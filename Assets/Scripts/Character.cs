@@ -48,7 +48,7 @@ public class StatsGroup
     public void Init()
     {
         stats.Add(new StatsValue(Statistic.Life, 100));
-        stats.Add(new StatsValue(Statistic.Damage, 12));
+        stats.Add(new StatsValue(Statistic.Damage, 35));
         stats.Add(new StatsValue(Statistic.Armor, 5));
         stats.Add(new StatsValue(Statistic.AttackSpeed, 1f));
         stats.Add(new StatsValue(Statistic.MoveSpeed, 2f));
@@ -129,8 +129,7 @@ public class Character : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        damage -= ApplyDefence(damage);
-
+        damage = ApplyDefence(damage);
 
         lifePool.currentValue -= damage;
 
@@ -154,6 +153,7 @@ public class Character : MonoBehaviour
         if (lifePool.currentValue <= 0)
         {
             isDead = true;
+            GetComponent<CharacterDefeatHandler>().Defeated();
         }
     }
 

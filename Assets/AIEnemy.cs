@@ -12,6 +12,11 @@ public class AIEnemy : MonoBehaviour
     [SerializeField] Character target;
     float timer = 4f;
 
+    private void Start()
+    {
+        target = GameManager.instance.playerObject.GetComponent<Character>();
+    }
+
     private void Update()
     {
         timer -= Time.deltaTime;
