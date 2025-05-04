@@ -882,6 +882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1c7856e39bd8a941aef8d58807fd02e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentScene: 
 --- !u!1 &768288268
 GameObject:
   m_ObjectHideFlags: 0
@@ -2264,6 +2265,10 @@ PrefabInstance:
       propertyPath: textOnScreen
       value: 
       objectReference: {fileID: 768288270}
+    - target: {fileID: 4449674399323909522, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: interactRange
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 8007819955216344100, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: m_Enabled
       value: 1
