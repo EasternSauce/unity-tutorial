@@ -108,6 +108,11 @@ public class ValuePool
         this.maxValue = maxValue;
         this.currentValue = maxValue.integer_value;
     }
+
+    internal void FullRestore()
+    {
+        currentValue = maxValue.integer_value;
+    }
 }
 
 public class Character : MonoBehaviour
@@ -160,5 +165,11 @@ public class Character : MonoBehaviour
     public StatsValue TakeStats(Statistic statisticToGet)
     {
         return stats.Get(statisticToGet);
+    }
+
+    internal void Restore()
+    {
+        lifePool.FullRestore();
+        isDead = false;
     }
 }

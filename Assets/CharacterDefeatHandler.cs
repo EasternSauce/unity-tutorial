@@ -12,6 +12,10 @@ public class CharacterDefeatHandler : MonoBehaviour
     InteractInput interactInput;
     PlayerCharacterInput playerCharacterInput;
     CharacterMovementInput movementInput;
+    Character character;
+
+    [SerializeField] bool player = false;
+    [SerializeField] GameObject defeatedPanel;
 
     private void Awake()
     {
@@ -23,82 +27,66 @@ public class CharacterDefeatHandler : MonoBehaviour
         interactInput  = GetComponent<InteractInput>();
         playerCharacterInput  = GetComponent<PlayerCharacterInput>();
         movementInput  = GetComponent<CharacterMovementInput>();
+        character = GetComponent<Character>();
     }
 
     public void Defeated()
     {
-        agent.isStopped = true;
-        agent.enabled = false;
-
-        //AI part
-
-        if(aiEnemy != null)
-        {
-            aiEnemy.enabled = false;
-        }
-
-        objectCollider.enabled = false;
-
-        //player part
-        
-        if(attackInput != null)
-        {
-            attackInput.enabled = false;
-        }  
-
-        if(interactInput != null)
-        {
-            interactInput.enabled = false;
-        }    
-
-        if(playerCharacterInput != null)
-        {
-            playerCharacterInput.enabled = false;
-        }   
-
-        if(movementInput != null)
-        {
-            movementInput.enabled = false;
-        }  
-
+        SetState(false);
     }
 
     internal void Respawn()
     {
-        
+        SetState(true);
+    }
 
-        agent.isStopped = false;
-        agent.enabled = true;
+    void SetState(bool state)
+    {
+        agent.isStopped = !state;
+        agent.enabled = state;
 
         //AI part
 
         if(aiEnemy != null)
         {
-            aiEnemy.enabled = true;
+            aiEnemy.enabled = state;
         }
 
-        objectCollider.enabled = true;
+        objectCollider.enabled = state;
 
         //player part
         
         if(attackInput != null)
         {
-            attackInput.enabled = true;
+            attackInput.enabled = state;
         }  
 
         if(interactInput != null)
         {
-            interactInput.enabled = true;
+            interactInput.enabled = state;
         }    
 
         if(playerCharacterInput != null)
         {
-            playerCharacterInput.enabled = true;
+            playerCharacterInput.enabled = state;
         }   
 
         if(movementInput != null)
         {
-            movementInput.enabled = true;
-        }  
+            movementInput.enabled = state;
+        }
+
+        if (defeatedPanel != null)
+        {
+            defeatedPanel.SetActive(!state);
+        }
+
+        if (state == true) {
+            if (character != null)
+            {
+                character.Restore();
+            }
+        }
+
     }
 }
