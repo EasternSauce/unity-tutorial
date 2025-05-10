@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerCharacterInput : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void Update()
     {
+        if(EventSystem.current.IsPointerOverGameObject()) { return; }
+
         if(Input.GetMouseButtonDown(0))
         {
             if (attackInput.AttackCheck())
