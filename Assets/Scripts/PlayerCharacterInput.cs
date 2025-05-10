@@ -29,7 +29,9 @@ public class PlayerCharacterInput : MonoBehaviour
             {
                 interactInput.Interact();
                 return;
-            } 
+            }
+
+            interactInput.ResetState();
             characterMovementInput.MoveInput();
             
         }

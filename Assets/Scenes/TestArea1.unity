@@ -151,7 +151,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0240c0a28a1153c4abf5fd03eaa4f473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  postMessage: ala ma kota
   objectName: 
 --- !u!65 &143838459
 BoxCollider:
@@ -395,7 +394,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0240c0a28a1153c4abf5fd03eaa4f473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  postMessage: hmmmmm
   objectName: 
 --- !u!65 &491840949
 BoxCollider:
@@ -1041,7 +1039,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0240c0a28a1153c4abf5fd03eaa4f473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  postMessage: TestArea2
   objectName: 
 --- !u!65 &969504038
 BoxCollider:
@@ -1058,7 +1055,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -1215,7 +1212,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0240c0a28a1153c4abf5fd03eaa4f473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  postMessage: kot ma ale
   objectName: 
 --- !u!65 &1183047565
 BoxCollider:
@@ -1770,7 +1766,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!136 &2772129351403012801
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -7258,7 +7254,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0240c0a28a1153c4abf5fd03eaa4f473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  postMessage: 
   objectName: 
 --- !u!114 &9204621269770802513
 MonoBehaviour:
@@ -7285,6 +7280,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c364b08f40e438240b519389d446a0a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: 0
+  defeatedPanel: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
