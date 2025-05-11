@@ -3498,6 +3498,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectedItemGrid: {fileID: 0}
+  itemDatas:
+  - {fileID: 11400000, guid: 5a9cf930980ce1045b6625c522c6c56e, type: 2}
+  - {fileID: 11400000, guid: 96220e7d073a8cb44873e3685ccd54dd, type: 2}
+  - {fileID: 11400000, guid: 8957333b5bc754a43a0787603add1b03, type: 2}
+  inventoryItemPrefab: {fileID: 2762296068298152622, guid: f1cdd60fb1920ac41ac6c014e1b1c463, type: 3}
+  targetCanvas: {fileID: 1825286069}
 --- !u!114 &2120118269
 MonoBehaviour:
   m_ObjectHideFlags: 0
