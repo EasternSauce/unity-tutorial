@@ -79,18 +79,22 @@ public class ItemGrid : MonoBehaviour
     {
         InventoryItem pickedItem = inventoryItemGrid[tilePositionOnGrid.x, tilePositionOnGrid.y];
 
-        if(pickedItem == null) { return null; }
+        if (pickedItem == null) { return null; }
 
-        for(int ix = 0; ix < pickedItem.itemData.sizeWidth; ix++)
+        ClearGridFromItem(pickedItem);
+
+        return pickedItem;
+    }
+
+    public void ClearGridFromItem(InventoryItem pickedItem)
+    {
+        for (int ix = 0; ix < pickedItem.itemData.sizeWidth; ix++)
         {
-            for(int iy = 0; iy < pickedItem.itemData.sizeHeight; iy++)
+            for (int iy = 0; iy < pickedItem.itemData.sizeHeight; iy++)
             {
                 inventoryItemGrid[pickedItem.positionOnGridX + ix, pickedItem.positionOnGridY + iy] = null;
             }
         }
-        inventoryItemGrid[tilePositionOnGrid.x, tilePositionOnGrid.y] = null;
-        
-        return pickedItem;
     }
 
     bool PositionCheck(int x, int y)
@@ -116,6 +120,31 @@ public class ItemGrid : MonoBehaviour
         posY += height - 1;
 
         if(PositionCheck(posX, posY) == false) { return false; }
+
+        return true;
+    }
+
+    internal bool CheckOverlap(int posX, int posY, int sizeWidth, int sizeHeight, ref InventoryItem overlapItem)
+    {
+        for(int x = 0; x < sizeWidth; x++)
+        {
+            for(int y = 0; y < sizeHeight; y++)
+            {
+                if(inventoryItemGrid[posX + x, posY + y] != null)
+                {
+                    if (overlapItem == null)
+                    {
+                        overlapItem = inventoryItemGrid[posX + x, posY + y];
+                    }
+                    else {
+                        if(overlapItem != inventoryItemGrid[posX + x, posY + y])
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
 
         return true;
     }

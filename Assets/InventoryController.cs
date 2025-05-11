@@ -8,6 +8,7 @@ public class InventoryController : MonoBehaviour
 
     Vector2Int positionOnGrid;
     InventoryItem selectedItem;
+    InventoryItem overlapItem;
     RectTransform selectedItemRectTransform;
 
     [SerializeField] List<ItemData> itemDatas;
@@ -50,7 +51,7 @@ public class InventoryController : MonoBehaviour
         if(selectedItemGrid == null) { return; }
 
         if(Input.GetMouseButtonDown(0)) {
-            positionOnGrid = selectedItemGrid.GetTileGridPosition(Input.mousePosition);
+            positionOnGrid = GetTileGridPosition();
             if (selectedItem == null)
             {
                 selectedItem = selectedItemGrid.PickUpItem(positionOnGrid);
@@ -58,20 +59,58 @@ public class InventoryController : MonoBehaviour
                     selectedItemRectTransform = selectedItem.GetComponent<RectTransform>();
                 }
             }
-            else {
-                if(selectedItemGrid.BoundaryCheck(
-                    positionOnGrid.x,
-                    positionOnGrid.y,
-                    selectedItem.itemData.sizeWidth,
-                    selectedItem.itemData.sizeHeight)
-                    )
-                {
-                    selectedItemGrid.PlaceItem(selectedItem, positionOnGrid.x, positionOnGrid.y);
-                    selectedItem = null;
-                    selectedItemRectTransform = null;
-                }
-
+            else
+            {
+                PlaceItemInput();
             }
         }
+    }
+
+    Vector2Int GetTileGridPosition()
+    {
+        Vector2 position = Input.mousePosition;
+        if(selectedItem != null)
+        {
+            position.x -= (selectedItem.itemData.sizeWidth - 1) * ItemGrid.TileSizeWidth / 2;
+            position.y += (selectedItem.itemData.sizeHeight - 1) * ItemGrid.TileSizeHeight / 2;
+        }
+
+        return selectedItemGrid.GetTileGridPosition(position);
+    }
+
+    private void PlaceItemInput()
+    {
+        if (selectedItemGrid.BoundaryCheck(
+            positionOnGrid.x,
+            positionOnGrid.y,
+            selectedItem.itemData.sizeWidth,
+            selectedItem.itemData.sizeHeight) == false
+            )
+        {
+            return;
+        }
+
+        if (selectedItemGrid.CheckOverlap(positionOnGrid.x, positionOnGrid.y, selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight, ref overlapItem) == false)
+        {
+            overlapItem = null;
+            return;
+        }
+
+        if(overlapItem != null)
+        {
+            selectedItemGrid.ClearGridFromItem(overlapItem);
+        }
+    
+        selectedItemGrid.PlaceItem(selectedItem, positionOnGrid.x, positionOnGrid.y);
+        selectedItem = null;
+        selectedItemRectTransform = null;
+
+        if(overlapItem != null)
+        {
+            selectedItem = overlapItem;
+            selectedItemRectTransform = selectedItem.GetComponent<RectTransform>();
+            overlapItem = null;
+        }
+        
     }
 }
