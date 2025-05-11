@@ -56,7 +56,7 @@ public class ItemGrid : MonoBehaviour
         itemRectTransform.localPosition = CalculatePositionOfObjectOnGrid(itemToPlace, x, y);
     }
 
-    private static Vector2 CalculatePositionOfObjectOnGrid(InventoryItem item, int x, int y)
+    public Vector2 CalculatePositionOfObjectOnGrid(InventoryItem item, int x, int y)
     {
         Vector2 positionOnGrid = new Vector2();
         positionOnGrid.x = TileSizeWidth * x + TileSizeWidth * item.itemData.sizeWidth / 2;
@@ -147,5 +147,10 @@ public class ItemGrid : MonoBehaviour
         }
 
         return true;
+    }
+
+    internal InventoryItem GetItem(int x, int y)
+    {
+        return inventoryItemGrid[x, y];
     }
 }
