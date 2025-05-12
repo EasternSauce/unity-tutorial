@@ -42,9 +42,9 @@ public class ItemGrid : MonoBehaviour
         RectTransform itemRectTransform = itemToPlace.GetComponent<RectTransform>();
         itemRectTransform.SetParent(transform);
 
-        for(int ix = 0; ix < itemToPlace.itemData.sizeWidth; ix++)
+        for (int ix = 0; ix < itemToPlace.itemData.sizeWidth; ix++)
         {
-            for(int iy = 0; iy < itemToPlace.itemData.sizeHeight; iy++)
+            for (int iy = 0; iy < itemToPlace.itemData.sizeHeight; iy++)
             {
                 inventoryItemGrid[x + ix, y + iy] = itemToPlace;
             }
@@ -54,6 +54,46 @@ public class ItemGrid : MonoBehaviour
         itemToPlace.positionOnGridY = y;
 
         itemRectTransform.localPosition = CalculatePositionOfObjectOnGrid(itemToPlace, x, y);
+    }
+
+    internal Vector2Int? FindSpaceForObject(InventoryItem itemToInsert)
+    {
+        int width = gridSizeWidth - itemToInsert.itemData.sizeWidth + 1;
+        int height = gridSizeHeight - itemToInsert.itemData.sizeHeight + 1;
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (CheckAvailableSpace(x, y, itemToInsert.itemData.sizeWidth, itemToInsert.itemData.sizeHeight) == true)
+                {
+                    return new Vector2Int(x, y);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private bool CheckAvailableSpace(int posX, int posY, int sizeWidth, int sizeHeight)
+    {
+        for (int x = 0; x < sizeWidth; x++)
+        {
+            for (int y = 0; y < sizeHeight; y++)
+            {
+                if (inventoryItemGrid[posX + x, posY + y] != null)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    internal InventoryItem GetItem(int x, int y)
+    {
+        return inventoryItemGrid[x, y];
     }
 
     public Vector2 CalculatePositionOfObjectOnGrid(InventoryItem item, int x, int y)
@@ -74,7 +114,7 @@ public class ItemGrid : MonoBehaviour
 
         return tileGridPosition;
     }
-    
+
     public InventoryItem PickUpItem(Vector2Int tilePositionOnGrid)
     {
         InventoryItem pickedItem = inventoryItemGrid[tilePositionOnGrid.x, tilePositionOnGrid.y];
@@ -99,12 +139,12 @@ public class ItemGrid : MonoBehaviour
 
     bool PositionCheck(int x, int y)
     {
-        if(x < 0 || y < 0)
+        if (x < 0 || y < 0)
         {
             return false;
         }
 
-        if(x >= gridSizeWidth || y >= gridSizeHeight)
+        if (x >= gridSizeWidth || y >= gridSizeHeight)
         {
             return false;
         }
@@ -114,30 +154,31 @@ public class ItemGrid : MonoBehaviour
 
     public bool BoundaryCheck(int posX, int posY, int width, int height)
     {
-        if(PositionCheck(posX, posY) == false) { return false; }
+        if (PositionCheck(posX, posY) == false) { return false; }
 
         posX += width - 1;
         posY += height - 1;
 
-        if(PositionCheck(posX, posY) == false) { return false; }
+        if (PositionCheck(posX, posY) == false) { return false; }
 
         return true;
     }
 
     internal bool CheckOverlap(int posX, int posY, int sizeWidth, int sizeHeight, ref InventoryItem overlapItem)
     {
-        for(int x = 0; x < sizeWidth; x++)
+        for (int x = 0; x < sizeWidth; x++)
         {
-            for(int y = 0; y < sizeHeight; y++)
+            for (int y = 0; y < sizeHeight; y++)
             {
-                if(inventoryItemGrid[posX + x, posY + y] != null)
+                if (inventoryItemGrid[posX + x, posY + y] != null)
                 {
                     if (overlapItem == null)
                     {
                         overlapItem = inventoryItemGrid[posX + x, posY + y];
                     }
-                    else {
-                        if(overlapItem != inventoryItemGrid[posX + x, posY + y])
+                    else
+                    {
+                        if (overlapItem != inventoryItemGrid[posX + x, posY + y])
                         {
                             return false;
                         }
@@ -149,8 +190,4 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-    internal InventoryItem GetItem(int x, int y)
-    {
-        return inventoryItemGrid[x, y];
-    }
 }
