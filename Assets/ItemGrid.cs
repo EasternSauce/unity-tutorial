@@ -18,22 +18,13 @@ public class ItemGrid : MonoBehaviour
 
     [SerializeField] GameObject inventoryItemPrefab;
 
-    private void Awake()
+    public void Init()
     {
         rectTransform = GetComponent<RectTransform>();
-    }
-
-    private void Start()
-    {
-        Init(gridSizeWidth, gridSizeHeight);
-    }
-
-    private void Init(int width, int height)
-    {
-        inventoryItemGrid = new InventoryItem[width, height];
+        inventoryItemGrid = new InventoryItem[gridSizeWidth, gridSizeHeight];
         Vector2 size = new Vector2();
-        size.x = TileSizeWidth * width;
-        size.y = TileSizeHeight * height;
+        size.x = TileSizeWidth * gridSizeWidth;
+        size.y = TileSizeHeight * gridSizeHeight;
         rectTransform.sizeDelta = size;
     }
 
@@ -56,16 +47,16 @@ public class ItemGrid : MonoBehaviour
         itemRectTransform.localPosition = CalculatePositionOfObjectOnGrid(itemToPlace, x, y);
     }
 
-    internal Vector2Int? FindSpaceForObject(InventoryItem itemToInsert)
+    internal Vector2Int? FindSpaceForObject(ItemData itemData)
     {
-        int width = gridSizeWidth - itemToInsert.itemData.sizeWidth + 1;
-        int height = gridSizeHeight - itemToInsert.itemData.sizeHeight + 1;
+        int width = gridSizeWidth - itemData.sizeWidth + 1;
+        int height = gridSizeHeight - itemData.sizeHeight + 1;
 
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                if (CheckAvailableSpace(x, y, itemToInsert.itemData.sizeWidth, itemToInsert.itemData.sizeHeight) == true)
+                if (CheckAvailableSpace(x, y, itemData.sizeWidth, itemData.sizeHeight) == true)
                 {
                     return new Vector2Int(x, y);
                 }
@@ -137,7 +128,7 @@ public class ItemGrid : MonoBehaviour
         }
     }
 
-    bool PositionCheck(int x, int y)
+    public bool PositionCheck(int x, int y)
     {
         if (x < 0 || y < 0)
         {
