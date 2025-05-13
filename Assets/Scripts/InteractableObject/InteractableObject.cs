@@ -11,6 +11,11 @@ public class InteractableObject : MonoBehaviour
         objectName = gameObject.name;
     }
 
+    public void Subscribe(Action<Inventory> action)
+    {
+        interact += action;
+    }
+
     public void Interact(Inventory inventory)
     {
         interact?.Invoke(inventory);

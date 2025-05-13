@@ -7,7 +7,7 @@ public class PickUpInteractableObject : MonoBehaviour
 
     private void Start()
     {
-        GetComponent<InteractableObject>().interact += PickUp;
+        GetComponent<InteractableObject>().Subscribe(PickUp);
     }
 
     public void PickUp(Inventory inventory)
