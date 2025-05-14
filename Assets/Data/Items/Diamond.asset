@@ -15,4 +15,9 @@ MonoBehaviour:
   equipmentSlot: 7
   sizeWidth: 1
   sizeHeight: 1
+  stats:
+  - statisticType: 0
+    typeFloat: 0
+    integer_value: 25
+    float_value: 0
   icon: {fileID: 21300000, guid: d7a4061b74af92d46ae8b09c8ee31898, type: 3}

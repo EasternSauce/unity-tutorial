@@ -26,7 +26,7 @@ public class StatsValue
         this.integer_value = value;
     }
 
-    
+
     public StatsValue(Statistic statisticType, float value = 0)
     {
         this.statisticType = statisticType;
@@ -57,6 +57,20 @@ public class StatsGroup
     internal StatsValue Get(Statistic statisticToGet)
     {
         return stats[(int)statisticToGet];
+    }
+
+    internal void Sum(StatsValue toAdd)
+    {
+        StatsValue statsValue = stats[(int)toAdd.statisticType];
+
+        if (toAdd.typeFloat == true)
+        {
+            statsValue.float_value += toAdd.float_value;
+        }
+        else
+        {
+            statsValue.integer_value += toAdd.integer_value;
+        }
     }
 }
 
@@ -104,7 +118,8 @@ public class ValuePool
     public StatsValue maxValue;
     public int currentValue;
 
-    public ValuePool(StatsValue maxValue) {
+    public ValuePool(StatsValue maxValue)
+    {
         this.maxValue = maxValue;
         this.currentValue = maxValue.integer_value;
     }
@@ -122,7 +137,7 @@ public class Character : MonoBehaviour
     public ValuePool lifePool;
     public bool isDead;
 
-    private void Start() 
+    private void Start()
     {
         attributes = new AttributeGroup();
         attributes.Init();
@@ -171,5 +186,18 @@ public class Character : MonoBehaviour
     {
         lifePool.FullRestore();
         isDead = false;
+    }
+
+    internal void AddStats(List<StatsValue> statsValues)
+    {
+        for (int i = 0; i < statsValues.Count; i++)
+        {
+            StatsAdd(statsValues[i]);
+        }
+    }
+
+    private void StatsAdd(StatsValue statsValue)
+    {
+        stats.Sum(statsValue);
     }
 }

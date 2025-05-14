@@ -1056,7 +1056,7 @@ GameObject:
   - component: {fileID: 477890029}
   - component: {fileID: 477890028}
   m_Layer: 5
-  m_Name: Weapon Slot
+  m_Name: Weapon Slot 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2513,6 +2513,16 @@ MonoBehaviour:
   currency: 0
   mainInventoryItemGrid: {fileID: 2120118265}
   inventoryController: {fileID: 72065790}
+  slots:
+  - {fileID: 477890029}
+  - {fileID: 1948456955}
+  - {fileID: 482786662}
+  - {fileID: 82200470}
+  - {fileID: 1231608565}
+  - {fileID: 1857135997}
+  - {fileID: 1207701935}
+  - {fileID: 448830335}
+  - {fileID: 1729633493}
 --- !u!1 &929173239
 GameObject:
   m_ObjectHideFlags: 0

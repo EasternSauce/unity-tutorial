@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
@@ -6,9 +7,20 @@ public class Inventory : MonoBehaviour
     [SerializeField] ItemGrid mainInventoryItemGrid;
     [SerializeField] InventoryController inventoryController;
 
+    [SerializeField] List<EquipmentItemSlot> slots;
+
+    Character character;
+
     private void Start()
     {
         mainInventoryItemGrid.Init();
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            slots[i].Init(this);
+        }
+
+        character = GetComponent<Character>();
     }
 
     public void AddCurrency(int amount)
@@ -27,5 +39,10 @@ public class Inventory : MonoBehaviour
         mainInventoryItemGrid.PlaceItem(newItem, positionToPlace.Value.x, positionToPlace.Value.y);
 
         return true;
+    }
+
+    public void AddStats(List<StatsValue> statsValues)
+    {
+        character.AddStats(statsValues);
     }
 }
