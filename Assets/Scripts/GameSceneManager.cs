@@ -18,9 +18,10 @@ public class GameSceneManager : MonoBehaviour
 
     private void Start()
     {
-        for(int i = 0; i < SceneManager.sceneCount; i++)
+        // set currentScene to first non-essential scene
+        for (int i = 0; i < SceneManager.sceneCount; i++)
         {
-            if(SceneManager.GetSceneAt(i).name != "Essential")
+            if (SceneManager.GetSceneAt(i).name != "Essential")
             {
                 currentScene = SceneManager.GetSceneAt(i).name;
                 break;
@@ -37,7 +38,7 @@ public class GameSceneManager : MonoBehaviour
     {
         SwitchScenes(toSceneName);
 
-        while (load.isDone == false & unload.isDone == false)
+        while (load.isDone == false && unload.isDone == false)
         {
             yield return new WaitForSeconds(0.1f);
         }

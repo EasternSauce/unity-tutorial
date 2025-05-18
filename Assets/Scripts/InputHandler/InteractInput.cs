@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class InteractInput : MonoBehaviour
@@ -12,7 +11,7 @@ public class InteractInput : MonoBehaviour
     public InteractableObject hoveringOverObject;
     [HideInInspector]
     public Character hoveringOverCharacter;
-    
+
     InteractHandler interactHandler;
 
     void Awake()
@@ -40,7 +39,7 @@ public class InteractInput : MonoBehaviour
         }
     }
 
-    
+
     internal void Interact()
     {
         interactHandler.interactedObject = hoveringOverObject;
@@ -71,7 +70,8 @@ public class InteractInput : MonoBehaviour
         {
             hpBar.Show(hoveringOverCharacter.lifePool);
         }
-        else {
+        else
+        {
             hpBar.Clear();
         }
     }

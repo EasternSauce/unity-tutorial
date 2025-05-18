@@ -5,6 +5,7 @@ using System;
 public enum Statistic
 {
     Life,
+    Energy,
     Damage,
     Armor,
     AttackSpeed,
@@ -48,6 +49,7 @@ public class StatsGroup
     public void Init()
     {
         stats.Add(new StatsValue(Statistic.Life, 100));
+        stats.Add(new StatsValue(Statistic.Energy, 100));
         stats.Add(new StatsValue(Statistic.Damage, 35));
         stats.Add(new StatsValue(Statistic.Armor, 5));
         stats.Add(new StatsValue(Statistic.AttackSpeed, 1f));
@@ -135,15 +137,19 @@ public class Character : MonoBehaviour
     [SerializeField] AttributeGroup attributes;
     [SerializeField] StatsGroup stats;
     public ValuePool lifePool;
+    public ValuePool energyPool;
     public bool isDead;
 
     private void Start()
     {
         attributes = new AttributeGroup();
         attributes.Init();
+
         stats = new StatsGroup();
         stats.Init();
+
         lifePool = new ValuePool(stats.Get(Statistic.Life));
+        energyPool = new ValuePool(stats.Get(Statistic.Energy));
 
     }
 

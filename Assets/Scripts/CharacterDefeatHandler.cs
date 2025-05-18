@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -22,11 +21,11 @@ public class CharacterDefeatHandler : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         aiEnemy = GetComponent<AIEnemy>();
         objectCollider = GetComponent<Collider>();
-    
-        attackInput  = GetComponent<AttackInput>();
-        interactInput  = GetComponent<InteractInput>();
-        playerCharacterInput  = GetComponent<PlayerCharacterInput>();
-        movementInput  = GetComponent<CharacterMovementInput>();
+
+        attackInput = GetComponent<AttackInput>();
+        interactInput = GetComponent<InteractInput>();
+        playerCharacterInput = GetComponent<PlayerCharacterInput>();
+        movementInput = GetComponent<CharacterMovementInput>();
         character = GetComponent<Character>();
     }
 
@@ -47,7 +46,7 @@ public class CharacterDefeatHandler : MonoBehaviour
 
         //AI part
 
-        if(aiEnemy != null)
+        if (aiEnemy != null)
         {
             aiEnemy.enabled = state;
         }
@@ -55,23 +54,23 @@ public class CharacterDefeatHandler : MonoBehaviour
         objectCollider.enabled = state;
 
         //player part
-        
-        if(attackInput != null)
+
+        if (attackInput != null)
         {
             attackInput.enabled = state;
-        }  
+        }
 
-        if(interactInput != null)
+        if (interactInput != null)
         {
             interactInput.enabled = state;
-        }    
+        }
 
-        if(playerCharacterInput != null)
+        if (playerCharacterInput != null)
         {
             playerCharacterInput.enabled = state;
-        }   
+        }
 
-        if(movementInput != null)
+        if (movementInput != null)
         {
             movementInput.enabled = state;
         }
@@ -81,7 +80,8 @@ public class CharacterDefeatHandler : MonoBehaviour
             defeatedPanel.SetActive(!state);
         }
 
-        if (state == true) {
+        if (state == true)
+        {
             if (character != null)
             {
                 character.Restore();

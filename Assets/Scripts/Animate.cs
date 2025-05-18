@@ -9,10 +9,10 @@ public class Animate : MonoBehaviour
 
     Character character;
 
-    private void Awake() 
+    private void Awake()
     {
         animator = GetComponentInChildren<Animator>();
-        agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        agent = GetComponent<NavMeshAgent>();
         character = GetComponent<Character>();
     }
 

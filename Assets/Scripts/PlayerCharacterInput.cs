@@ -18,25 +18,31 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void Update()
     {
-        if(EventSystem.current.IsPointerOverGameObject()) { return; }
+        if (EventSystem.current.IsPointerOverGameObject()) { return; }
 
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButton(0))
         {
             if (attackInput.AttackCheck())
             {
                 attackInput.Attack();
                 return;
             }
-            
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (interactInput.InteractCheck())
+                {
+                    interactInput.Interact();
+                    return;
+                }
+            }
             if (interactInput.InteractCheck())
             {
-                interactInput.Interact();
                 return;
             }
 
             interactInput.ResetState();
             characterMovementInput.MoveInput();
-            
+
         }
     }
 }

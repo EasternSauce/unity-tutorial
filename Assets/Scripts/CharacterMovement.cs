@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -29,7 +28,7 @@ public class CharacterMovement : MonoBehaviour
 
     private void Update()
     {
-        if(current_MoveSpeed != moveSpeed.float_value)
+        if (current_MoveSpeed != moveSpeed.float_value)
         {
             current_MoveSpeed = moveSpeed.float_value;
             UpdateMoveSpeed();
