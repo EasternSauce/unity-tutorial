@@ -8,20 +8,20 @@ public class UiPanelManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            OpenInventory();
-        }
+        // if (Input.GetKeyDown(KeyCode.I))
+        // {
+        //     OpenInventory();
+        // }
 
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            OpenStats();
-        }
+        // if (Input.GetKeyDown(KeyCode.S))
+        // {
+        //     OpenStats();
+        // }
 
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            OpenQuest();
-        }
+        // if (Input.GetKeyDown(KeyCode.Q))
+        // {
+        //     OpenQuest();
+        // }
     }
 
     public void OpenInventory()
@@ -35,7 +35,7 @@ public class UiPanelManager : MonoBehaviour
         questPanel.SetActive(false);
 
     }
-    
+
     public void OpenQuest()
     {
         questPanel.SetActive(!questPanel.activeInHierarchy);

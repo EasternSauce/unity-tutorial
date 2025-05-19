@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public class PlayerCharacterInput : MonoBehaviour
 {
@@ -16,33 +17,23 @@ public class PlayerCharacterInput : MonoBehaviour
         interactInput = GetComponent<InteractInput>();
     }
 
-    private void Update()
+    public void LMB_InputHandle(InputAction.CallbackContext callbackContext)
     {
         if (EventSystem.current.IsPointerOverGameObject()) { return; }
 
-        if (Input.GetMouseButton(0))
+        if (attackInput.AttackCheck())
         {
-            if (attackInput.AttackCheck())
-            {
-                attackInput.Attack();
-                return;
-            }
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (interactInput.InteractCheck())
-                {
-                    interactInput.Interact();
-                    return;
-                }
-            }
-            if (interactInput.InteractCheck())
-            {
-                return;
-            }
-
-            interactInput.ResetState();
-            characterMovementInput.MoveInput();
-
+            attackInput.Attack();
+            return;
         }
+
+        if (interactInput.InteractCheck())
+        {
+            interactInput.Interact();
+            return;
+        }
+
+        interactInput.ResetState();
+        characterMovementInput.MoveInput();
     }
 }

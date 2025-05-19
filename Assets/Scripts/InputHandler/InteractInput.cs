@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class InteractInput : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class InteractInput : MonoBehaviour
 
     InteractHandler interactHandler;
 
+    Vector2 mousePosition;
+
     void Awake()
     {
         interactHandler = GetComponent<InteractHandler>();
@@ -24,9 +27,14 @@ public class InteractInput : MonoBehaviour
         CheckInteractObject();
     }
 
+    public void MousePositionInput(InputAction.CallbackContext callbackContext)
+    {
+        mousePosition = callbackContext.ReadValue<Vector2>();
+    }
+
     private void CheckInteractObject()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit))
