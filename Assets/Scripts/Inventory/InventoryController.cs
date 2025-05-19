@@ -1,12 +1,16 @@
+using System;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class InventoryController : MonoBehaviour
 {
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
 
+    [SerializeField] MouseInput mouseInput;
+    Vector2 mousePosition;
     Vector2Int positionOnGrid;
     InventoryItem selectedItem;
     InventoryItem overlapItem;
@@ -42,6 +46,8 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
+        ProcessMousePosition();
+
         ProcessMouseInput();
 
         HandleHighlight();
@@ -57,6 +63,11 @@ public class InventoryController : MonoBehaviour
         {
             InsertRandomItem();
         }
+    }
+
+    private void ProcessMousePosition()
+    {
+        mousePosition = mouseInput.mouseInputPosition;
     }
 
     private void InsertRandomItem()
@@ -161,27 +172,30 @@ public class InventoryController : MonoBehaviour
 
     }
 
-    private void ProcessMouseInput()
+    public void ProcessLMBPress(InputAction.CallbackContext callbackContext)
+    {
+        // TODO: if selecteditemgrid...
+
+        if (selectedItemGrid != null)
+        {
+            ItemGridInput();
+        }
+
+        if (selectedItemSlot != null)
+        {
+            ItemSlotInput();
+        }
+    }
+
+    public void ProcessMouseInput()
     {
         if (selectedItem != null)
         {
-            selectedItemRectTransform.position = Input.mousePosition;
+            selectedItemRectTransform.position = mousePosition;
         }
 
-        if (selectedItemGrid == null && selectedItemSlot == null) { return; }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (selectedItemGrid != null)
-            {
-                ItemGridInput();
-            }
-
-            if (selectedItemSlot != null)
-            {
-                ItemSlotInput();
-            }
-        }
+        // if (selectedItemGrid == null && selectedItemSlot == null) { return; }
+        // 25 -> 6:28
     }
 
     private void ItemSlotInput()
@@ -234,7 +248,7 @@ public class InventoryController : MonoBehaviour
 
     Vector2Int GetTileGridPosition()
     {
-        Vector2 position = Input.mousePosition;
+        Vector2 position = mousePosition;
         if (selectedItem != null)
         {
             position.x -= (selectedItem.itemData.sizeWidth - 1) * ItemGrid.TileSizeWidth / 2;

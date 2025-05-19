@@ -6,24 +6,6 @@ public class UiPanelManager : MonoBehaviour
     [SerializeField] GameObject statsPanel;
     [SerializeField] GameObject questPanel;
 
-    private void Update()
-    {
-        // if (Input.GetKeyDown(KeyCode.I))
-        // {
-        //     OpenInventory();
-        // }
-
-        // if (Input.GetKeyDown(KeyCode.S))
-        // {
-        //     OpenStats();
-        // }
-
-        // if (Input.GetKeyDown(KeyCode.Q))
-        // {
-        //     OpenQuest();
-        // }
-    }
-
     public void OpenInventory()
     {
         inventoryPanel.SetActive(!inventoryPanel.activeInHierarchy);
@@ -36,7 +18,7 @@ public class UiPanelManager : MonoBehaviour
 
     }
 
-    public void OpenQuest()
+    public void OpenQuests()
     {
         questPanel.SetActive(!questPanel.activeInHierarchy);
         statsPanel.SetActive(false);

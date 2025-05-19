@@ -496,6 +496,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Item Chest (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 3777154784895806330, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
+      propertyPath: dropItem
+      value: 
+      objectReference: {fileID: 11400000, guid: 5a9cf930980ce1045b6625c522c6c56e, type: 2}
     - target: {fileID: 4793865437023642029, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 7.398249
@@ -1587,6 +1591,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Item Chest (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 3777154784895806330, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
+      propertyPath: dropItem
+      value: 
+      objectReference: {fileID: 11400000, guid: 5a9cf930980ce1045b6625c522c6c56e, type: 2}
     - target: {fileID: 4793865437023642029, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.5699673
@@ -1759,6 +1767,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Item Chest (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 3777154784895806330, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
+      propertyPath: dropItem
+      value: 
+      objectReference: {fileID: 11400000, guid: 96220e7d073a8cb44873e3685ccd54dd, type: 2}
     - target: {fileID: 4793865437023642029, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.8776495
@@ -1950,6 +1962,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Item Chest
       objectReference: {fileID: 0}
+    - target: {fileID: 3777154784895806330, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
+      propertyPath: dropItem
+      value: 
+      objectReference: {fileID: 11400000, guid: 5a9cf930980ce1045b6625c522c6c56e, type: 2}
     - target: {fileID: 4793865437023642029, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.8755054

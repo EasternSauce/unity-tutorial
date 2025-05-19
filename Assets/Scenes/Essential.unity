@@ -304,8 +304,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -375, y: 539.99}
-  m_SizeDelta: {x: 750, y: 1080}
+  m_AnchoredPosition: {x: -375, y: 625.10944}
+  m_SizeDelta: {x: 750, y: 909.7611}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &72065786
 MonoBehaviour:
@@ -384,6 +384,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1433e3b1e6d72da4792bafb9de37939a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mouseInput: {fileID: 330585548}
   itemDatas:
   - {fileID: 11400000, guid: 5a9cf930980ce1045b6625c522c6c56e, type: 2}
   - {fileID: 11400000, guid: 96220e7d073a8cb44873e3685ccd54dd, type: 2}
@@ -429,7 +430,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 118, y: 240.3396}
+  m_AnchoredPosition: {x: 33.19995, y: 328.6446}
   m_SizeDelta: {x: 117.99, y: 112.0693}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &82200469
@@ -1008,6 +1009,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e24b65f620e144c41883af511f9b7847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mouseInputPosition: {x: 0, y: 0, z: 0}
   rayToWorldIntersectionPoint: {x: 0, y: 0, z: 0}
 --- !u!114 &330585549
 MonoBehaviour:
@@ -1108,8 +1110,68 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 72065790}
+        m_TargetAssemblyTypeName: InventoryController, Assembly-CSharp
+        m_MethodName: ProcessLMBPress
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: a2a32915-e1db-4fc9-ba26-4b51c60ce9d9
     m_ActionName: 'Player/LeftMouseButton[/Mouse/leftButton]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 731758869}
+        m_TargetAssemblyTypeName: UiPanelManager, Assembly-CSharp
+        m_MethodName: OpenInventory
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 1566b4b0-94fe-4de0-9e15-a18815b8d48b
+    m_ActionName: 'Player/OpenInventory[/Keyboard/i]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 731758869}
+        m_TargetAssemblyTypeName: UiPanelManager, Assembly-CSharp
+        m_MethodName: OpenStats
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 360c6ee7-83a3-47c4-8d76-5b026d36829e
+    m_ActionName: 'Player/OpenStats[/Keyboard/s]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 731758869}
+        m_TargetAssemblyTypeName: UiPanelManager, Assembly-CSharp
+        m_MethodName: OpenQuests
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 0e85ba5c-d1c6-4d50-86f8-71ebc37a0562
+    m_ActionName: 'Player/OpenQuests[/Keyboard/q]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -1380,7 +1442,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 263.50403, y: -101.014404}
+  m_AnchoredPosition: {x: 178.70398, y: -12.709412}
   m_SizeDelta: {x: 107.5391, y: 130.3188}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &448830334
@@ -1527,7 +1589,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -53.2, y: 71.695}
+  m_AnchoredPosition: {x: -138, y: 160}
   m_SizeDelta: {x: 117.99, y: 143.39}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &477890028
@@ -1810,7 +1872,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 118, y: 71.695}
+  m_AnchoredPosition: {x: 33.19995, y: 160}
   m_SizeDelta: {x: 117.99, y: 143.39}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &482786661
@@ -2449,7 +2511,7 @@ GameObject:
   - component: {fileID: 693350647}
   - component: {fileID: 693350646}
   m_Layer: 5
-  m_Name: Quest Button
+  m_Name: Quests Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3503,8 +3565,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 375, y: 470}
-  m_SizeDelta: {x: 750, y: 1207.9948}
+  m_AnchoredPosition: {x: 375, y: 622.11}
+  m_SizeDelta: {x: 750, y: 903.77}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1065040668
 MonoBehaviour:
@@ -3719,7 +3781,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 148, y: -65}
+  m_AnchoredPosition: {x: 63.19995, y: 23.304993}
   m_SizeDelta: {x: 56.531, y: 58.292}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1207701934
@@ -3941,7 +4003,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 28, y: -65.00067}
+  m_AnchoredPosition: {x: -56.80005, y: 23.304321}
   m_SizeDelta: {x: 117.99, y: 58.2925}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1231608564
@@ -4939,7 +5001,7 @@ GameObject:
   - component: {fileID: 1460610418}
   - component: {fileID: 1460610417}
   m_Layer: 5
-  m_Name: Panel Quest
+  m_Name: Panel Quests
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4962,8 +5024,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 375, y: 470}
-  m_SizeDelta: {x: 750, y: 1207.9948}
+  m_AnchoredPosition: {x: 375, y: 622.11}
+  m_SizeDelta: {x: 750, y: 903.77}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1460610417
 MonoBehaviour:
@@ -5329,7 +5391,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 238, y: 213.45}
+  m_AnchoredPosition: {x: 153.19995, y: 301.755}
   m_SizeDelta: {x: 56.531, y: 58.292}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1729633492
@@ -6020,7 +6082,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -90, y: -65.00101}
+  m_AnchoredPosition: {x: -174.80005, y: 23.303986}
   m_SizeDelta: {x: 56.531, y: 58.292}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1857135996
@@ -6164,7 +6226,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 20.804688, y: -441.17844}
+  m_AnchoredPosition: {x: 33.195, y: -399}
   m_SizeDelta: {x: 683.6095, y: 45.6431}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1877962347
@@ -6439,7 +6501,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 288, y: 71.695}
+  m_AnchoredPosition: {x: 203.19995, y: 160}
   m_SizeDelta: {x: 117.99, y: 143.39}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1948456954
