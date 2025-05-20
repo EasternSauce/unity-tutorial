@@ -74,6 +74,20 @@ public class StatsGroup
             statsValue.integer_value += toAdd.integer_value;
         }
     }
+
+    public void Subtract(StatsValue toSubtract)
+    {
+        StatsValue statsValue = stats[(int)toSubtract.statisticType];
+
+        if (toSubtract.typeFloat == true)
+        {
+            statsValue.float_value -= toSubtract.float_value;
+        }
+        else
+        {
+            statsValue.integer_value -= toSubtract.integer_value;
+        }
+    }
 }
 
 public enum Attribute
@@ -205,5 +219,18 @@ public class Character : MonoBehaviour
     private void StatsAdd(StatsValue statsValue)
     {
         stats.Sum(statsValue);
+    }
+
+    public void SubtractStats(List<StatsValue> statsValues)
+    {
+        for (int i = 0; i < statsValues.Count; i++)
+        {
+            StatsSubstract(statsValues[i]);
+        }
+    }
+
+    private void StatsSubstract(StatsValue statsValue)
+    {
+        stats.Subtract(statsValue);
     }
 }

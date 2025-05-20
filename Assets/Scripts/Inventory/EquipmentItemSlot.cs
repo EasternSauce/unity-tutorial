@@ -28,6 +28,10 @@ public class EquipmentItemSlot : MonoBehaviour
     public InventoryItem ReplaceItem(InventoryItem itemToPlace)
     {
         InventoryItem replaceItem = itemInSlot;
+        if (replaceItem != null)
+        {
+            inventory.SubtractStats(replaceItem.itemData.stats);
+        }
 
         PlaceItem(itemToPlace);
 
