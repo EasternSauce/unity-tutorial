@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class InventoryController : MonoBehaviour
@@ -25,6 +26,9 @@ public class InventoryController : MonoBehaviour
 
     InventoryItem itemToHighlight;
 
+    Vector2Int oldPosition;
+    private bool isOverUIElement;
+
     public EquipmentItemSlot SelectedItemSlot
     {
         get => selectedItemSlot;
@@ -46,23 +50,25 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
+        isOverUIElement = EventSystem.current.IsPointerOverGameObject();
+
         ProcessMousePosition();
 
         ProcessMouseInput();
 
         HandleHighlight();
 
-        if (selectedItemGrid == null) { return; }
+        // if (selectedItemGrid == null) { return; }
 
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            CreateRandomItem();
-        }
+        // if (Input.GetKeyDown(KeyCode.A))
+        // {
+        //     CreateRandomItem();
+        // }
 
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            InsertRandomItem();
-        }
+        // if (Input.GetKeyDown(KeyCode.Z))
+        // {
+        //     InsertRandomItem();
+        // }
     }
 
     private void ProcessMousePosition()
@@ -88,8 +94,6 @@ public class InventoryController : MonoBehaviour
 
         selectedItemGrid.PlaceItem(itemToInsert, posOnGrid.Value.x, posOnGrid.Value.y);
     }
-
-    Vector2Int oldPosition;
 
     private void HandleHighlight()
     {
@@ -175,6 +179,7 @@ public class InventoryController : MonoBehaviour
     public void ProcessLMBPress(InputAction.CallbackContext callbackContext)
     {
         // TODO: if selecteditemgrid...
+        // if (isOverUIElement)... return;
 
         if (selectedItemGrid != null)
         {
@@ -196,6 +201,7 @@ public class InventoryController : MonoBehaviour
 
         // if (selectedItemGrid == null && selectedItemSlot == null) { return; }
         // 25 -> 6:28
+        // 25 -> 9:48
     }
 
     private void ItemSlotInput()

@@ -1,3 +1,4 @@
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -10,6 +11,8 @@ public class PlayerCharacterInput : MonoBehaviour
     AttackInput attackInput;
     InteractInput interactInput;
 
+    bool isOverUIElement;
+
     private void Awake()
     {
         characterMovementInput = GetComponent<CharacterMovementInput>();
@@ -17,8 +20,15 @@ public class PlayerCharacterInput : MonoBehaviour
         interactInput = GetComponent<InteractInput>();
     }
 
+    private void Update()
+    {
+        isOverUIElement = EventSystem.current.IsPointerOverGameObject();
+    }
+
     public void LMB_InputHandle(InputAction.CallbackContext callbackContext)
     {
+        if (isOverUIElement == true) { return; }
+
         if (EventSystem.current.IsPointerOverGameObject()) { return; }
 
         if (attackInput.AttackCheck())
