@@ -50,7 +50,7 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
-        // isOverUIElement = EventSystem.current.IsPointerOverGameObject();
+        isOverUIElement = EventSystem.current.IsPointerOverGameObject();
 
         ProcessMousePosition();
 
@@ -180,10 +180,14 @@ public class InventoryController : MonoBehaviour
     {
         if (!callbackContext.performed) return;
 
-        // TODO: if selecteditemgrid...
-        // if (isOverUIElement)... return;
+        if (selectedItemGrid == null && selectedItemSlot == null)
+        {
+            if (isOverUIElement) { return; }
 
-        if (selectedItemSlot != null)
+            ThrowItemAwayProcess();
+
+        }
+        else if (selectedItemSlot != null)
         {
             if (selectedItem == null && selectedItemSlot.HasItem())
             {
@@ -214,17 +218,6 @@ public class InventoryController : MonoBehaviour
             selectedItemRectTransform.position = mousePosition;
         }
 
-        if (selectedItemGrid == null && selectedItemSlot == null)
-        {
-            if (EventSystem.current.IsPointerOverGameObject() == true)
-            {
-                return;
-            }
-            if (Input.GetMouseButtonDown(0))
-            {
-                ThrowItemAwayProcess();
-            }
-        }
 
         // if (selectedItemGrid == null && selectedItemSlot == null) { return; }
         // 25 -> 6:28

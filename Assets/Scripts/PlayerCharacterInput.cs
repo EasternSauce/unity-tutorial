@@ -31,8 +31,6 @@ public class PlayerCharacterInput : MonoBehaviour
 
         if (isOverUIElement == true) { return; }
 
-        // if (EventSystem.current.IsPointerOverGameObject()) { return; }
-
         if (attackInput.AttackCheck())
         {
             attackInput.Attack();
