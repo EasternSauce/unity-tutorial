@@ -3,7 +3,7 @@ using UnityEngine;
 public class ItemChestInteractableObject : MonoBehaviour
 {
     Animator animator;
-    [SerializeField] ItemData dropItem;
+    [SerializeField] ItemDropList dropList;
 
     [SerializeField] float itemDropRange = 2f;
 
@@ -21,7 +21,7 @@ public class ItemChestInteractableObject : MonoBehaviour
 
         GetComponent<Collider>().enabled = false;
         animator.SetBool("Open", true);
-        ItemSpawnManager.instance.SpawnItem(SelectRandomPosition(), dropItem);
+        ItemSpawnManager.instance.SpawnItem(SelectRandomPosition(), dropList.GetDrop());
         isOpened = true;
     }
 

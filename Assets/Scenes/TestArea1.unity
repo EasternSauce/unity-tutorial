@@ -500,6 +500,10 @@ PrefabInstance:
       propertyPath: dropItem
       value: 
       objectReference: {fileID: 11400000, guid: 5a9cf930980ce1045b6625c522c6c56e, type: 2}
+    - target: {fileID: 3777154784895806330, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
+      propertyPath: dropList
+      value: 
+      objectReference: {fileID: 11400000, guid: 436abf19d6de1b146b27ebd3d608f8d5, type: 2}
     - target: {fileID: 4793865437023642029, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 7.398249
@@ -1595,6 +1599,10 @@ PrefabInstance:
       propertyPath: dropItem
       value: 
       objectReference: {fileID: 11400000, guid: 5a9cf930980ce1045b6625c522c6c56e, type: 2}
+    - target: {fileID: 3777154784895806330, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
+      propertyPath: dropList
+      value: 
+      objectReference: {fileID: 11400000, guid: 436abf19d6de1b146b27ebd3d608f8d5, type: 2}
     - target: {fileID: 4793865437023642029, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.5699673
@@ -1771,6 +1779,10 @@ PrefabInstance:
       propertyPath: dropItem
       value: 
       objectReference: {fileID: 11400000, guid: 96220e7d073a8cb44873e3685ccd54dd, type: 2}
+    - target: {fileID: 3777154784895806330, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
+      propertyPath: dropList
+      value: 
+      objectReference: {fileID: 11400000, guid: 436abf19d6de1b146b27ebd3d608f8d5, type: 2}
     - target: {fileID: 4793865437023642029, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.8776495
@@ -1966,6 +1978,10 @@ PrefabInstance:
       propertyPath: dropItem
       value: 
       objectReference: {fileID: 11400000, guid: 5a9cf930980ce1045b6625c522c6c56e, type: 2}
+    - target: {fileID: 3777154784895806330, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
+      propertyPath: dropList
+      value: 
+      objectReference: {fileID: 11400000, guid: 436abf19d6de1b146b27ebd3d608f8d5, type: 2}
     - target: {fileID: 4793865437023642029, guid: ae7b36e5680031744aaa41d480179ff6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.8755054
@@ -7531,7 +7547,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c364b08f40e438240b519389d446a0a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: 0
   defeatedPanel: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
