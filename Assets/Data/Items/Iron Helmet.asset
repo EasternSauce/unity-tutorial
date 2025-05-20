@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385969cfcbb293740a38259ee30a59a1, type: 3}
   m_Name: Iron Helmet
   m_EditorClassIdentifier: 
-  equipmentSlot: 0
+  equipmentSlot: 4
   sizeWidth: 2
   sizeHeight: 2
   stats:
