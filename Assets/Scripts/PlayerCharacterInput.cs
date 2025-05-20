@@ -1,3 +1,5 @@
+using System;
+using CharacterCommand;
 using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,6 +8,7 @@ using UnityEngine.InputSystem;
 public class PlayerCharacterInput : MonoBehaviour
 {
     [SerializeField] MouseInput mouseInput;
+    CommandHandler commandHandler;
 
     CharacterMovementInput characterMovementInput;
     AttackInput attackInput;
@@ -15,6 +18,8 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void Awake()
     {
+        commandHandler = GetComponent<CommandHandler>();
+
         characterMovementInput = GetComponent<CharacterMovementInput>();
         attackInput = GetComponent<AttackInput>();
         interactInput = GetComponent<InteractInput>();
@@ -33,17 +38,29 @@ public class PlayerCharacterInput : MonoBehaviour
 
         if (attackInput.AttackCheck())
         {
-            attackInput.Attack();
-            return;
+            AttackCommand(interactInput.hoveringOverCharacter.gameObject);
         }
 
         if (interactInput.InteractCheck())
         {
-            interactInput.Interact();
-            return;
+            InteractCommand(interactInput.hoveringOverObject.gameObject);
         }
 
-        interactInput.ResetState();
-        characterMovementInput.MoveInput();
+        MoveCommand(mouseInput.rayToWorldIntersectionPoint);
+    }
+
+    private void MoveCommand(Vector3 point)
+    {
+        commandHandler.SetCommand(new Command(CommandType.Move, point));
+    }
+
+    private void InteractCommand(GameObject target)
+    {
+        commandHandler.SetCommand(new Command(CommandType.Interact, target));
+    }
+
+    private void AttackCommand(GameObject target)
+    {
+        commandHandler.SetCommand(new Command(CommandType.Attack, target));
     }
 }

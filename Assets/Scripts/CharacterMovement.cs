@@ -1,7 +1,8 @@
+using CharacterCommand;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class CharacterMovement : MonoBehaviour
+public class CharacterMovement : MonoBehaviour, ICommandHandle
 {
     NavMeshAgent agent;
     Character character;
@@ -44,5 +45,10 @@ public class CharacterMovement : MonoBehaviour
     internal void Stop()
     {
         agent.isStopped = true;
+    }
+
+    public void ProcessCommand(Command command)
+    {
+
     }
 }

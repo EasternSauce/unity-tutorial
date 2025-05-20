@@ -1,6 +1,7 @@
+using CharacterCommand;
 using UnityEngine;
 
-public class InteractHandler : MonoBehaviour
+public class InteractHandler : MonoBehaviour, ICommandHandle
 {
     [SerializeField] float interactRange = 0.5f;
 
@@ -41,5 +42,10 @@ public class InteractHandler : MonoBehaviour
     public void ResetState()
     {
         interactedObject = null;
+    }
+
+    public void ProcessCommand(Command command)
+    {
+
     }
 }

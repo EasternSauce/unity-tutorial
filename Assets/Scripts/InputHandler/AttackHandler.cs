@@ -1,6 +1,7 @@
+using CharacterCommand;
 using UnityEngine;
 
-public class AttackHandler : MonoBehaviour
+public class AttackHandler : MonoBehaviour, ICommandHandle
 {
     Character character;
     [SerializeField] float attackRange = 1f;
@@ -9,8 +10,6 @@ public class AttackHandler : MonoBehaviour
     Animator animator;
     CharacterMovement characterMovement;
 
-    Character target;
-
     private void Awake()
     {
         animator = GetComponentInChildren<Animator>();
@@ -18,20 +17,9 @@ public class AttackHandler : MonoBehaviour
         character = GetComponent<Character>();
     }
 
-    internal void Attack(Character target)
-    {
-        this.target = target;
-        ProcessAttack();
-    }
-
     private void Update()
     {
         AttackTimerTick();
-
-        if (target != null)
-        {
-            ProcessAttack();
-        }
     }
 
     private void AttackTimerTick()
@@ -42,9 +30,18 @@ public class AttackHandler : MonoBehaviour
         }
     }
 
-    private void ProcessAttack()
+    float GetAttackTime()
     {
-        float distance = Vector3.Distance(transform.position, target.transform.position);
+        float attackTime = defaultTimeToAttack;
+
+        attackTime /= character.TakeStats(Statistic.AttackSpeed).float_value;
+
+        return attackTime;
+    }
+
+    public void ProcessCommand(Command command)
+    {
+        float distance = Vector3.Distance(transform.position, command.target.transform.position);
 
         if (distance < attackRange)
         {
@@ -55,22 +52,18 @@ public class AttackHandler : MonoBehaviour
             characterMovement.Stop();
             animator.SetTrigger("Attack");
 
-            target.TakeDamage(character.TakeStats(Statistic.Damage).integer_value);
-
-            target = null;
+            DealDamage(command);
         }
         else
         {
-            characterMovement.SetDestination(target.transform.position);
+            characterMovement.SetDestination(command.target.transform.position);
         }
     }
 
-    float GetAttackTime()
+    private void DealDamage(Command command)
     {
-        float attackTime = defaultTimeToAttack;
-
-        attackTime /= character.TakeStats(Statistic.AttackSpeed).float_value;
-
-        return attackTime;
+        Character targetCharacter = command.target.GetComponent<Character>();
+        int damage = character.TakeStats(Statistic.Damage).integer_value;
+        targetCharacter.TakeDamage(damage);
     }
 }
