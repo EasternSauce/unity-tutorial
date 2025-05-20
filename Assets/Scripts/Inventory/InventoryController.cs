@@ -50,7 +50,7 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
-        isOverUIElement = EventSystem.current.IsPointerOverGameObject();
+        // isOverUIElement = EventSystem.current.IsPointerOverGameObject();
 
         ProcessMousePosition();
 
@@ -178,17 +178,32 @@ public class InventoryController : MonoBehaviour
 
     public void ProcessLMBPress(InputAction.CallbackContext callbackContext)
     {
+        if (!callbackContext.performed) return;
+
         // TODO: if selecteditemgrid...
         // if (isOverUIElement)... return;
 
-        if (selectedItemGrid != null)
-        {
-            ItemGridInput();
-        }
-
         if (selectedItemSlot != null)
         {
-            ItemSlotInput();
+            if (selectedItem == null && selectedItemSlot.HasItem())
+            {
+                // Pick up item from the equipment slot
+                InventoryItem itemFromSlot = selectedItemSlot.PickUpItem();
+                if (itemFromSlot != null)
+                {
+                    SelectItem(itemFromSlot);
+                    selectedItemSlot = null;
+                }
+            }
+            else
+            {
+                // Try placing the selected item into the equipment slot
+                ItemSlotInput();
+            }
+        }
+        else if (selectedItemGrid != null)
+        {
+            ItemGridInput();
         }
     }
 

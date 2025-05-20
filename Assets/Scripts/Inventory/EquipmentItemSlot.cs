@@ -47,4 +47,20 @@ public class EquipmentItemSlot : MonoBehaviour
         rt.SetParent(slotRectTransform);
         rt.position = slotRectTransform.position;
     }
+
+    public InventoryItem PickUpItem()
+    {
+        if (itemInSlot == null) return null;
+
+        InventoryItem pickedItem = itemInSlot;
+        inventory.SubtractStats(pickedItem.itemData.stats);
+        itemInSlot = null;
+
+        return pickedItem;
+    }
+
+    public bool HasItem()
+    {
+        return itemInSlot != null;
+    }
 }
