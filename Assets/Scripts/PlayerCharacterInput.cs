@@ -22,7 +22,7 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void Update()
     {
-        // isOverUIElement = EventSystem.current.IsPointerOverGameObject();
+        isOverUIElement = EventSystem.current.IsPointerOverGameObject();
     }
 
     public void LMB_InputHandle(InputAction.CallbackContext callbackContext)

@@ -6,6 +6,7 @@ public class EquipmentItemSlotInteract : MonoBehaviour, IPointerEnterHandler, IP
     InventoryController inventoryController;
     EquipmentItemSlot slot;
 
+#pragma warning disable CS0618
     void Awake()
     {
         inventoryController = FindObjectOfType<InventoryController>();

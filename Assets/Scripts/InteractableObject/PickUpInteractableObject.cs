@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PickUpInteractableObject : MonoBehaviour
@@ -21,5 +22,10 @@ public class PickUpInteractableObject : MonoBehaviour
 
         Debug.Log("You are trying to pick up me!");
         Destroy(gameObject);
+    }
+
+    internal void SetItem(ItemData itemToSpawn)
+    {
+        itemData = itemToSpawn;
     }
 }

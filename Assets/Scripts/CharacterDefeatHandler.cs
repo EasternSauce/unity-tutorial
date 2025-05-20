@@ -13,7 +13,7 @@ public class CharacterDefeatHandler : MonoBehaviour
     CharacterMovementInput movementInput;
     Character character;
 
-    [SerializeField] bool player = false;
+    // [SerializeField] private bool player;
     [SerializeField] GameObject defeatedPanel;
 
     private void Awake()

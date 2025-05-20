@@ -214,9 +214,35 @@ public class InventoryController : MonoBehaviour
             selectedItemRectTransform.position = mousePosition;
         }
 
+        if (selectedItemGrid == null && selectedItemSlot == null)
+        {
+            if (EventSystem.current.IsPointerOverGameObject() == true)
+            {
+                return;
+            }
+            if (Input.GetMouseButtonDown(0))
+            {
+                ThrowItemAwayProcess();
+            }
+        }
+
         // if (selectedItemGrid == null && selectedItemSlot == null) { return; }
         // 25 -> 6:28
         // 25 -> 9:48
+    }
+
+    private void ThrowItemAwayProcess()
+    {
+        if (selectedItem == null) { return; }
+
+        ItemSpawnManager.instance.SpawnItem(GameManager.instance.playerObject.transform.position, selectedItem.itemData);
+        DestroySelectedItemObject();
+        NullSelectedItem();
+    }
+
+    private void DestroySelectedItemObject()
+    {
+        Destroy(selectedItemRectTransform.gameObject);
     }
 
     private void ItemSlotInput()

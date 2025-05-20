@@ -7,6 +7,7 @@ public class GridInteract : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     InventoryController inventoryController;
     ItemGrid itemGrid;
 
+#pragma warning disable CS0618
     private void Start()
     {
         inventoryController = FindObjectOfType<InventoryController>();
