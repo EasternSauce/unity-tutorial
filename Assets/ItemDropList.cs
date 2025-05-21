@@ -26,7 +26,7 @@ public class ItemDropList : ScriptableObject
         totalWeight += 1;
     }
 
-    internal string GetDropName()
+    public string GetDropName()
     {
         ItemData itemData = GetDrop();
         return itemData.name;

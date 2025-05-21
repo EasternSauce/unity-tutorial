@@ -64,8 +64,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     private void DealDamage(Command command)
     {
-        Character targetCharacter = command.target.GetComponent<Character>();
-        int damage = character.TakeStats(Statistic.Damage).integer_value;
-        targetCharacter.TakeDamage(damage);
+        IDamageable target = command.target.GetComponent<IDamageable>();
+        int damage = character.GetDamage();
+        target.TakeDamage(damage);
     }
 }

@@ -11,7 +11,7 @@ public class InteractInput : MonoBehaviour
     [HideInInspector]
     public InteractableObject hoveringOverObject;
     [HideInInspector]
-    public Character hoveringOverCharacter;
+    public IDamageable attackTarget;
 
     InteractHandler interactHandler;
 
@@ -53,14 +53,14 @@ public class InteractInput : MonoBehaviour
         if (interactableObject != null)
         {
             hoveringOverObject = interactableObject;
-            hoveringOverCharacter = interactableObject.GetComponent<Character>();
+            attackTarget = interactableObject.GetComponent<IDamageable>();
             textOnScreen.text = hoveringOverObject.objectName;
 
         }
         else
         {
             hoveringOverObject = null;
-            hoveringOverCharacter = null;
+            attackTarget = null;
             textOnScreen.text = "";
         }
         UpdateHPBar();
@@ -68,9 +68,9 @@ public class InteractInput : MonoBehaviour
 
     private void UpdateHPBar()
     {
-        if (hoveringOverCharacter != null)
+        if (attackTarget != null)
         {
-            hpBar.Show(hoveringOverCharacter.lifePool);
+            // hpBar.Show(attackTarget.lifePool);
         }
         else
         {
@@ -78,7 +78,7 @@ public class InteractInput : MonoBehaviour
         }
     }
 
-    internal bool InteractCheck()
+    public bool InteractCheck()
     {
         return hoveringOverObject != null;
     }

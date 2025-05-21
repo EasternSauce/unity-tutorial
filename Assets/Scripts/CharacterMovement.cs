@@ -42,7 +42,7 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
         agent.SetDestination(destinationPosition);
     }
 
-    internal void Stop()
+    public void Stop()
     {
         agent.isStopped = true;
     }

@@ -24,7 +24,7 @@ public class PickUpInteractableObject : MonoBehaviour
         Destroy(gameObject);
     }
 
-    internal void SetItem(ItemData itemToSpawn)
+    public void SetItem(ItemData itemToSpawn)
     {
         itemData = itemToSpawn;
     }

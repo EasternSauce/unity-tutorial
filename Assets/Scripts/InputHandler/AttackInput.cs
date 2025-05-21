@@ -13,6 +13,6 @@ public class AttackInput : MonoBehaviour
 
     public bool AttackCheck()
     {
-        return interactInput.hoveringOverCharacter != null;
+        return interactInput.attackTarget != null;
     }
 }

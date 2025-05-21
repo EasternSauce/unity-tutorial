@@ -38,7 +38,7 @@ public class PlayerCharacterInput : MonoBehaviour
 
         if (attackInput.AttackCheck())
         {
-            AttackCommand(interactInput.hoveringOverCharacter.gameObject);
+            AttackCommand(interactInput.hoveringOverObject.gameObject);
         }
         else if (interactInput.InteractCheck())
         {

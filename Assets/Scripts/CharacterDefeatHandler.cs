@@ -34,7 +34,7 @@ public class CharacterDefeatHandler : MonoBehaviour
         SetState(false);
     }
 
-    internal void Respawn()
+    public void Respawn()
     {
         SetState(true);
     }

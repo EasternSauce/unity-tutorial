@@ -46,7 +46,7 @@ public class ItemGrid : MonoBehaviour
         itemRectTransform.localPosition = CalculatePositionOfObjectOnGrid(itemToPlace, x, y);
     }
 
-    internal Vector2Int? FindSpaceForObject(ItemData itemData)
+    public Vector2Int? FindSpaceForObject(ItemData itemData)
     {
         int width = gridSizeWidth - itemData.sizeWidth + 1;
         int height = gridSizeHeight - itemData.sizeHeight + 1;
@@ -81,7 +81,7 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-    internal InventoryItem GetItem(int x, int y)
+    public InventoryItem GetItem(int x, int y)
     {
         return inventoryItemGrid[x, y];
     }
@@ -154,7 +154,7 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-    internal bool CheckOverlap(int posX, int posY, int sizeWidth, int sizeHeight, ref InventoryItem overlapItem)
+    public bool CheckOverlap(int posX, int posY, int sizeWidth, int sizeHeight, ref InventoryItem overlapItem)
     {
         for (int x = 0; x < sizeWidth; x++)
         {

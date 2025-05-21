@@ -58,12 +58,12 @@ public class StatsGroup
         stats.Add(new StatsValue(Statistic.HealthRegeneration, 1f));
     }
 
-    internal StatsValue Get(Statistic statisticToGet)
+    public StatsValue Get(Statistic statisticToGet)
     {
         return stats[(int)statisticToGet];
     }
 
-    internal void Sum(StatsValue toAdd)
+    public void Sum(StatsValue toAdd)
     {
         StatsValue statsValue = stats[(int)toAdd.statisticType];
 
@@ -142,7 +142,7 @@ public class ValuePool
         this.currentValue = maxValue.integer_value;
     }
 
-    internal void FullRestore()
+    public void FullRestore()
     {
         currentValue = maxValue.integer_value;
     }
@@ -157,7 +157,7 @@ public class ValuePool
     }
 }
 
-public class Character : MonoBehaviour
+public class Character : MonoBehaviour, IDamageable
 {
     [SerializeField] AttributeGroup attributes;
     [SerializeField] StatsGroup stats;
@@ -235,13 +235,13 @@ public class Character : MonoBehaviour
         return stats.Get(statisticToGet);
     }
 
-    internal void Restore()
+    public void Restore()
     {
         lifePool.FullRestore();
         isDead = false;
     }
 
-    internal void AddStats(List<StatsValue> statsValues)
+    public void AddStats(List<StatsValue> statsValues)
     {
         for (int i = 0; i < statsValues.Count; i++)
         {
@@ -265,5 +265,11 @@ public class Character : MonoBehaviour
     private void StatsSubstract(StatsValue statsValue)
     {
         stats.Subtract(statsValue);
+    }
+
+    public int GetDamage()
+    {
+        int damage = TakeStats(Statistic.Damage).integer_value;
+        return damage;
     }
 }
