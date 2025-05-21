@@ -47,12 +47,6 @@ public class InteractInput : MonoBehaviour
         }
     }
 
-
-    internal void Interact()
-    {
-        interactHandler.interactedObject = hoveringOverObject;
-    }
-
     private void UpdateInteractableObject(RaycastHit hit)
     {
         InteractableObject interactableObject = hit.transform.GetComponent<InteractableObject>();
@@ -87,10 +81,5 @@ public class InteractInput : MonoBehaviour
     internal bool InteractCheck()
     {
         return hoveringOverObject != null;
-    }
-
-    internal void ResetState()
-    {
-        interactHandler.ResetState();
     }
 }

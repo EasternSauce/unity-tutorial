@@ -11,11 +11,6 @@ public class AttackInput : MonoBehaviour
         attackHandler = GetComponent<AttackHandler>();
     }
 
-    public void Attack()
-    {
-        attackHandler.Attack(interactInput.hoveringOverCharacter);
-    }
-
     public bool AttackCheck()
     {
         return interactInput.hoveringOverCharacter != null;

@@ -49,6 +49,6 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
 
     public void ProcessCommand(Command command)
     {
-
+        SetDestination(command.worldPoint);
     }
 }

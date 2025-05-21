@@ -53,6 +53,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             animator.SetTrigger("Attack");
 
             DealDamage(command);
+
+            command.isComplete = true;
         }
         else
         {

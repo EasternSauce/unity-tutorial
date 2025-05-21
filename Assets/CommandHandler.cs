@@ -16,6 +16,7 @@ namespace CharacterCommand
 
         public Vector3 worldPoint;
         public GameObject target;
+        public bool isComplete;
 
         public Command(CommandType commandType, Vector3 worldPoint)
         {
@@ -71,6 +72,15 @@ namespace CharacterCommand
                     ProcessInteractCommand();
                     break;
             }
+            if (currentCommand.isComplete)
+            {
+                CompleteCommand();
+            }
+        }
+
+        private void CompleteCommand()
+        {
+            currentCommand = null;
         }
 
         private void ProcessInteractCommand()

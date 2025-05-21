@@ -40,13 +40,15 @@ public class PlayerCharacterInput : MonoBehaviour
         {
             AttackCommand(interactInput.hoveringOverCharacter.gameObject);
         }
-
-        if (interactInput.InteractCheck())
+        else if (interactInput.InteractCheck())
         {
             InteractCommand(interactInput.hoveringOverObject.gameObject);
         }
+        else
+        {
+            MoveCommand(mouseInput.rayToWorldIntersectionPoint);
+        }
 
-        MoveCommand(mouseInput.rayToWorldIntersectionPoint);
     }
 
     private void MoveCommand(Vector3 point)
