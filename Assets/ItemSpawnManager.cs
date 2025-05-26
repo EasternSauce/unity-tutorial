@@ -23,7 +23,7 @@ public class ItemSpawnManager : MonoBehaviour
         if (Physics.Raycast(findSurfaceRay, out hit, Mathf.Infinity, terrainLayerMask))
         {
             float height = itemPrefab.GetComponent<Renderer>().bounds.size.y;
-            GameObject newItemOnGround = GameObject.Instantiate(itemPrefab, hit.point + Vector3.up * height / 2f, Quaternion.identity);
+            GameObject newItemOnGround = GameObject.Instantiate(itemPrefab, hit.point + Vector3.up * (height / 2f), Quaternion.identity);
             newItemOnGround.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
         }
     }

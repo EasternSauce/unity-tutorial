@@ -21,4 +21,4 @@ MonoBehaviour:
     weight: 5
   - item: {fileID: 11400000, guid: a26a4d150ee851541a59fa1fa6245004, type: 2}
     weight: 5
-  totalWeight: 0
+  totalWeight: 17
