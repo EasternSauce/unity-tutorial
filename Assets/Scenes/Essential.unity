@@ -7270,6 +7270,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1569521751161479285, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 566e2561e70c6014a8f50742c1ba2a6d, type: 2}
+    - target: {fileID: 1569521751161479285, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: m_WarningMessage
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 2316572876094678181, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: mouseInput
       value: 
