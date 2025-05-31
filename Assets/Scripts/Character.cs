@@ -51,9 +51,9 @@ public class StatsGroup
     {
         stats.Add(new StatsValue(Statistic.Life, 100));
         stats.Add(new StatsValue(Statistic.Energy, 100));
-        stats.Add(new StatsValue(Statistic.Damage, 35));
+        stats.Add(new StatsValue(Statistic.Damage, 15));
         stats.Add(new StatsValue(Statistic.Armor, 5));
-        stats.Add(new StatsValue(Statistic.AttackSpeed, 1f));
+        stats.Add(new StatsValue(Statistic.AttackSpeed, 0.4f));
         stats.Add(new StatsValue(Statistic.MoveSpeed, 2f));
         stats.Add(new StatsValue(Statistic.HealthRegeneration, 1f));
     }
@@ -271,5 +271,10 @@ public class Character : MonoBehaviour, IDamageable
     {
         int damage = TakeStats(Statistic.Damage).integer_value;
         return damage;
+    }
+
+    public ValuePool getLifePool()
+    {
+        return lifePool;
     }
 }

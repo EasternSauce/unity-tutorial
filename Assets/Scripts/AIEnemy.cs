@@ -1,8 +1,10 @@
+using CharacterCommand;
 using UnityEngine;
 
 public class AIEnemy : MonoBehaviour
 {
     AttackHandler attackHandler;
+    [SerializeField] float attackRange = 5f;
 
     private void Awake()
     {
@@ -10,7 +12,7 @@ public class AIEnemy : MonoBehaviour
     }
 
     [SerializeField] Character target;
-    float timer = 4f;
+    float timer = 0.2f;
 
     private void Start()
     {
@@ -20,11 +22,13 @@ public class AIEnemy : MonoBehaviour
     private void Update()
     {
         timer -= Time.deltaTime;
-        if (timer < 0f)
-        {
-            timer = 4f;
+        float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
 
-            //attackHandler.Attack(target);
+        if (target.lifePool.currentValue > 0 && timer < 0f && distanceToTarget <= attackRange)
+        {
+            timer = 0.2f;
+
+            attackHandler.ProcessCommand(new Command(CommandType.Attack, target.gameObject));
         }
     }
 }

@@ -7346,6 +7346,10 @@ PrefabInstance:
       propertyPath: textOnScreen
       value: 
       objectReference: {fileID: 768288270}
+    - target: {fileID: 4965133185813602848, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: defaultTimeToAttack
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6493717686141080161, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: hpBar
       value: 
