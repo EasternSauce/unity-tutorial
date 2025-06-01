@@ -5,7 +5,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 {
     Character character;
     [SerializeField] float attackRange = 2.5f;
-    [SerializeField] float defaultTimeToAttack = 2f;
+    [SerializeField] float defaultTimeToAttack = 1f;
     float attackTimer;
     Animator animator;
     CharacterMovement characterMovement;

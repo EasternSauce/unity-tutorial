@@ -11,7 +11,8 @@ public class Animate : MonoBehaviour
 
     private void Awake()
     {
-        animator = GetComponentInChildren<Animator>();
+        animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
         agent = GetComponent<NavMeshAgent>();
         character = GetComponent<Character>();
     }
