@@ -6,7 +6,6 @@ public class SceneTransitionInteractableObject : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("here1");
         GetComponent<InteractableObject>().Subscribe(Transition);
     }
 

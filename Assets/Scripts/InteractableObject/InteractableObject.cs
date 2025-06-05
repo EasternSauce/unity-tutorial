@@ -18,7 +18,6 @@ public class InteractableObject : MonoBehaviour
 
     public void Interact(Inventory inventory)
     {
-        Debug.Log("here2");
         interact?.Invoke(inventory);
     }
 

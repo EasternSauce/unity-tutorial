@@ -96,12 +96,16 @@ public class ItemGrid : MonoBehaviour
 
     public Vector2Int GetTileGridPosition(Vector2 mousePosition)
     {
-        mousePositionOnTheGrid.x = mousePosition.x - rectTransform.position.x;
-        mousePositionOnTheGrid.y = rectTransform.position.y - mousePosition.y;
+        Vector2 localMousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            rectTransform,
+            mousePosition,
+            null,
+            out localMousePosition
+        );
 
-        tileGridPosition.x = (int)(mousePositionOnTheGrid.x / TileSizeWidth);
-        tileGridPosition.y = (int)(mousePositionOnTheGrid.y / TileSizeHeight);
-
+        tileGridPosition.x = (int)(localMousePosition.x / TileSizeWidth);
+        tileGridPosition.y = (int)(-localMousePosition.y / TileSizeHeight);
         return tileGridPosition;
     }
 

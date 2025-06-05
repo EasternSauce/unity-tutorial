@@ -19,7 +19,6 @@ public class MouseInput : MonoBehaviour
         if (Physics.Raycast(ray, out hit, float.MaxValue))
         {
             rayToWorldIntersectionPoint = hit.point;
-            // Debug.Log(rayToWorldIntersectionPoint);
         }
     }
 }

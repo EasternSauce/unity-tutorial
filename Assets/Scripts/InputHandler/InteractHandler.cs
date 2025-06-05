@@ -16,21 +16,11 @@ public class InteractHandler : MonoBehaviour, ICommandHandle
 
     public void ProcessCommand(Command command)
     {
-        Debug.Log("Processing command");
         float distance = Vector3.Distance(transform.position, command.target.transform.position);
 
         if (distance < interactRange)
         {
-            Debug.Log("Within range, interacting");
-            var interactable = command.target.GetComponent<InteractableObject>();
-            if (interactable == null)
-            {
-                Debug.LogError("No InteractableObject on command.target!");
-            }
-            else
-            {
-                interactable.Interact(inventory);
-            }
+            command.target.GetComponent<InteractableObject>().Interact(inventory);
             characterMovement.Stop();
             command.isComplete = true;
         }
