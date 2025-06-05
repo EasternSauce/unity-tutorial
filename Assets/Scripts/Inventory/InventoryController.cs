@@ -176,38 +176,25 @@ public class InventoryController : MonoBehaviour
 
     }
 
-    public void ProcessLMBPress(InputAction.CallbackContext callbackContext)
+    public void ProcessLMBPress(InputAction.CallbackContext context)
     {
-        if (!callbackContext.performed) return;
+        if (context.phase != InputActionPhase.Started) { return; }
 
         if (selectedItemGrid == null && selectedItemSlot == null)
         {
             if (isOverUIElement) { return; }
 
             ThrowItemAwayProcess();
+        }
 
-        }
-        else if (selectedItemSlot != null)
-        {
-            if (selectedItem == null && selectedItemSlot.HasItem())
-            {
-                // Pick up item from the equipment slot
-                InventoryItem itemFromSlot = selectedItemSlot.PickUpItem();
-                if (itemFromSlot != null)
-                {
-                    SelectItem(itemFromSlot);
-                    selectedItemSlot = null;
-                }
-            }
-            else
-            {
-                // Try placing the selected item into the equipment slot
-                ItemSlotInput();
-            }
-        }
-        else if (selectedItemGrid != null)
+        if (SelectedItemGrid != null)
         {
             ItemGridInput();
+        }
+
+        if (selectedItemSlot != null)
+        {
+            ItemSlotInput();
         }
     }
 
@@ -217,11 +204,6 @@ public class InventoryController : MonoBehaviour
         {
             selectedItemRectTransform.position = mousePosition;
         }
-
-
-        // if (selectedItemGrid == null && selectedItemSlot == null) { return; }
-        // 25 -> 6:28
-        // 25 -> 9:48
     }
 
     private void ThrowItemAwayProcess()
@@ -243,6 +225,19 @@ public class InventoryController : MonoBehaviour
         if (selectedItem != null)
         {
             PlaceItemIntoSlot();
+        }
+        else
+        {
+            PickUpItemFromSlot();
+        }
+    }
+
+    private void PickUpItemFromSlot()
+    {
+        InventoryItem item = selectedItemSlot.PickUpItem();
+        if (item != null)
+        {
+            SelectItem(item);
         }
     }
 

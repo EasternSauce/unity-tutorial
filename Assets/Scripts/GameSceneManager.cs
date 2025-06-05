@@ -31,6 +31,7 @@ public class GameSceneManager : MonoBehaviour
 
     public void StartTransition(string toSceneName)
     {
+        Debug.Log("here3");
         StartCoroutine(Transition(toSceneName));
     }
 

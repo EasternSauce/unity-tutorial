@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class EquipmentItemSlot : MonoBehaviour
@@ -27,11 +28,7 @@ public class EquipmentItemSlot : MonoBehaviour
 
     public InventoryItem ReplaceItem(InventoryItem itemToPlace)
     {
-        InventoryItem replaceItem = itemInSlot;
-        if (replaceItem != null)
-        {
-            inventory.SubtractStats(replaceItem.itemData.stats);
-        }
+        InventoryItem replaceItem = PickUpItem();
 
         PlaceItem(itemToPlace);
 
@@ -50,17 +47,21 @@ public class EquipmentItemSlot : MonoBehaviour
 
     public InventoryItem PickUpItem()
     {
-        if (itemInSlot == null) return null;
+        InventoryItem pickUpItem = itemInSlot;
+        if (pickUpItem != null)
+        {
+            inventory.SubtractStats(pickUpItem.itemData.stats);
+            ClearSlot(pickUpItem);
+        }
 
-        InventoryItem pickedItem = itemInSlot;
-        inventory.SubtractStats(pickedItem.itemData.stats);
-        itemInSlot = null;
-
-        return pickedItem;
+        return pickUpItem;
     }
 
-    public bool HasItem()
+    private void ClearSlot(InventoryItem pickUpItem)
     {
-        return itemInSlot != null;
+        itemInSlot = null;
+
+        RectTransform rt = pickUpItem.GetComponent<RectTransform>();
+        rt.SetParent(null);
     }
 }

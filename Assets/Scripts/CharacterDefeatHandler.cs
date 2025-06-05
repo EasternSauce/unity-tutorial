@@ -41,7 +41,10 @@ public class CharacterDefeatHandler : MonoBehaviour
 
     void SetState(bool state)
     {
-        agent.isStopped = !state;
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = !state;
+        }
         agent.enabled = state;
 
         //AI part

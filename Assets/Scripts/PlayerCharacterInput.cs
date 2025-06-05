@@ -32,7 +32,7 @@ public class PlayerCharacterInput : MonoBehaviour
 
     public void LMB_InputHandle(InputAction.CallbackContext callbackContext)
     {
-        if (!callbackContext.performed) return;
+        if (callbackContext.performed || callbackContext.canceled) return;
 
         if (isOverUIElement == true) { return; }
 

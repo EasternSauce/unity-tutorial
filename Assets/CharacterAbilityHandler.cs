@@ -14,6 +14,8 @@ public class AbilityContainer
         this.ability = ability;
     }
 
+    public float CooldownNormalized { get { return 1f - currentCooldown / ability.cooldown; } }
+
     internal void Cooldown()
     {
         currentCooldown = ability.cooldown;
@@ -35,6 +37,7 @@ public class CharacterAbilityHandler : MonoBehaviour
     List<AbilityContainer> abilities;
 
     public UnityEvent<AbilityContainer, int> onAbilityChange;
+    public UnityEvent<float, int> onCooldownUpdate;
 
     private void Start()
     {
@@ -63,6 +66,7 @@ public class CharacterAbilityHandler : MonoBehaviour
         for (int i = 0; i < abilities.Count; i++)
         {
             abilities[i].ReduceCooldown(Time.deltaTime);
+            onCooldownUpdate?.Invoke(abilities[i].CooldownNormalized, i);
         }
     }
 
@@ -76,6 +80,8 @@ public class CharacterAbilityHandler : MonoBehaviour
 
     public void ActivateAbility(int abilityId)
     {
+        if (abilityId >= abilities.Count) { return; }
+        if (abilities[abilityId] == null) { return; }
         AbilityContainer abilityContainer = abilities[abilityId];
         ActivateAbility(abilityContainer);
     }

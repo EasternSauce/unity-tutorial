@@ -38,13 +38,19 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
 
     public void SetDestination(Vector3 destinationPosition)
     {
-        agent.isStopped = false;
-        agent.SetDestination(destinationPosition);
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(destinationPosition);
+        }
     }
 
     public void Stop()
     {
-        agent.isStopped = true;
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
     }
 
     public void ProcessCommand(Command command)
