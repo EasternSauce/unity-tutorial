@@ -21,6 +21,13 @@ public class CharacterRespawn : MonoBehaviour
     {
         gameObject.transform.position = respawnPoint;
         characterDefeat.Respawn();
+
+        AttackHandler attackHandler = GetComponent<AttackHandler>();
+        if (attackHandler != null)
+        {
+            attackHandler.ResetState();
+        }
+
         animator.Play("Idle");
         animator.SetBool("defeated", false);
     }

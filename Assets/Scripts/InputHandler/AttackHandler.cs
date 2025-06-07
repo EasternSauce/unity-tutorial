@@ -116,4 +116,11 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         int damage = character.GetDamage();
         target.TakeDamage(damage);
     }
+
+    public void ResetState()
+    {
+        attackTimer = 0f;
+        animationTimer = 0f;
+        animator.ResetTrigger("Attack");
+    }
 }
