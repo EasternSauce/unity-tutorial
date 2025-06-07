@@ -49,7 +49,6 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
                 agent.SetDestination(destinationPosition);
             }
         }
-
     }
 
     public void Stop()
