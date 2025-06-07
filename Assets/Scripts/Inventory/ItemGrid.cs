@@ -21,9 +21,11 @@ public class ItemGrid : MonoBehaviour
     {
         rectTransform = GetComponent<RectTransform>();
         inventoryItemGrid = new InventoryItem[gridSizeWidth, gridSizeHeight];
-        Vector2 size = new Vector2();
-        size.x = TileSizeWidth * gridSizeWidth;
-        size.y = TileSizeHeight * gridSizeHeight;
+        Vector2 size = new()
+        {
+            x = TileSizeWidth * gridSizeWidth,
+            y = TileSizeHeight * gridSizeHeight
+        };
         rectTransform.sizeDelta = size;
     }
 
@@ -88,20 +90,21 @@ public class ItemGrid : MonoBehaviour
 
     public Vector2 CalculatePositionOfObjectOnGrid(InventoryItem item, int x, int y)
     {
-        Vector2 positionOnGrid = new Vector2();
-        positionOnGrid.x = TileSizeWidth * x + TileSizeWidth * item.itemData.sizeWidth / 2;
-        positionOnGrid.y = -(TileSizeHeight * y + TileSizeHeight * item.itemData.sizeHeight / 2);
+        Vector2 positionOnGrid = new()
+        {
+            x = TileSizeWidth * x + TileSizeWidth * item.itemData.sizeWidth / 2,
+            y = -(TileSizeHeight * y + TileSizeHeight * item.itemData.sizeHeight / 2)
+        };
         return positionOnGrid;
     }
 
     public Vector2Int GetTileGridPosition(Vector2 mousePosition)
     {
-        Vector2 localMousePosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             rectTransform,
             mousePosition,
             null,
-            out localMousePosition
+            out Vector2 localMousePosition
         );
 
         tileGridPosition.x = (int)(localMousePosition.x / TileSizeWidth);

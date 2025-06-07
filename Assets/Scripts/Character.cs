@@ -273,7 +273,7 @@ public class Character : MonoBehaviour, IDamageable
         return damage;
     }
 
-    public ValuePool getLifePool()
+    public ValuePool GetLifePool()
     {
         return lifePool;
     }

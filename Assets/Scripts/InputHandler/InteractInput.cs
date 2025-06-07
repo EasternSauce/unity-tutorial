@@ -70,7 +70,7 @@ public class InteractInput : MonoBehaviour
     {
         if (attackTarget != null)
         {
-            hpBar.Show(attackTarget.getLifePool());
+            hpBar.Show(attackTarget.GetLifePool());
         }
         else
         {

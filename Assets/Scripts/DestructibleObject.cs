@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class DestructibleObject : MonoBehaviour, IDamageable
 {
-    public ValuePool getLifePool()
+    public ValuePool GetLifePool()
     {
         return null;
     }
