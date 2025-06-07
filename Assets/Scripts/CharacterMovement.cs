@@ -21,7 +21,7 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
 
     private void Start()
     {
-        moveSpeed = character.TakeStats(Statistic.MoveSpeed);
+        moveSpeed = character.GetStatsValue(Statistic.MoveSpeed);
         UpdateMoveSpeed();
     }
 

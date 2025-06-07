@@ -58,6 +58,6 @@ public class Inventory : MonoBehaviour
 
     public void SubtractStats(List<StatsValue> stats)
     {
-        character.SubtractStats(stats);
+        character.SubstractStats(stats);
     }
 }

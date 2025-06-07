@@ -56,7 +56,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     {
         float attackTime = defaultTimeToAttack;
 
-        attackTime /= character.TakeStats(Statistic.AttackSpeed).float_value;
+        attackTime /= character.GetStatsValue(Statistic.AttackSpeed).float_value;
 
         return attackTime;
     }

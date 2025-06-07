@@ -128,6 +128,11 @@ public class AttributeGroup
         attributeValues.Add(new AttributeValue(Attribute.Dexterity));
         attributeValues.Add(new AttributeValue(Attribute.Intelligence));
     }
+
+    public AttributeValue Get(Attribute attributeToShow)
+    {
+        return attributeValues[(int)attributeToShow];
+    }
 }
 
 [Serializable]
@@ -230,7 +235,7 @@ public class Character : MonoBehaviour, IDamageable
         }
     }
 
-    public StatsValue TakeStats(Statistic statisticToGet)
+    public StatsValue GetStatsValue(Statistic statisticToGet)
     {
         return stats.Get(statisticToGet);
     }
@@ -254,27 +259,32 @@ public class Character : MonoBehaviour, IDamageable
         stats.Sum(statsValue);
     }
 
-    public void SubtractStats(List<StatsValue> statsValues)
+    public void SubstractStats(List<StatsValue> statsValues)
     {
         for (int i = 0; i < statsValues.Count; i++)
         {
-            StatsSubstract(statsValues[i]);
+            SubstractStats(statsValues[i]);
         }
     }
 
-    private void StatsSubstract(StatsValue statsValue)
+    private void SubstractStats(StatsValue statsValue)
     {
         stats.Subtract(statsValue);
     }
 
     public int GetDamage()
     {
-        int damage = TakeStats(Statistic.Damage).integer_value;
+        int damage = GetStatsValue(Statistic.Damage).integer_value;
         return damage;
     }
 
     public ValuePool GetLifePool()
     {
         return lifePool;
+    }
+
+    public AttributeValue GetAttributeValue(Attribute attributeToShow)
+    {
+        return attributes.Get(attributeToShow);
     }
 }
