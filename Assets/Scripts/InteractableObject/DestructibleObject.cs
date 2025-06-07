@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(InteractableObject))]
 public class DestructibleObject : MonoBehaviour, IDamageable
 {
     public ValuePool GetLifePool()
