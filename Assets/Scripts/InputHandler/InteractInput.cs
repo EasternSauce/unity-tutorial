@@ -37,7 +37,9 @@ public class InteractInput : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit))
+        int layerMask = ~LayerMask.GetMask("PlayerCharacter");
+
+        if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask))
         {
             if (currentHoverOverObject != hit.transform.gameObject)
             {

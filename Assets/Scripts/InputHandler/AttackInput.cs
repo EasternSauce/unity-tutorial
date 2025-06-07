@@ -11,9 +11,13 @@ public class AttackInput : MonoBehaviour
         attackHandler = GetComponent<AttackHandler>();
     }
 
-    public bool AttackCheck()
+    public bool AttackCooldownCheck()
     {
-        if (attackHandler.CheckAttack() == false) { return false; }
-        return interactInput.attackTarget != null && interactInput.hoveringOverObject != null;
+        return attackHandler.CheckAttack();
+    }
+
+    public bool AttackTargetCheck()
+    {
+        return interactInput.attackTarget != null;// && interactInput.hoveringOverObject != null;
     }
 }

@@ -16,7 +16,10 @@ public class MouseInput : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(mouseInputPosition);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, float.MaxValue))
+
+        int layerMask = ~LayerMask.GetMask("PlayerCharacter");
+
+        if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask))
         {
             rayToWorldIntersectionPoint = hit.point;
         }
