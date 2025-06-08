@@ -25,7 +25,15 @@ public class AIEnemy : MonoBehaviour
 
     private void OnDestroy()
     {
-        aiGroup.Remove(this);
+        if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode || UnityEditor.EditorApplication.isPlaying == false)
+        {
+            return;
+        }
+
+        if (aiGroup != null)
+        {
+            aiGroup.Remove(this);
+        }
     }
 
     internal void UpdateAgent(GameObject targetToAttack)
@@ -33,11 +41,18 @@ public class AIEnemy : MonoBehaviour
         timer -= Time.deltaTime;
         float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
 
-        if ((targetToAttack.GetComponent<Character>() == null || targetToAttack.GetComponent<Character>().lifePool.currentValue > 0) && timer < 0f && distanceToTarget <= attackRange)
+        if (targetToAttack.GetComponent<Character>() == null || targetToAttack.GetComponent<Character>().lifePool.currentValue > 0)
         {
-            timer = 0.2f;
+            if (timer < 0f && distanceToTarget <= attackRange)
+            {
+                timer = 0.2f;
 
-            commandHandler.SetCommand(new Command(CommandType.Attack, targetToAttack));
+                commandHandler.SetCommand(new Command(CommandType.Attack, targetToAttack));
+            }
+        }
+        else
+        {
+            commandHandler.SetCommand(null);
         }
     }
 }
