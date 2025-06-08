@@ -45,7 +45,7 @@ public class CharacterDefeatHandler : MonoBehaviour
         {
             agent.isStopped = !state;
         }
-        Debug.Log("enable: " + state);
+
         agent.enabled = state;
 
         //AI part

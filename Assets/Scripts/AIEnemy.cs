@@ -1,34 +1,43 @@
+using System;
 using CharacterCommand;
 using UnityEngine;
 
+[RequireComponent(typeof(CommandHandler))]
 public class AIEnemy : MonoBehaviour
 {
-    AttackHandler attackHandler;
+    [SerializeField] AIAgentGroup aiGroup;
+
+    CommandHandler commandHandler;
+
     [SerializeField] float attackRange = 5f;
 
     private void Awake()
     {
-        attackHandler = GetComponent<AttackHandler>();
+        commandHandler = GetComponent<CommandHandler>();
     }
 
-    [SerializeField] Character target;
     float timer = 0.2f;
 
     private void Start()
     {
-        target = GameManager.instance.playerObject.GetComponent<Character>();
+        aiGroup.Add(this);
     }
 
-    private void Update()
+    private void OnDestroy()
+    {
+        aiGroup.Remove(this);
+    }
+
+    internal void UpdateAgent(GameObject targetToAttack)
     {
         timer -= Time.deltaTime;
-        float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
+        float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
 
-        if (target.lifePool.currentValue > 0 && timer < 0f && distanceToTarget <= attackRange)
+        if ((targetToAttack.GetComponent<Character>() == null || targetToAttack.GetComponent<Character>().lifePool.currentValue > 0) && timer < 0f && distanceToTarget <= attackRange)
         {
             timer = 0.2f;
 
-            attackHandler.ProcessCommand(new Command(CommandType.Attack, target.gameObject));
+            commandHandler.SetCommand(new Command(CommandType.Attack, targetToAttack));
         }
     }
 }
