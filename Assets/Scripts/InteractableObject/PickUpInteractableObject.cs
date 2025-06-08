@@ -11,8 +11,16 @@ public class PickUpInteractableObject : MonoBehaviour
         GetComponent<InteractableObject>().Subscribe(PickUp);
     }
 
-    public void PickUp(Inventory inventory)
+    public void PickUp(Character character)
     {
+        Inventory inventory = character.GetComponent<Inventory>();
+
+        if (inventory == null)
+        {
+            Debug.LogWarning("To interact with this object, this character needs an Inventory");
+            return;
+        }
+
         inventory.AddCurrency(cointCount);
 
         if (itemData != null)
@@ -20,7 +28,6 @@ public class PickUpInteractableObject : MonoBehaviour
             inventory.AddItem(itemData);
         }
 
-        Debug.Log("You are trying to pick up me!");
         Destroy(gameObject);
     }
 

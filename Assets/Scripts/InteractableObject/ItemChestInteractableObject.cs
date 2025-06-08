@@ -16,7 +16,7 @@ public class ItemChestInteractableObject : MonoBehaviour
         GetComponent<InteractableObject>().Subscribe(OpenChest);
     }
 
-    public void OpenChest(Inventory inventory)
+    public void OpenChest(Character character)
     {
         if (isOpened == true) { return; }
 
@@ -24,7 +24,7 @@ public class ItemChestInteractableObject : MonoBehaviour
         animator.SetBool("Open", true);
         for (int i = 0; i < 50; i++)
         {
-            ItemSpawnManager.instance.SpawnItem(SelectRandomPosition(), dropList.GetDrop());
+            ItemSpawnManager.instance.SpawnItem(SelectRandomPosition(), dropList.GetDrop(), transform);
         }
         isOpened = true;
     }

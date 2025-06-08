@@ -9,7 +9,7 @@ public class SceneTransitionInteractableObject : MonoBehaviour
         GetComponent<InteractableObject>().Subscribe(Transition);
     }
 
-    public void Transition(Inventory inventory)
+    public void Transition(Character character)
     {
         GameSceneManager.instance.StartTransition(sceneName);
     }

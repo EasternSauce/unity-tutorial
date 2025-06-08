@@ -13,7 +13,7 @@ public class ItemSpawnManager : MonoBehaviour
 
     [SerializeField] GameObject itemPrefab;
 
-    public void SpawnItem(Vector3 position, ItemData itemToSpawn)
+    public void SpawnItem(Vector3 position, ItemData itemToSpawn, Transform parent = null)
     {
         position += Vector3.up * 50;
 
@@ -25,6 +25,7 @@ public class ItemSpawnManager : MonoBehaviour
             float height = itemPrefab.GetComponent<Renderer>().bounds.size.y;
             GameObject newItemOnGround = GameObject.Instantiate(itemPrefab, hit.point + Vector3.up * (height / 2f), Quaternion.identity);
             newItemOnGround.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
+            newItemOnGround.transform.parent = parent;
         }
     }
 }
