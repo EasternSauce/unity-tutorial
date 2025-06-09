@@ -8,12 +8,14 @@ public class AIEnemy : MonoBehaviour
     [SerializeField] AIAgentGroup aiGroup;
 
     CommandHandler commandHandler;
+    Character character;
 
     [SerializeField] float attackRange = 5f;
 
     private void Awake()
     {
         commandHandler = GetComponent<CommandHandler>();
+        character = GetComponent<Character>();
     }
 
     float timer = 0.2f;
@@ -39,6 +41,17 @@ public class AIEnemy : MonoBehaviour
     internal void UpdateAgent(GameObject targetToAttack)
     {
         timer -= Time.deltaTime;
+
+        if (character == null || character.lifePool.currentValue <= 0)
+        {
+            if (commandHandler != null)
+            {
+                commandHandler.SetCommand(null);
+            }
+
+            return;
+        }
+
         float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
 
         if (targetToAttack.GetComponent<Character>() == null || targetToAttack.GetComponent<Character>().lifePool.currentValue > 0)

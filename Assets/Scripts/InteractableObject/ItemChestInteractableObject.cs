@@ -8,6 +8,9 @@ public class ItemChestInteractableObject : MonoBehaviour
 
     [SerializeField] float itemDropRange = 2f;
 
+    [SerializeField] float ringInnerRadius = 1f;
+    [SerializeField] float ringOuterRadius = 2f;
+
     bool isOpened = false;
 
     private void Start()
@@ -31,11 +34,14 @@ public class ItemChestInteractableObject : MonoBehaviour
 
     private Vector3 SelectRandomPosition()
     {
-        Vector3 pos = transform.position;
+        float angle = UnityEngine.Random.Range(0f, Mathf.PI * 2);
+        float radius = UnityEngine.Random.Range(ringInnerRadius, ringOuterRadius);
 
-        pos += Vector3.right * UnityEngine.Random.Range(-itemDropRange, itemDropRange);
-        pos += Vector3.forward * UnityEngine.Random.Range(-itemDropRange, itemDropRange);
+        float x = Mathf.Cos(angle) * radius;
+        float z = Mathf.Sin(angle) * radius;
 
-        return pos;
+        Vector3 offset = new Vector3(x, 0f, z);
+
+        return transform.position + offset;
     }
 }

@@ -10,7 +10,6 @@ public class PlayerCharacterInput : MonoBehaviour
     [SerializeField] MouseInput mouseInput;
     CommandHandler commandHandler;
 
-    CharacterMovementInput characterMovementInput;
     AttackInput attackInput;
     InteractInput interactInput;
 
@@ -21,7 +20,6 @@ public class PlayerCharacterInput : MonoBehaviour
     {
         commandHandler = GetComponent<CommandHandler>();
 
-        characterMovementInput = GetComponent<CharacterMovementInput>();
         attackInput = GetComponent<AttackInput>();
         interactInput = GetComponent<InteractInput>();
     }
@@ -49,12 +47,6 @@ public class PlayerCharacterInput : MonoBehaviour
                 }
                 return;
             }
-
-            // if (interactInput.InteractCheck())
-            // {
-            //     InteractCommand(interactInput.hoveringOverObject.gameObject);
-            //     return;
-            // }
 
             MoveCommand(mouseInput.rayToWorldIntersectionPoint);
         }
