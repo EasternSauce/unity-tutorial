@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using CharacterCommand;
 using UnityEngine;
 
@@ -15,6 +16,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     Animator animator;
     CharacterMovement characterMovement;
     CanMoveState canMoveState;
+
+    Coroutine attackCoroutine;
 
     private void Awake()
     {
@@ -67,7 +70,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         if (distance < attackRange)
         {
-            if (CheckAttack() == false) { return; }
+            if (!CheckAttack()) return;
 
             ResetAttackTimer();
             SetAnimationTimer();
@@ -76,14 +79,41 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             FaceTarget(command.target.transform);
             animator.SetTrigger("Attack");
 
-            DealDamage(command);
+            // Start delayed damage coroutine
+            if (attackCoroutine != null)
+            {
+                StopCoroutine(attackCoroutine);
+            }
 
-            command.isComplete = true;
+            attackCoroutine = StartCoroutine(DelayedDamage(command));
         }
         else
         {
             characterMovement.SetDestination(command.target.transform.position);
         }
+    }
+
+    private IEnumerator DelayedDamage(Command command)
+    {
+        float hitTime = attackAnimationTime * 0.4f;
+        yield return new WaitForSeconds(hitTime);
+
+        if (command == null || command.isComplete || command.target == null)
+        {
+            yield break;
+        }
+
+        float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
+        if (currentDistance > attackRange)
+        {
+            Debug.Log("Attack missed: target moved out of range.");
+            command.isComplete = true;
+            yield break;
+        }
+
+        DealDamage(command);
+        command.isComplete = true;
+        attackCoroutine = null;
     }
 
     private void SetAnimationTimer()
@@ -122,5 +152,11 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         attackTimer = 0f;
         animationTimer = 0f;
         animator.ResetTrigger("Attack");
+
+        if (attackCoroutine != null)
+        {
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
+        }
     }
 }

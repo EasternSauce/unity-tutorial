@@ -117,6 +117,7 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void MoveCommand(Vector3 point)
     {
+        CancelOngoingAttack();
         commandHandler.SetCommand(new Command(CommandType.Move, point));
     }
 
@@ -128,5 +129,14 @@ public class PlayerCharacterInput : MonoBehaviour
     private void AttackCommand(GameObject target)
     {
         commandHandler.SetCommand(new Command(CommandType.Attack, target));
+    }
+
+    private void CancelOngoingAttack()
+    {
+        var attackHandler = GetComponent<AttackHandler>();
+        if (attackHandler != null)
+        {
+            attackHandler.ResetState();
+        }
     }
 }
