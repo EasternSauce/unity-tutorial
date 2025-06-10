@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 385969cfcbb293740a38259ee30a59a1, type: 3}
+  m_Name: Leather Boots
+  m_EditorClassIdentifier: 
+  equipmentSlot: 6
+  sizeWidth: 2
+  sizeHeight: 2
+  stats:
+  - statisticType: 0
+    typeFloat: 0
+    integer_value: 25
+    float_value: 0
+  icon: {fileID: 401930529, guid: 6ec767fb2d00bb249802c2992f52b6d7, type: 3}

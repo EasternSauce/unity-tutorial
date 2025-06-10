@@ -11,7 +11,8 @@ public enum EquipmentSlot
     Belt,
     Boots,
     Ring,
-    Amulet
+    Amulet,
+    Gloves
 }
 
 [CreateAssetMenu]

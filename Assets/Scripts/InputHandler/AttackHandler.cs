@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using CharacterCommand;
 using UnityEngine;
@@ -79,7 +78,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             FaceTarget(command.target.transform);
             animator.SetTrigger("Attack");
 
-            // Start delayed damage coroutine
             if (attackCoroutine != null)
             {
                 StopCoroutine(attackCoroutine);

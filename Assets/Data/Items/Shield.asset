@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 385969cfcbb293740a38259ee30a59a1, type: 3}
-  m_Name: Bow
+  m_Name: Shield
   m_EditorClassIdentifier: 
-  equipmentSlot: 1
+  equipmentSlot: 2
   sizeWidth: 2
   sizeHeight: 3
   stats:
-  - statisticType: 2
+  - statisticType: 3
     typeFloat: 0
-    integer_value: 100
+    integer_value: 200
     float_value: 0
-  icon: {fileID: 21300000, guid: 3e6062f88b764bb4b9dcca70e681331b, type: 3}
+  icon: {fileID: 21300000, guid: 1d7500027f3588848bcb14999e32ea06, type: 3}

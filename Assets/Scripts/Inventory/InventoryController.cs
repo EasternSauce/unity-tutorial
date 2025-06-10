@@ -57,18 +57,6 @@ public class InventoryController : MonoBehaviour
         ProcessMouseInput();
 
         HandleHighlight();
-
-        // if (selectedItemGrid == null) { return; }
-
-        // if (Input.GetKeyDown(KeyCode.A))
-        // {
-        //     CreateRandomItem();
-        // }
-
-        // if (Input.GetKeyDown(KeyCode.Z))
-        // {
-        //     InsertRandomItem();
-        // }
     }
 
     private void ProcessMousePosition()

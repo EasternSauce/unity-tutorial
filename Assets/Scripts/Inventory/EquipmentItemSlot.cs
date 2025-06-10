@@ -37,12 +37,32 @@ public class EquipmentItemSlot : MonoBehaviour
 
     public void PlaceItem(InventoryItem itemToPlace)
     {
+        if (itemToPlace == null || itemToPlace.itemData == null)
+        {
+            Debug.LogError("Cannot place item: itemToPlace or its itemData is null.");
+            return;
+        }
+
+        if (inventory == null)
+        {
+            Debug.LogError("Inventory is not initialized on EquipmentItemSlot.");
+            return;
+        }
+
+
         itemInSlot = itemToPlace;
         inventory.AddStats(itemInSlot.itemData.stats);
 
         RectTransform rt = itemToPlace.GetComponent<RectTransform>();
-        rt.SetParent(slotRectTransform);
-        rt.position = slotRectTransform.position;
+        if (rt != null)
+        {
+            rt.SetParent(slotRectTransform);
+            rt.position = slotRectTransform.position;
+        }
+        else
+        {
+            Debug.LogWarning("Item does not have RectTransform.");
+        }
     }
 
     public InventoryItem PickUpItem()
