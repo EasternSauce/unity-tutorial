@@ -32,8 +32,8 @@ public class ItemChestInteractableObject : MonoBehaviour
 
     private Vector3 SelectRandomPosition()
     {
-        float angle = UnityEngine.Random.Range(0f, Mathf.PI * 2);
-        float radius = UnityEngine.Random.Range(ringInnerRadius, ringOuterRadius);
+        float angle = Random.Range(0f, Mathf.PI * 2);
+        float radius = Random.Range(ringInnerRadius, ringOuterRadius);
 
         float x = Mathf.Cos(angle) * radius;
         float z = Mathf.Sin(angle) * radius;

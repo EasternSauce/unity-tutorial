@@ -6680,6 +6680,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1256735853}
     m_Modifications:
+    - target: {fileID: 319902811324448131, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
+      propertyPath: m_text
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2312766670833562635, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
       propertyPath: m_Name
       value: AbilityButton (1)
@@ -8986,27 +8990,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8830855484463178057, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.9464189
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8830855484463178057, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.15206218
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8830855484463178057, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.28129303
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8830855484463178057, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.045195706
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8830855484463178057, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -1035.4543
+      value: 32
       objectReference: {fileID: 0}
     - target: {fileID: 8830855484463178057, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -129.2193
+      value: -32
       objectReference: {fileID: 0}
     - target: {fileID: 8830855484463178057, guid: f611361d45e2d7348bd1c0bf21fa5d6e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

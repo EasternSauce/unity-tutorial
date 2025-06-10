@@ -54,7 +54,14 @@ namespace CharacterCommand
 
         private void Update()
         {
-            if (currentCommand == null) { return; }
+            if (currentCommand == null) return;
+
+            Character character = GetComponent<Character>();
+            if (character == null || character.IsDead)
+            {
+                currentCommand = null;
+                return;
+            }
 
             ProcessCommand();
         }

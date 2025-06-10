@@ -168,7 +168,9 @@ public class Character : MonoBehaviour, IDamageable
     [SerializeField] StatsGroup stats;
     public ValuePool lifePool;
     public ValuePool energyPool;
-    public bool isDead;
+
+    private bool isDead;
+    public bool IsDead => isDead;
 
     private void Start()
     {
@@ -180,7 +182,6 @@ public class Character : MonoBehaviour, IDamageable
 
         lifePool = new ValuePool(stats.Get(Statistic.Life));
         energyPool = new ValuePool(stats.Get(Statistic.Energy));
-
     }
 
     private void Update()
@@ -228,9 +229,16 @@ public class Character : MonoBehaviour, IDamageable
 
     private void CheckDeath()
     {
-        if (lifePool.currentValue <= 0)
+        if (!isDead && lifePool.currentValue <= 0)
         {
             isDead = true;
+
+            var handler = GetComponent<CharacterCommand.CommandHandler>();
+            if (handler != null)
+            {
+                handler.SetCommand(null);
+            }
+
             GetComponent<CharacterDefeatHandler>().Defeated();
         }
     }

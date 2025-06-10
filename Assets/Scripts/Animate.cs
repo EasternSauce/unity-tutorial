@@ -22,6 +22,6 @@ public class Animate : MonoBehaviour
         float motion = agent.velocity.magnitude;
 
         animator.SetFloat("motion", motion);
-        animator.SetBool("defeated", character.isDead);
+        animator.SetBool("defeated", character.IsDead);
     }
 }

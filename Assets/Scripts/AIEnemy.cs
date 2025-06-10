@@ -42,7 +42,7 @@ public class AIEnemy : MonoBehaviour
     {
         timer -= Time.deltaTime;
 
-        if (character == null || character.lifePool.currentValue <= 0)
+        if (character == null || character.IsDead)
         {
             if (commandHandler != null)
             {
@@ -54,7 +54,7 @@ public class AIEnemy : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
 
-        if (targetToAttack.GetComponent<Character>() == null || targetToAttack.GetComponent<Character>().lifePool.currentValue > 0)
+        if (targetToAttack.GetComponent<Character>() != null && !targetToAttack.GetComponent<Character>().IsDead)
         {
             if (timer < 0f && distanceToTarget <= attackRange)
             {
