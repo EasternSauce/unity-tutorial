@@ -10,7 +10,6 @@ public class CharacterDefeatHandler : MonoBehaviour
     AttackInput attackInput;
     InteractInput interactInput;
     PlayerCharacterInput playerCharacterInput;
-    CharacterMovementInput movementInput;
     Character character;
 
     // [SerializeField] private bool player;
@@ -25,7 +24,6 @@ public class CharacterDefeatHandler : MonoBehaviour
         attackInput = GetComponent<AttackInput>();
         interactInput = GetComponent<InteractInput>();
         playerCharacterInput = GetComponent<PlayerCharacterInput>();
-        movementInput = GetComponent<CharacterMovementInput>();
         character = GetComponent<Character>();
     }
 
@@ -72,11 +70,6 @@ public class CharacterDefeatHandler : MonoBehaviour
         if (playerCharacterInput != null)
         {
             playerCharacterInput.enabled = state;
-        }
-
-        if (movementInput != null)
-        {
-            movementInput.enabled = state;
         }
 
         if (defeatedPanel != null)

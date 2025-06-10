@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8063764968881672781}
   - component: {fileID: 18455169917739327}
   - component: {fileID: 4111030535637799211}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: RockTile2
   m_TagString: Untagged
   m_Icon: {fileID: 0}

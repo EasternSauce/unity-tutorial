@@ -13,14 +13,7 @@ public class InteractInput : MonoBehaviour
     [HideInInspector]
     public IDamageable attackTarget;
 
-    InteractHandler interactHandler;
-
     Vector2 mousePosition;
-
-    void Awake()
-    {
-        interactHandler = GetComponent<InteractHandler>();
-    }
 
     void Update()
     {
@@ -37,15 +30,31 @@ public class InteractInput : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         RaycastHit hit;
 
-        int layerMask = ~LayerMask.GetMask("PlayerCharacter");
+        float hoverRadius = 0.5f; // Increase for bigger hover area
+        int layerMask = ~LayerMask.GetMask("RaycastIgnore");
 
-        if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask))
+        if (Physics.SphereCast(ray, hoverRadius, out hit, float.MaxValue, layerMask))
         {
-            if (currentHoverOverObject != hit.transform.gameObject)
+            GameObject hitObject = hit.transform.gameObject;
+
+            if (currentHoverOverObject != hitObject)
             {
-                currentHoverOverObject = hit.transform.gameObject;
+                SetOutlineEnabled(currentHoverOverObject, false);
+
+                currentHoverOverObject = hitObject;
+                SetOutlineEnabled(currentHoverOverObject, true);
+
                 UpdateInteractableObject(hit);
             }
+        }
+        else
+        {
+            SetOutlineEnabled(currentHoverOverObject, false);
+            currentHoverOverObject = null;
+            hoveringOverObject = null;
+            attackTarget = null;
+            textOnScreen.text = "";
+            hpBar.Clear();
         }
     }
 
@@ -57,7 +66,6 @@ public class InteractInput : MonoBehaviour
             hoveringOverObject = interactableObject;
             attackTarget = interactableObject.GetComponent<IDamageable>();
             textOnScreen.text = hoveringOverObject.objectName;
-
         }
         else
         {
@@ -65,6 +73,7 @@ public class InteractInput : MonoBehaviour
             attackTarget = null;
             textOnScreen.text = "";
         }
+
         UpdateHPBar();
     }
 
@@ -83,5 +92,16 @@ public class InteractInput : MonoBehaviour
     public bool InteractCheck()
     {
         return hoveringOverObject != null;
+    }
+
+    private void SetOutlineEnabled(GameObject obj, bool enabled)
+    {
+        if (obj == null) return;
+
+        var outline = obj.GetComponent<Outline>();
+        if (outline != null)
+        {
+            outline.enabled = enabled;
+        }
     }
 }

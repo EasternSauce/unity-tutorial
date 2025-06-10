@@ -12,6 +12,8 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
     StatsValue moveSpeed;
     CanMoveState canMoveState;
 
+    private Command currentCommand;
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -36,6 +38,15 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
         {
             current_MoveSpeed = moveSpeed.float_value;
             UpdateMoveSpeed();
+        }
+
+        if (currentCommand != null && agent.isOnNavMesh)
+        {
+            if (agent.remainingDistance <= agent.stoppingDistance && !agent.pathPending)
+            {
+                currentCommand.isComplete = true;
+                currentCommand = null;
+            }
         }
     }
 
@@ -62,5 +73,6 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
     public void ProcessCommand(Command command)
     {
         SetDestination(command.worldPoint);
+        currentCommand = command;
     }
 }

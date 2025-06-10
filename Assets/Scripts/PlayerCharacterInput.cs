@@ -1,6 +1,4 @@
-using System;
 using CharacterCommand;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -16,6 +14,12 @@ public class PlayerCharacterInput : MonoBehaviour
     bool isOverUIElement;
     bool isLMBPressed;
 
+    bool isHoldActive = false;
+
+    private bool commandLock = false;
+    private float commandLockDuration = 0.3f;
+    private float commandLockTimer = 0f;
+
     private void Awake()
     {
         commandHandler = GetComponent<CommandHandler>();
@@ -27,7 +31,20 @@ public class PlayerCharacterInput : MonoBehaviour
     private void Update()
     {
         isOverUIElement = EventSystem.current.IsPointerOverGameObject();
-        LMB_Hold_CommandProcess();
+
+        if (commandLock)
+        {
+            commandLockTimer -= Time.deltaTime;
+            if (commandLockTimer <= 0f)
+            {
+                commandLock = false;
+            }
+        }
+
+        if (isHoldActive && !isOverUIElement && !commandLock)
+        {
+            LMB_Hold_CommandProcess();
+        }
     }
 
     private void LMB_Hold_CommandProcess()
@@ -54,14 +71,23 @@ public class PlayerCharacterInput : MonoBehaviour
 
     public void LMB_InputHandle(InputAction.CallbackContext callbackContext)
     {
-        LMB_Hold(callbackContext);
+        if (callbackContext.started)
+        {
+            isLMBPressed = true;
+            isHoldActive = true;
 
-        if (isOverUIElement == true) { return; }
+            if (!isOverUIElement)
+            {
+                LMB_Press_ProcessCommand();
+            }
+        }
 
-        if (callbackContext.performed || callbackContext.canceled) return;
-
-        LMB_Press_ProcessCommand();
-
+        if (callbackContext.canceled)
+        {
+            isLMBPressed = false;
+            isHoldActive = false;
+            commandLock = false;
+        }
     }
 
     private void LMB_Press_ProcessCommand()
@@ -69,30 +95,24 @@ public class PlayerCharacterInput : MonoBehaviour
         if (attackInput.AttackTargetCheck() && attackInput.AttackCooldownCheck())
         {
             AttackCommand(interactInput.hoveringOverObject.gameObject);
+            SetCommandLock();
             return;
         }
 
         if (interactInput.InteractCheck())
         {
             InteractCommand(interactInput.hoveringOverObject.gameObject);
+            SetCommandLock();
             return;
         }
 
         MoveCommand(mouseInput.rayToWorldIntersectionPoint);
-
     }
 
-    private void LMB_Hold(InputAction.CallbackContext callbackContext)
+    private void SetCommandLock()
     {
-        if (callbackContext.started)
-        {
-            isLMBPressed = true;
-        }
-
-        if (callbackContext.canceled)
-        {
-            isLMBPressed = false;
-        }
+        commandLock = true;
+        commandLockTimer = commandLockDuration;
     }
 
     private void MoveCommand(Vector3 point)

@@ -1,9 +1,8 @@
-using System;
 using UnityEngine;
 
 public class PickUpInteractableObject : MonoBehaviour
 {
-    [SerializeField] int cointCount;
+    [SerializeField] int coinCount;
     [SerializeField] ItemData itemData;
 
     private void Start()
@@ -21,7 +20,10 @@ public class PickUpInteractableObject : MonoBehaviour
             return;
         }
 
-        inventory.AddCurrency(cointCount);
+        if (coinCount >= 0)
+        {
+            inventory.AddCurrency(coinCount);
+        }
 
         if (itemData != null)
         {

@@ -6,8 +6,6 @@ public class ItemChestInteractableObject : MonoBehaviour
     Animator animator;
     [SerializeField] ItemDropList dropList;
 
-    [SerializeField] float itemDropRange = 2f;
-
     [SerializeField] float ringInnerRadius = 1f;
     [SerializeField] float ringOuterRadius = 2f;
 

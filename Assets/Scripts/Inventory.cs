@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,7 +35,6 @@ public class Inventory : MonoBehaviour
     public void AddCurrency(int amount)
     {
         currency += amount;
-        Debug.Log("Currency = " + currency.ToString());
     }
 
     public bool AddItem(ItemData itemData)

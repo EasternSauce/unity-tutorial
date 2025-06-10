@@ -17,7 +17,7 @@ public class MouseInput : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(mouseInputPosition);
         RaycastHit hit;
 
-        int layerMask = ~LayerMask.GetMask("PlayerCharacter");
+        int layerMask = ~LayerMask.GetMask("RaycastIgnore");
 
         if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask))
         {
