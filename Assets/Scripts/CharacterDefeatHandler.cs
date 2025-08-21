@@ -1,89 +1,19 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 public class CharacterDefeatHandler : MonoBehaviour
 {
-    NavMeshAgent agent;
-    AIEnemy aiEnemy;
-    Collider objectCollider;
-
-    AttackInput attackInput;
-    InteractInput interactInput;
-    PlayerCharacterInput playerCharacterInput;
-    Character character;
-
-    // [SerializeField] private bool player;
-    [SerializeField] GameObject defeatedPanel;
-
-    private void Awake()
-    {
-        agent = GetComponent<NavMeshAgent>();
-        aiEnemy = GetComponent<AIEnemy>();
-        objectCollider = GetComponent<Collider>();
-
-        attackInput = GetComponent<AttackInput>();
-        interactInput = GetComponent<InteractInput>();
-        playerCharacterInput = GetComponent<PlayerCharacterInput>();
-        character = GetComponent<Character>();
-    }
+    public UnityEvent onDefeated;
+    public UnityEvent onRespawned;
 
     public void Defeated()
     {
-        SetState(false);
+        onDefeated?.Invoke();
     }
 
     public void Respawn()
     {
-        SetState(true);
-    }
-
-    void SetState(bool state)
-    {
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
-        {
-            agent.isStopped = !state;
-        }
-
-        agent.enabled = state;
-
-        //AI part
-
-        if (aiEnemy != null)
-        {
-            aiEnemy.enabled = state;
-        }
-
-        objectCollider.enabled = state;
-
-        //player part
-
-        if (attackInput != null)
-        {
-            attackInput.enabled = state;
-        }
-
-        if (interactInput != null)
-        {
-            interactInput.enabled = state;
-        }
-
-        if (playerCharacterInput != null)
-        {
-            playerCharacterInput.enabled = state;
-        }
-
-        if (defeatedPanel != null)
-        {
-            defeatedPanel.SetActive(!state);
-        }
-
-        if (state == true)
-        {
-            if (character != null)
-            {
-                character.Restore();
-            }
-        }
-
+        onRespawned?.Invoke();
     }
 }
