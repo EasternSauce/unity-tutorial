@@ -5,7 +5,13 @@ using UnityEngine.AI;
 [RequireComponent(typeof(CanMoveState))]
 public class CharacterMovement : MonoBehaviour, ICommandHandle
 {
-    NavMeshAgent agent;
+    [SerializeField] private float defaultStoppingDistance = 0.1f;
+    [SerializeField] private NavMeshAgent agent;
+
+    public NavMeshAgent Agent => agent;
+
+    public float DefaultStoppingDistance => defaultStoppingDistance;
+
     Character character;
     [SerializeField] float default_MoveSpeed = 3.5f;
     float current_MoveSpeed;

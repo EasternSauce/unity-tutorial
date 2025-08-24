@@ -84,15 +84,14 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             }
 
             attackCoroutine = StartCoroutine(DelayedDamage(command));
+
+            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
         }
         else
         {
-            Vector3 targetPos = command.target.transform.position;
-            Vector3 direction = (targetPos - transform.position).normalized;
+            characterMovement.Agent.stoppingDistance = attackRange - 0.1f;
 
-            Vector3 moveTo = targetPos - direction * (attackRange - 0.1f);
-
-            characterMovement.SetDestination(moveTo);
+            characterMovement.SetDestination(command.target.transform.position);
         }
     }
 
