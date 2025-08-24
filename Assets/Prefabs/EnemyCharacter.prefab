@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 7617368940083294593}
   - component: {fileID: 7599319321417753288}
   - component: {fileID: 3810563472766681406}
-  m_Layer: 9
+  m_Layer: 8
   m_Name: EnemyCharacter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -359,6 +359,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcf9b1e0aa397474bb7e8ce44c104423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultStoppingDistance: 0.1
+  agent: {fileID: 0}
   default_MoveSpeed: 3.5
 --- !u!114 &7599319321417753288
 MonoBehaviour:

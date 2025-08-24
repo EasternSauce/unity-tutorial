@@ -1204,7 +1204,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4567667690385125271, guid: 6b436e11b6366e148ba035dca31e8c20, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.089
       objectReference: {fileID: 0}
     - target: {fileID: 4567667690385125271, guid: 6b436e11b6366e148ba035dca31e8c20, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9971,6 +9971,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 376731200303714898, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 376731200303714898, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: m_BaseOffset
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 570481121221969242, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: animator
       value: 
@@ -10091,6 +10099,14 @@ PrefabInstance:
       propertyPath: textOnScreen
       value: 
       objectReference: {fileID: 768288270}
+    - target: {fileID: 5982454074742364627, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: m_Height
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5982454074742364627, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6493717686141080161, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: hpBar
       value: 
