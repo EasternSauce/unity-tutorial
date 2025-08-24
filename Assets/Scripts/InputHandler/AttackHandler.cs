@@ -67,7 +67,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     {
         float distance = Vector3.Distance(transform.position, command.target.transform.position);
 
-        if (distance < attackRange)
+        if (distance <= attackRange)
         {
             if (!CheckAttack()) return;
 
@@ -87,7 +87,12 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
         else
         {
-            characterMovement.SetDestination(command.target.transform.position);
+            Vector3 targetPos = command.target.transform.position;
+            Vector3 direction = (targetPos - transform.position).normalized;
+
+            Vector3 moveTo = targetPos - direction * (attackRange - 0.1f);
+
+            characterMovement.SetDestination(moveTo);
         }
     }
 
