@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerCharacterInput : MonoBehaviour
 {
+    [SerializeField] private InventoryController inventoryController;
+
     [SerializeField] MouseInput mouseInput;
     CommandHandler commandHandler;
 
@@ -50,12 +52,18 @@ public class PlayerCharacterInput : MonoBehaviour
     private void LMB_Hold_CommandProcess()
     {
         if (commandHandler.GetCurrentCommandType() == CommandType.Interact)
-        {
             return;
-        }
 
-        if (isLMBPressed && isOverUIElement == false)
+        if (isLMBPressed && !isOverUIElement)
         {
+            // Drop item first if dragging
+            if (inventoryController.HasItemOnCursor)
+            {
+                inventoryController.ThrowItemAwayProcess();
+                SetCommandLock();
+                return;
+            }
+
             if (attackInput.AttackTargetCheck())
             {
                 AttackCommand(interactInput.hoveringOverObject.gameObject);
@@ -89,6 +97,15 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void LMB_Press_ProcessCommand()
     {
+        // 1️⃣ If dragging an item, drop it and skip movement
+        if (inventoryController.HasItemOnCursor)
+        {
+            inventoryController.ThrowItemAwayProcess(); // uses your existing drop logic
+            SetCommandLock(); // optional: prevents accidental movement immediately after drop
+            return;
+        }
+
+        // 2️⃣ Otherwise, handle normal attacks/interact/move
         if (attackInput.AttackTargetCheck())
         {
             AttackCommand(interactInput.hoveringOverObject.gameObject);

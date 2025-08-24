@@ -7,6 +7,8 @@ using UnityEngine.InputSystem;
 
 public class InventoryController : MonoBehaviour
 {
+    public bool HasItemOnCursor => selectedItem != null;
+
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
 
@@ -194,7 +196,7 @@ public class InventoryController : MonoBehaviour
         }
     }
 
-    private void ThrowItemAwayProcess()
+    public void ThrowItemAwayProcess()
     {
         if (selectedItem == null) { return; }
 
