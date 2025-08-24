@@ -95,33 +95,33 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
     }
 
-private IEnumerator DelayedDamage(Command command)
-{
-    float hitTime = attackAnimationTime * 0.4f;
-    yield return new WaitForSeconds(hitTime);
-
-    if (command == null || command.isComplete || command.target == null)
+    private IEnumerator DelayedDamage(Command command)
     {
-        characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
-        yield break;
-    }
+        float hitTime = attackAnimationTime * 0.4f;
+        yield return new WaitForSeconds(hitTime);
 
-    float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
-    if (currentDistance > attackRange)
-    {
-        Debug.Log("Attack missed: target moved out of range.");
+        if (command == null || command.isComplete || command.target == null)
+        {
+            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+            yield break;
+        }
+
+        float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
+        if (currentDistance > attackRange)
+        {
+            Debug.Log("Attack missed: target moved out of range.");
+            command.isComplete = true;
+            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+            yield break;
+        }
+
+        DealDamage(command);
         command.isComplete = true;
+
         characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
-        yield break;
+
+        attackCoroutine = null;
     }
-
-    DealDamage(command);
-    command.isComplete = true;
-
-    characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
-
-    attackCoroutine = null;
-}
 
     private void SetAnimationTimer()
     {
@@ -156,7 +156,6 @@ private IEnumerator DelayedDamage(Command command)
 
     public void ResetState()
     {
-        attackTimer = 0f;
         animationTimer = 0f;
         animator.ResetTrigger("Attack");
 
