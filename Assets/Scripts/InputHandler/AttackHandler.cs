@@ -70,10 +70,9 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         float distance = Vector3.Distance(transform.position, command.target.transform.position);
         float attackBuffer = 0.1f;
 
-        if (character != null && character.IsPlayer)
-        {
-            FaceTarget(command.target.transform);
-        }
+        Transform targetTransform = command.target.transform;
+
+        RotateTowardsTarget(targetTransform);
 
         if (distance <= attackRange + attackBuffer)
         {
@@ -82,7 +81,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
             if (!CheckAttack()) return;
 
-            FaceTarget(command.target.transform);
+            RotateTowardsTarget(targetTransform, forceInstant: true);
 
             ResetAttackTimer();
             SetAnimationTimer();
@@ -97,8 +96,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
         else
         {
-            Vector3 direction = (command.target.transform.position - transform.position).normalized;
-            Vector3 destination = command.target.transform.position - direction * attackRange;
+            Vector3 direction = (targetTransform.position - transform.position).normalized;
+            Vector3 destination = targetTransform.position - direction * attackRange;
 
             characterMovement.Agent.stoppingDistance = 0f;
             characterMovement.Agent.isStopped = false;
@@ -147,12 +146,29 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         return true;
     }
 
-    private void FaceTarget(Transform target)
+    private void RotateTowardsTarget(Transform target, bool forceInstant = false)
     {
+        if (target == null) return;
+
         Vector3 lookVector = target.position - transform.position;
         lookVector.y = 0f;
-        Quaternion quaternion = Quaternion.LookRotation(lookVector);
-        transform.rotation = quaternion;
+
+        if (lookVector == Vector3.zero) return;
+
+        Quaternion targetRotation = Quaternion.LookRotation(lookVector);
+
+        bool isMoving = characterMovement.Agent.velocity.magnitude > 0.1f;
+        bool attackReady = CheckAttack();
+
+        if (forceInstant || attackReady || isMoving)
+        {
+            transform.rotation = targetRotation;
+        }
+        else
+        {
+            float rotationSpeed = 3f;
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
     }
 
     private void ResetAttackTimer()
