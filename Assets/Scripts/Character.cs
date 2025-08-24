@@ -164,6 +164,9 @@ public class ValuePool
 
 public class Character : MonoBehaviour, IDamageable
 {
+    [SerializeField] private bool isPlayer = false;
+    public bool IsPlayer => isPlayer;
+
     [SerializeField] AttributeGroup attributes;
     [SerializeField] StatsGroup stats;
     public ValuePool lifePool;

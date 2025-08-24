@@ -65,17 +65,29 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     public void ProcessCommand(Command command)
     {
+        if (command == null || command.target == null) return;
+
         float distance = Vector3.Distance(transform.position, command.target.transform.position);
 
-        if (distance <= attackRange)
+        if (character != null && character.IsPlayer)
         {
-            if (!CheckAttack()) return;
+            FaceTarget(command.target.transform);
+        }
+
+        if (distance < attackRange)
+        {
+            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+
+            if (!CheckAttack())
+            {
+                return;
+            }
+
+            FaceTarget(command.target.transform);
 
             ResetAttackTimer();
             SetAnimationTimer();
-
             characterMovement.Stop();
-            FaceTarget(command.target.transform);
             animator.SetTrigger("Attack");
 
             if (attackCoroutine != null)
@@ -84,8 +96,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             }
 
             attackCoroutine = StartCoroutine(DelayedDamage(command));
-
-            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
         }
         else
         {

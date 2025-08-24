@@ -58,10 +58,7 @@ public class PlayerCharacterInput : MonoBehaviour
         {
             if (attackInput.AttackTargetCheck())
             {
-                if (attackInput.AttackCooldownCheck())
-                {
-                    AttackCommand(interactInput.hoveringOverObject.gameObject);
-                }
+                AttackCommand(interactInput.hoveringOverObject.gameObject);
                 return;
             }
 
@@ -92,7 +89,7 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void LMB_Press_ProcessCommand()
     {
-        if (attackInput.AttackTargetCheck() && attackInput.AttackCooldownCheck())
+        if (attackInput.AttackTargetCheck())
         {
             AttackCommand(interactInput.hoveringOverObject.gameObject);
             SetCommandLock();
