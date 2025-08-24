@@ -68,26 +68,24 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         if (command == null || command.target == null) return;
 
         float distance = Vector3.Distance(transform.position, command.target.transform.position);
+        float attackBuffer = 0.1f;
 
         if (character != null && character.IsPlayer)
         {
             FaceTarget(command.target.transform);
         }
 
-        if (distance < attackRange)
+        if (distance <= attackRange + attackBuffer)
         {
-            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+            characterMovement.Stop();
+            characterMovement.Agent.isStopped = true;
 
-            if (!CheckAttack())
-            {
-                return;
-            }
+            if (!CheckAttack()) return;
 
             FaceTarget(command.target.transform);
 
             ResetAttackTimer();
             SetAnimationTimer();
-            characterMovement.Stop();
             animator.SetTrigger("Attack");
 
             if (attackCoroutine != null)
@@ -99,9 +97,12 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
         else
         {
-            characterMovement.Agent.stoppingDistance = attackRange - 0.1f;
+            Vector3 direction = (command.target.transform.position - transform.position).normalized;
+            Vector3 destination = command.target.transform.position - direction * attackRange;
 
-            characterMovement.SetDestination(command.target.transform.position);
+            characterMovement.Agent.stoppingDistance = 0f;
+            characterMovement.Agent.isStopped = false;
+            characterMovement.SetDestination(destination);
         }
     }
 
@@ -117,7 +118,9 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
 
         float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
-        if (currentDistance > attackRange)
+        float attackBuffer = 0.1f;
+
+        if (currentDistance > attackRange + attackBuffer)
         {
             Debug.Log("Attack missed: target moved out of range.");
             command.isComplete = true;
