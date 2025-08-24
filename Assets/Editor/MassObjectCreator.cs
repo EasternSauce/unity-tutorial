@@ -38,6 +38,7 @@ public class MassObjectCreator
         }
 
         GameObject parent = new GameObject("GeneratedCave");
+        parent.isStatic = true;
 
         bool[,] isEmpty = new bool[mapWidth, mapHeight];
         System.Random rand = new System.Random();
@@ -159,16 +160,51 @@ public class MassObjectCreator
 
     private static void InstantiateTiles(GameObject prefab, bool[,] isEmpty, GameObject parent)
     {
+        int groupSizeX = 40; // top-level X grouping
+        int groupSizeZ = 40; // top-level Z grouping
+        int subGroupSizeX = 10; // sub-level X grouping
+        int subGroupSizeZ = 10; // sub-level Z grouping
+
         for (int z = 0; z < mapHeight; z++)
         {
             for (int x = 0; x < mapWidth; x++)
             {
                 if (!isEmpty[x, z])
                 {
+                    // === First level group ===
+                    int groupX = x / groupSizeX;
+                    int groupZ = z / groupSizeZ;
+                    string groupName = $"Group_{groupX}_{groupZ}";
+
+                    Transform groupTransform = parent.transform.Find(groupName);
+                    if (groupTransform == null)
+                    {
+                        GameObject groupObj = new GameObject(groupName);
+                        groupObj.transform.parent = parent.transform;
+                        groupObj.isStatic = true;
+                        groupTransform = groupObj.transform;
+                    }
+
+                    // === Second level subgroup ===
+                    int subGroupX = (x % groupSizeX) / subGroupSizeX;
+                    int subGroupZ = (z % groupSizeZ) / subGroupSizeZ;
+                    string subGroupName = $"Sub_{subGroupX}_{subGroupZ}";
+
+                    Transform subGroupTransform = groupTransform.Find(subGroupName);
+                    if (subGroupTransform == null)
+                    {
+                        GameObject subGroupObj = new GameObject(subGroupName);
+                        subGroupObj.transform.parent = groupTransform;
+                        subGroupObj.isStatic = true;
+                        subGroupTransform = subGroupObj.transform;
+                    }
+
+                    // === Instantiate tile ===
                     Vector3 position = new Vector3(x * tileSpacing, 0, z * tileSpacing);
                     GameObject obj = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
                     obj.transform.position = position;
-                    obj.transform.parent = parent.transform;
+                    obj.transform.parent = subGroupTransform;
+                    obj.isStatic = true;
 
                     Renderer rend = obj.GetComponentInChildren<Renderer>();
                     if (rend != null)
@@ -236,6 +272,7 @@ public class MassObjectCreator
     {
         GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
         ground.name = "GroundPlane";
+        ground.isStatic = true;
 
         float totalWidth = mapWidth * tileSpacing;
         float totalHeight = mapHeight * tileSpacing;
