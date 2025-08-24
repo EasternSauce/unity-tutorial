@@ -95,28 +95,33 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
     }
 
-    private IEnumerator DelayedDamage(Command command)
+private IEnumerator DelayedDamage(Command command)
+{
+    float hitTime = attackAnimationTime * 0.4f;
+    yield return new WaitForSeconds(hitTime);
+
+    if (command == null || command.isComplete || command.target == null)
     {
-        float hitTime = attackAnimationTime * 0.4f;
-        yield return new WaitForSeconds(hitTime);
-
-        if (command == null || command.isComplete || command.target == null)
-        {
-            yield break;
-        }
-
-        float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
-        if (currentDistance > attackRange)
-        {
-            Debug.Log("Attack missed: target moved out of range.");
-            command.isComplete = true;
-            yield break;
-        }
-
-        DealDamage(command);
-        command.isComplete = true;
-        attackCoroutine = null;
+        characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+        yield break;
     }
+
+    float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
+    if (currentDistance > attackRange)
+    {
+        Debug.Log("Attack missed: target moved out of range.");
+        command.isComplete = true;
+        characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+        yield break;
+    }
+
+    DealDamage(command);
+    command.isComplete = true;
+
+    characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+
+    attackCoroutine = null;
+}
 
     private void SetAnimationTimer()
     {
