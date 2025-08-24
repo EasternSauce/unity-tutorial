@@ -30,8 +30,8 @@ public class InteractInput : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         RaycastHit hit;
 
-        float hoverRadius = 0.5f; // Increase for bigger hover area
-        int layerMask = ~LayerMask.GetMask("RaycastIgnore");
+        float hoverRadius = 0.5f;
+        int layerMask = ~LayerMask.GetMask("Player");
 
         if (Physics.SphereCast(ray, hoverRadius, out hit, float.MaxValue, layerMask))
         {
