@@ -8,10 +8,9 @@ public class InteractInput : MonoBehaviour
 
     GameObject currentHoverOverObject;
 
-    [HideInInspector]
-    public InteractableObject hoveringOverObject;
-    [HideInInspector]
-    public IDamageable attackTarget;
+    [HideInInspector] public InteractableObject hoveringOverObject;
+    [HideInInspector] public IDamageable attackTarget;
+    Character hoveringCharacter;
 
     Vector2 mousePosition;
 
@@ -44,7 +43,14 @@ public class InteractInput : MonoBehaviour
                 currentHoverOverObject = hitObject;
                 SetOutlineEnabled(currentHoverOverObject, true);
 
-                UpdateInteractableObject(hit);
+                InteractableObject interactableObject = hitObject.GetComponent<InteractableObject>();
+                hoveringOverObject = interactableObject;
+                attackTarget = interactableObject?.GetComponent<IDamageable>();
+                hoveringCharacter = interactableObject?.GetComponent<Character>();
+
+                textOnScreen.text = hoveringCharacter != null ? hoveringOverObject.objectName : "";
+
+                UpdateHPBar();
             }
         }
         else
@@ -53,28 +59,10 @@ public class InteractInput : MonoBehaviour
             currentHoverOverObject = null;
             hoveringOverObject = null;
             attackTarget = null;
+            hoveringCharacter = null;
             textOnScreen.text = "";
             hpBar.Clear();
         }
-    }
-
-    private void UpdateInteractableObject(RaycastHit hit)
-    {
-        InteractableObject interactableObject = hit.transform.GetComponent<InteractableObject>();
-        if (interactableObject != null)
-        {
-            hoveringOverObject = interactableObject;
-            attackTarget = interactableObject.GetComponent<IDamageable>();
-            textOnScreen.text = hoveringOverObject.objectName;
-        }
-        else
-        {
-            hoveringOverObject = null;
-            attackTarget = null;
-            textOnScreen.text = "";
-        }
-
-        UpdateHPBar();
     }
 
     private void UpdateHPBar()
