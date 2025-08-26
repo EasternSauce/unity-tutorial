@@ -116,6 +116,11 @@ namespace CharacterCommand
 
             return currentCommand.commandType;
         }
+
+        public void ClearCurrentCommand()
+        {
+            currentCommand = null;
+        }
     }
 
 }
