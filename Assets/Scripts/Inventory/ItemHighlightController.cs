@@ -6,7 +6,7 @@ public class ItemHighlightController : MonoBehaviour
     [SerializeField] private ItemGrid currentGrid;
 
     private InventoryItem selectedItem;
-    private Vector2Int lastPosition;
+    private Vector2Int lastPosition = new Vector2Int(-1, -1);
 
     public void SetCurrentGrid(ItemGrid grid)
     {
@@ -28,63 +28,63 @@ public class ItemHighlightController : MonoBehaviour
             return;
         }
 
-        Vector2Int positionOnGrid = GetMouseGridPosition();
-
-
-        if (!currentGrid.PositionCheck(positionOnGrid.x, positionOnGrid.y))
+        if (!IsPointerInsideGrid())
         {
             inventoryHighlight.Show(false);
+            lastPosition = new Vector2Int(-1, -1);
             return;
         }
+
+        Vector2Int positionOnGrid = currentGrid.GetTileGridPosition(Input.mousePosition);
 
         if (positionOnGrid != lastPosition)
         {
             lastPosition = positionOnGrid;
-            UpdateHighlight();
+            UpdateHighlight(positionOnGrid);
         }
     }
 
-
-    private Vector2Int GetMouseGridPosition()
+    private bool IsPointerInsideGrid()
     {
-        Vector2 mousePos = Input.mousePosition;
+        RectTransform rectTransform = currentGrid.GetComponent<RectTransform>();
+        Vector2 localMousePos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            rectTransform,
+            Input.mousePosition,
+            null,
+            out localMousePos
+        );
 
-        if (selectedItem != null)
-        {
-            mousePos.x -= (selectedItem.itemData.sizeWidth - 1) * ItemGrid.TileSizeWidth / 2;
-            mousePos.y += (selectedItem.itemData.sizeHeight - 1) * ItemGrid.TileSizeHeight / 2;
-        }
-
-        return currentGrid.GetTileGridPosition(mousePos);
+        Rect rect = rectTransform.rect;
+        return rect.Contains(localMousePos);
     }
 
-    private void UpdateHighlight()
+    private void UpdateHighlight(Vector2Int positionOnGrid)
     {
         if (selectedItem == null)
         {
-            HighlightExistingItem();
+            HighlightExistingItem(positionOnGrid);
         }
         else
         {
-            HighlightSelectedItem();
+            HighlightSelectedItem(positionOnGrid);
         }
     }
 
-    private void HighlightExistingItem()
+    private void HighlightExistingItem(Vector2Int position)
     {
-        if (!currentGrid.PositionCheck(lastPosition.x, lastPosition.y))
+        if (!currentGrid.PositionCheck(position.x, position.y))
         {
             inventoryHighlight.Show(false);
             return;
         }
 
-        InventoryItem itemToHighlight = currentGrid.GetItem(lastPosition.x, lastPosition.y);
-
-        if (itemToHighlight != null)
+        InventoryItem item = currentGrid.GetItem(position.x, position.y);
+        if (item != null)
         {
             inventoryHighlight.Show(true);
-            inventoryHighlight.SetSize(itemToHighlight);
-            inventoryHighlight.SetPosition(currentGrid, itemToHighlight);
+            inventoryHighlight.SetSize(item);
+            inventoryHighlight.SetPosition(currentGrid, item);
         }
         else
         {
@@ -92,17 +92,24 @@ public class ItemHighlightController : MonoBehaviour
         }
     }
 
-    private void HighlightSelectedItem()
+    private void HighlightSelectedItem(Vector2Int position)
     {
         bool canPlace = currentGrid.BoundaryCheck(
-            lastPosition.x,
-            lastPosition.y,
+            position.x,
+            position.y,
             selectedItem.itemData.sizeWidth,
             selectedItem.itemData.sizeHeight
         );
 
-        inventoryHighlight.Show(canPlace);
-        inventoryHighlight.SetSize(selectedItem);
-        inventoryHighlight.SetPosition(currentGrid, selectedItem, lastPosition.x, lastPosition.y);
+        if (canPlace)
+        {
+            inventoryHighlight.Show(true);
+            inventoryHighlight.SetSize(selectedItem);
+            inventoryHighlight.SetPosition(currentGrid, selectedItem, position.x, position.y);
+        }
+        else
+        {
+            inventoryHighlight.Show(false);
+        }
     }
 }
