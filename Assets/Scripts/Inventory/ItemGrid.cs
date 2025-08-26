@@ -97,7 +97,7 @@ public class ItemGrid : MonoBehaviour
         return positionOnGrid;
     }
 
-    public Vector2Int GetTileGridPosition(Vector2 mousePosition)
+    public Vector2Int GetTileGridPosition(Vector2 mousePosition, InventoryItem item = null)
     {
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             rectTransform,
@@ -106,9 +106,16 @@ public class ItemGrid : MonoBehaviour
             out Vector2 localMousePosition
         );
 
-        tileGridPosition.x = (int)(localMousePosition.x / TileSizeWidth);
-        tileGridPosition.y = (int)(-localMousePosition.y / TileSizeHeight);
-        return tileGridPosition;
+        if (item != null)
+        {
+            localMousePosition.x -= (item.itemData.sizeWidth - 1) * TileSizeWidth / 2;
+            localMousePosition.y += (item.itemData.sizeHeight - 1) * TileSizeHeight / 2;
+        }
+
+        int x = (int)(localMousePosition.x / TileSizeWidth);
+        int y = (int)(-localMousePosition.y / TileSizeHeight);
+
+        return new Vector2Int(x, y);
     }
 
     public InventoryItem PickUpItem(Vector2Int tilePositionOnGrid)

@@ -35,7 +35,7 @@ public class ItemHighlightController : MonoBehaviour
             return;
         }
 
-        Vector2Int positionOnGrid = currentGrid.GetTileGridPosition(Input.mousePosition);
+        Vector2Int positionOnGrid = currentGrid.GetTileGridPosition(Input.mousePosition, selectedItem);
 
         if (positionOnGrid != lastPosition)
         {
