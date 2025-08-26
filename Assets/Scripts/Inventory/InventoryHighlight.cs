@@ -25,9 +25,10 @@ public class InventoryHighlight : MonoBehaviour
 
     public void SetParent(ItemGrid targetGrid)
     {
-        if(targetGrid == null) { return; }
-        highlighter.SetParent(targetGrid.transform);
+        if (targetGrid == null) return;
+        highlighter.SetParent(targetGrid.transform, false);
     }
+
 
     public void SetPosition(ItemGrid targetGrid, InventoryItem targetItem, int posX, int posY)
     {
@@ -36,7 +37,7 @@ public class InventoryHighlight : MonoBehaviour
             posX,
             posY
             );
-        
+
         highlighter.localPosition = pos;
     }
 

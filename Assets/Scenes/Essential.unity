@@ -269,6 +269,7 @@ GameObject:
   - component: {fileID: 72065788}
   - component: {fileID: 72065790}
   - component: {fileID: 72065789}
+  - component: {fileID: 72065791}
   m_Layer: 5
   m_Name: Panel Inventory
   m_TagString: Untagged
@@ -398,8 +399,22 @@ MonoBehaviour:
   - {fileID: 11400000, guid: eed6e2e8b7c202341a4166fbeea837a9, type: 2}
   inventoryItemPrefab: {fileID: 2762296068298152622, guid: f1cdd60fb1920ac41ac6c014e1b1c463, type: 3}
   targetCanvas: {fileID: 1825286069}
-  inventoryHighlight: {fileID: 72065789}
+  itemHighlightController: {fileID: 72065791}
   selectedItemParent: {fileID: 101276631}
+--- !u!114 &72065791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 72065784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 882e6c940d81ae047b37575c3086800b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inventoryHighlight: {fileID: 72065789}
+  currentGrid: {fileID: 2120118265}
 --- !u!1 &82200467
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,50 +1,84 @@
 using UnityEngine;
 
-public class ItemHighlightController
+public class ItemHighlightController : MonoBehaviour
 {
-    private InventoryHighlight inventoryHighlight;
-    private ItemGrid currentGrid;
-    private InventoryItem itemToHighlight;
+    [SerializeField] private InventoryHighlight inventoryHighlight;
+    [SerializeField] private ItemGrid currentGrid;
+
+    private InventoryItem selectedItem;
     private Vector2Int lastPosition;
 
-    public ItemHighlightController(InventoryHighlight highlight)
-    {
-        inventoryHighlight = highlight;
-    }
-
-    public void SetParent(ItemGrid grid)
+    public void SetCurrentGrid(ItemGrid grid)
     {
         currentGrid = grid;
-        inventoryHighlight.SetParent(grid);
+        if (inventoryHighlight != null)
+            inventoryHighlight.SetParent(grid);
     }
 
-    public void UpdateHighlight(InventoryItem selectedItem, ItemGrid selectedGrid, Vector2Int positionOnGrid)
+    public void SetSelectedItem(InventoryItem item)
     {
-        if (selectedGrid == null || currentGrid == null)
+        selectedItem = item;
+    }
+
+    private void Update()
+    {
+        if (currentGrid == null || inventoryHighlight == null)
+        {
+            inventoryHighlight?.Show(false);
+            return;
+        }
+
+        Vector2Int positionOnGrid = GetMouseGridPosition();
+
+
+        if (!currentGrid.PositionCheck(positionOnGrid.x, positionOnGrid.y))
         {
             inventoryHighlight.Show(false);
             return;
         }
 
-        if (positionOnGrid == lastPosition) return;
-
-        if (!currentGrid.PositionCheck(positionOnGrid.x, positionOnGrid.y)) return;
-
-        lastPosition = positionOnGrid;
-
-        if (selectedItem == null)
+        if (positionOnGrid != lastPosition)
         {
-            HighlightExistingItem(positionOnGrid);
-        }
-        else
-        {
-            HighlightSelectedItem(selectedItem, positionOnGrid);
+            lastPosition = positionOnGrid;
+            UpdateHighlight();
         }
     }
 
-    private void HighlightExistingItem(Vector2Int positionOnGrid)
+
+    private Vector2Int GetMouseGridPosition()
     {
-        itemToHighlight = currentGrid.GetItem(positionOnGrid.x, positionOnGrid.y);
+        Vector2 mousePos = Input.mousePosition;
+
+        if (selectedItem != null)
+        {
+            mousePos.x -= (selectedItem.itemData.sizeWidth - 1) * ItemGrid.TileSizeWidth / 2;
+            mousePos.y += (selectedItem.itemData.sizeHeight - 1) * ItemGrid.TileSizeHeight / 2;
+        }
+
+        return currentGrid.GetTileGridPosition(mousePos);
+    }
+
+    private void UpdateHighlight()
+    {
+        if (selectedItem == null)
+        {
+            HighlightExistingItem();
+        }
+        else
+        {
+            HighlightSelectedItem();
+        }
+    }
+
+    private void HighlightExistingItem()
+    {
+        if (!currentGrid.PositionCheck(lastPosition.x, lastPosition.y))
+        {
+            inventoryHighlight.Show(false);
+            return;
+        }
+
+        InventoryItem itemToHighlight = currentGrid.GetItem(lastPosition.x, lastPosition.y);
 
         if (itemToHighlight != null)
         {
@@ -58,17 +92,17 @@ public class ItemHighlightController
         }
     }
 
-    private void HighlightSelectedItem(InventoryItem selectedItem, Vector2Int positionOnGrid)
+    private void HighlightSelectedItem()
     {
         bool canPlace = currentGrid.BoundaryCheck(
-            positionOnGrid.x,
-            positionOnGrid.y,
+            lastPosition.x,
+            lastPosition.y,
             selectedItem.itemData.sizeWidth,
             selectedItem.itemData.sizeHeight
         );
 
         inventoryHighlight.Show(canPlace);
         inventoryHighlight.SetSize(selectedItem);
-        inventoryHighlight.SetPosition(currentGrid, selectedItem, positionOnGrid.x, positionOnGrid.y);
+        inventoryHighlight.SetPosition(currentGrid, selectedItem, lastPosition.x, lastPosition.y);
     }
 }

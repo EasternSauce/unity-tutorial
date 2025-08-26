@@ -22,10 +22,8 @@ public class InventoryController : MonoBehaviour
     [SerializeField] GameObject inventoryItemPrefab;
     [SerializeField] Transform targetCanvas;
 
-    [SerializeField] InventoryHighlight inventoryHighlight;
+    [SerializeField] ItemHighlightController itemHighlightController;
     [SerializeField] RectTransform selectedItemParent;
-
-    private ItemHighlightController itemHighlighter;
 
     private bool isOverUIElement;
 
@@ -41,13 +39,8 @@ public class InventoryController : MonoBehaviour
         set
         {
             selectedItemGrid = value;
-            itemHighlighter.SetParent(value);
+            itemHighlightController.SetCurrentGrid(value);
         }
-    }
-
-    private void Start()
-    {
-        itemHighlighter = new ItemHighlightController(inventoryHighlight);
     }
 
     private void Update()
@@ -55,10 +48,7 @@ public class InventoryController : MonoBehaviour
         isOverUIElement = EventSystem.current.IsPointerOverGameObject();
 
         ProcessMousePosition();
-
         ProcessMouseInput();
-
-        HandleHighlight();
     }
 
     private void ProcessMousePosition()
@@ -82,18 +72,6 @@ public class InventoryController : MonoBehaviour
         if (posOnGrid == null) return;
 
         selectedItemGrid.PlaceItem(itemToInsert, posOnGrid.Value.x, posOnGrid.Value.y);
-    }
-
-    private void HandleHighlight()
-    {
-        if (selectedItemSlot != null || selectedItemGrid == null)
-        {
-            inventoryHighlight.Show(false);
-            return;
-        }
-
-        Vector2Int positionOnGrid = GetTileGridPosition();
-        itemHighlighter.UpdateHighlight(selectedItem, selectedItemGrid, positionOnGrid);
     }
 
     private void CreateRandomItem()
@@ -120,6 +98,9 @@ public class InventoryController : MonoBehaviour
         selectedItem = inventoryItem;
         selectedItemRectTransform = inventoryItem.GetComponent<RectTransform>();
         selectedItemRectTransform.SetParent(selectedItemParent);
+
+        // update highlight controller with new selected item
+        itemHighlightController.SetSelectedItem(selectedItem);
     }
 
     public void ProcessLMBPress(InputAction.CallbackContext context)
@@ -200,6 +181,9 @@ public class InventoryController : MonoBehaviour
     {
         selectedItem = null;
         selectedItemRectTransform = null;
+
+        // update highlight controller
+        itemHighlightController.SetSelectedItem(null);
     }
 
     private void ItemGridInput()
@@ -251,6 +235,7 @@ public class InventoryController : MonoBehaviour
         {
             selectedItem = overlapItem;
             selectedItemRectTransform = selectedItem.GetComponent<RectTransform>();
+            itemHighlightController.SetSelectedItem(selectedItem);
             overlapItem = null;
         }
     }
