@@ -9,14 +9,14 @@ public class EquipmentItemSlot : MonoBehaviour
 
     RectTransform slotRectTransform;
 
-    Inventory inventory;
+    PlayerInventory inventory;
 
     private void Awake()
     {
         slotRectTransform = GetComponent<RectTransform>();
     }
 
-    public void Init(Inventory inventory)
+    public void Init(PlayerInventory inventory)
     {
         this.inventory = inventory;
     }

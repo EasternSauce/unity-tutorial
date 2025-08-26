@@ -12,7 +12,7 @@ public class PickUpInteractableObject : MonoBehaviour
 
     public void PickUp(Character character)
     {
-        Inventory inventory = character.GetComponent<Inventory>();
+        PlayerInventory inventory = character.GetComponent<PlayerInventory>();
 
         if (inventory == null)
         {

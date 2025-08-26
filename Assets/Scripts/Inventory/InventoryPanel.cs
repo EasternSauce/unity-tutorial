@@ -3,7 +3,7 @@ using UnityEngine;
 public class InventoryPanel : MonoBehaviour
 {
     [SerializeField] TMPro.TextMeshProUGUI currencyText;
-    [SerializeField] Inventory playerInventory;
+    [SerializeField] PlayerInventory playerInventory;
     int currency = -1;
 
     void Update()

@@ -13,8 +13,7 @@ public class SafeNavMeshAgentActivator : MonoBehaviour
 
     IEnumerator Start()
     {
-        // Wait a short delay or until NavMesh is ready
-        yield return new WaitForSeconds(0.1f); // or wait for scene load event
+        yield return new WaitForSeconds(0.1f);
 
         if (NavMesh.SamplePosition(transform.position, out _, 1f, NavMesh.AllAreas))
         {

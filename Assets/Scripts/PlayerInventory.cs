@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Inventory : MonoBehaviour
+public class PlayerInventory : MonoBehaviour
 {
     public int currency;
     [SerializeField] ItemGrid mainInventoryItemGrid;
