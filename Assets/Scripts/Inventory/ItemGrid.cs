@@ -12,8 +12,6 @@ public class ItemGrid : MonoBehaviour
 
     RectTransform rectTransform;
 
-    Vector2Int tileGridPosition = new Vector2Int();
-
     [SerializeField] GameObject inventoryItemPrefab;
 
     public void Init()
