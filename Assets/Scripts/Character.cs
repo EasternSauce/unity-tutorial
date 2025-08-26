@@ -196,6 +196,8 @@ public class Character : MonoBehaviour, IDamageable
 
     private void LifeRegeneration()
     {
+        if (isDead) return;
+
         lifeRegen += Time.deltaTime * stats.Get(Statistic.HealthRegeneration).float_value;
         if (lifeRegen > 1f)
         {
@@ -206,14 +208,18 @@ public class Character : MonoBehaviour, IDamageable
 
     private void Heal(int value)
     {
+        if (isDead) return;
         lifePool.Restore(value);
     }
 
     public void TakeDamage(int damage)
     {
+        if (isDead) return;
+
         damage = ApplyDefence(damage);
 
         lifePool.currentValue -= damage;
+        if (lifePool.currentValue < 0) lifePool.currentValue = 0;
 
         CheckDeath();
     }
@@ -235,6 +241,7 @@ public class Character : MonoBehaviour, IDamageable
         if (!isDead && lifePool.currentValue <= 0)
         {
             isDead = true;
+            lifePool.currentValue = 0;
 
             var handler = GetComponent<CharacterCommand.CommandHandler>();
             if (handler != null)
