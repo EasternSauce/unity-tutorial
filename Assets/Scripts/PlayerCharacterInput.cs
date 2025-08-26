@@ -56,7 +56,6 @@ public class PlayerCharacterInput : MonoBehaviour
 
         if (isLMBPressed && !isOverUIElement)
         {
-            // Drop item first if dragging
             if (inventoryController.HasItemOnCursor)
             {
                 inventoryController.ThrowItemOnGround();
@@ -97,15 +96,13 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void LMB_Press_ProcessCommand()
     {
-        // 1️⃣ If dragging an item, drop it and skip movement
         if (inventoryController.HasItemOnCursor)
         {
-            inventoryController.ThrowItemOnGround(); // uses your existing drop logic
-            SetCommandLock(); // optional: prevents accidental movement immediately after drop
+            inventoryController.ThrowItemOnGround();
+            SetCommandLock();
             return;
         }
 
-        // 2️⃣ Otherwise, handle normal attacks/interact/move
         if (attackInput.AttackTargetCheck())
         {
             AttackCommand(interactInput.hoveringOverObject.gameObject);
