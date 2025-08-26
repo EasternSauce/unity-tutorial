@@ -59,7 +59,7 @@ public class PlayerCharacterInput : MonoBehaviour
             // Drop item first if dragging
             if (inventoryController.HasItemOnCursor)
             {
-                inventoryController.ThrowItemAwayProcess();
+                inventoryController.ThrowItemOnGround();
                 SetCommandLock();
                 return;
             }
@@ -100,7 +100,7 @@ public class PlayerCharacterInput : MonoBehaviour
         // 1️⃣ If dragging an item, drop it and skip movement
         if (inventoryController.HasItemOnCursor)
         {
-            inventoryController.ThrowItemAwayProcess(); // uses your existing drop logic
+            inventoryController.ThrowItemOnGround(); // uses your existing drop logic
             SetCommandLock(); // optional: prevents accidental movement immediately after drop
             return;
         }

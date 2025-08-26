@@ -174,7 +174,7 @@ public class InventoryController : MonoBehaviour
         {
             if (isOverUIElement) { return; }
 
-            ThrowItemAwayProcess();
+            ThrowItemOnGround();
         }
 
         if (SelectedItemGrid != null)
@@ -196,18 +196,28 @@ public class InventoryController : MonoBehaviour
         }
     }
 
-    public void ThrowItemAwayProcess()
+    public void ThrowItemOnGround()
     {
-        if (selectedItem == null) { return; }
-
-        ItemSpawnManager.instance.SpawnItem(GameManager.instance.playerObject.transform.position, selectedItem.itemData);
-        DestroySelectedItemObject();
-        NullSelectedItem();
+        DropItem(GameManager.instance.playerObject.transform.position, selectedItem);
     }
 
-    private void DestroySelectedItemObject()
+    public void DropItem(Vector3 dropPosition, InventoryItem itemToDrop)
     {
-        Destroy(selectedItemRectTransform.gameObject);
+        if (itemToDrop == null) return;
+
+        ItemSpawnManager.instance.SpawnItem(dropPosition, itemToDrop.itemData);
+
+        DestroyInventoryObject(itemToDrop);
+    }
+
+    private void DestroyInventoryObject(InventoryItem itemToDrop)
+    {
+        Destroy(itemToDrop.gameObject);
+
+        if (itemToDrop == selectedItem)
+        {
+            NullSelectedItem();
+        }
     }
 
     private void ItemSlotInput()

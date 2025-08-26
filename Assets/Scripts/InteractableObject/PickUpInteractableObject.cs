@@ -27,7 +27,7 @@ public class PickUpInteractableObject : MonoBehaviour
 
         if (itemData != null)
         {
-            inventory.AddItem(itemData);
+            inventory.TryAddItemOrDrop(itemData, inventory.inventoryController);
         }
 
         Destroy(gameObject);

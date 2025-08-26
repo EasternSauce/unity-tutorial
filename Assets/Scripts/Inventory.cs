@@ -5,7 +5,7 @@ public class Inventory : MonoBehaviour
 {
     public int currency;
     [SerializeField] ItemGrid mainInventoryItemGrid;
-    [SerializeField] InventoryController inventoryController;
+    [SerializeField] public InventoryController inventoryController;
 
     [SerializeField] List<EquipmentItemSlot> slots;
 
@@ -45,6 +45,21 @@ public class Inventory : MonoBehaviour
 
         InventoryItem newItem = inventoryController.CreateNewInventoryItem(itemData);
         mainInventoryItemGrid.PlaceItem(newItem, positionToPlace.Value.x, positionToPlace.Value.y);
+
+        return true;
+    }
+
+    public bool TryAddItemOrDrop(ItemData itemData, InventoryController inventoryController)
+    {
+        bool added = AddItem(itemData);
+        if (!added)
+        {
+            InventoryItem tempItem = inventoryController.CreateNewInventoryItem(itemData);
+
+            inventoryController.DropItem(GameManager.instance.playerObject.transform.position, tempItem);
+
+            return false;
+        }
 
         return true;
     }

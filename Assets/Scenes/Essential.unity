@@ -10035,6 +10035,10 @@ PrefabInstance:
       propertyPath: mouseInput
       value: 
       objectReference: {fileID: 330585548}
+    - target: {fileID: 2316572876094678181, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: inventoryController
+      value: 
+      objectReference: {fileID: 72065790}
     - target: {fileID: 3133475635027797844, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: slots.Array.size
       value: 10
