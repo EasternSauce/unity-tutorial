@@ -30,9 +30,10 @@ public class InteractInput : MonoBehaviour
         RaycastHit hit;
 
         float hoverRadius = 0.5f;
-        int layerMask = ~LayerMask.GetMask("Player");
 
-        if (Physics.SphereCast(ray, hoverRadius, out hit, float.MaxValue, layerMask))
+        int interactMask = ~LayerMask.GetMask("Player", "Terrain");
+
+        if (Physics.SphereCast(ray, hoverRadius, out hit, float.MaxValue, interactMask))
         {
             GameObject hitObject = hit.transform.gameObject;
 
@@ -63,6 +64,23 @@ public class InteractInput : MonoBehaviour
             textOnScreen.text = "";
             hpBar.Clear();
         }
+    }
+
+    public bool TryGetTerrainPoint(out Vector3 point)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+        RaycastHit hit;
+
+        int terrainMask = LayerMask.GetMask("Terrain");
+
+        if (Physics.Raycast(ray, out hit, float.MaxValue, terrainMask))
+        {
+            point = hit.point;
+            return true;
+        }
+
+        point = Vector3.zero;
+        return false;
     }
 
     private void UpdateHPBar()

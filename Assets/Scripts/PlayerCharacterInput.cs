@@ -69,9 +69,13 @@ public class PlayerCharacterInput : MonoBehaviour
                 return;
             }
 
-            MoveCommand(mouseInput.rayToWorldIntersectionPoint);
+            if (interactInput.TryGetTerrainPoint(out var point))
+            {
+                MoveCommand(point);
+            }
         }
     }
+
 
     public void LMB_InputHandle(InputAction.CallbackContext callbackContext)
     {
@@ -117,7 +121,10 @@ public class PlayerCharacterInput : MonoBehaviour
             return;
         }
 
-        MoveCommand(mouseInput.rayToWorldIntersectionPoint);
+        if (interactInput.TryGetTerrainPoint(out var point))
+        {
+            MoveCommand(point);
+        }
     }
 
     private void SetCommandLock()
