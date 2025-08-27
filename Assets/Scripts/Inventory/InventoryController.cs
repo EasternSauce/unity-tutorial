@@ -188,7 +188,10 @@ public class InventoryController : MonoBehaviour
 
     private void ItemGridInput()
     {
-        positionOnGrid = GetTileGridPosition();
+        // Use the unified grid calculation (same as highlight)
+        positionOnGrid = selectedItemGrid.GetTileGridPosition(mousePosition,
+            selectedItemController.HasItem ? selectedItemController.SelectedItem : null);
+
         if (!selectedItemController.HasItem)
         {
             InventoryItem itemToSelect = selectedItemGrid.PickUpItem(positionOnGrid);
@@ -202,19 +205,6 @@ public class InventoryController : MonoBehaviour
         {
             PlaceItemInput();
         }
-    }
-
-    private Vector2Int GetTileGridPosition()
-    {
-        Vector2 position = mousePosition;
-        if (selectedItemController.HasItem)
-        {
-            InventoryItem selectedItem = selectedItemController.SelectedItem;
-            position.x -= (selectedItem.itemData.sizeWidth - 1) * ItemGrid.TileSizeWidth / 2;
-            position.y += (selectedItem.itemData.sizeHeight - 1) * ItemGrid.TileSizeHeight / 2;
-        }
-
-        return selectedItemGrid.GetTileGridPosition(position);
     }
 
     private void PlaceItemInput()

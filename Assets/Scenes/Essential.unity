@@ -400,8 +400,8 @@ MonoBehaviour:
   inventoryItemPrefab: {fileID: 2762296068298152622, guid: f1cdd60fb1920ac41ac6c014e1b1c463, type: 3}
   targetCanvas: {fileID: 1825286069}
   itemHighlightController: {fileID: 72065791}
-  selectedItemParent: {fileID: 0}
-  selectedItemController: {fileID: 0}
+  selectedItemParent: {fileID: 101276631}
+  selectedItemController: {fileID: 1825286070}
 --- !u!114 &72065791
 MonoBehaviour:
   m_ObjectHideFlags: 0

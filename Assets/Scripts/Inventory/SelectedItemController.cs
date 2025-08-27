@@ -29,8 +29,7 @@ public class SelectedItemController : MonoBehaviour
 
         SelectedItem = item;
         selectedItemRectTransform = item.GetComponent<RectTransform>();
-
-        selectedItemRectTransform.SetParent(parentTransform);
+        selectedItemRectTransform.SetParent(parentTransform, true);
         selectedItemRectTransform.localScale = Vector3.one;
         selectedItemRectTransform.pivot = new Vector2(0.5f, 0.5f);
         selectedItemRectTransform.SetAsLastSibling();
