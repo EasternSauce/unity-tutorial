@@ -15,6 +15,7 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private ItemHighlightController itemHighlightController;
     [SerializeField] private RectTransform selectedItemParent;
     [SerializeField] private SelectedItemController selectedItemController;
+    [SerializeField] private InventoryGridHandler gridHandler; // new reference
 
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
@@ -35,6 +36,12 @@ public class InventoryController : MonoBehaviour
         {
             selectedItemGrid = value;
             itemHighlightController.SetCurrentGrid(value);
+
+            // Update the grid handler's current grid as well
+            if (gridHandler != null)
+            {
+                gridHandler.SetCurrentGrid(value);
+            }
         }
     }
 
@@ -44,16 +51,16 @@ public class InventoryController : MonoBehaviour
         {
             selectedItemController = FindFirstObjectByType<SelectedItemController>();
         }
+
+        if (gridHandler == null)
+        {
+            gridHandler = FindFirstObjectByType<InventoryGridHandler>();
+        }
     }
 
     private void Update()
     {
         isOverUIElement = EventSystem.current.IsPointerOverGameObject();
-        ProcessMousePosition();
-    }
-
-    private void ProcessMousePosition()
-    {
         mousePosition = mouseInput.mouseInputPosition;
     }
 
@@ -188,8 +195,14 @@ public class InventoryController : MonoBehaviour
 
     private void ItemGridInput()
     {
-        // Use the unified grid calculation (same as highlight)
-        positionOnGrid = selectedItemGrid.GetTileGridPosition(mousePosition,
+        if (gridHandler == null)
+        {
+            Debug.LogWarning("InventoryController: InventoryGridHandler is not assigned.");
+            return;
+        }
+
+        // Use InventoryGridHandler for consistent grid position calculation
+        positionOnGrid = gridHandler.GetTileGridPosition(mousePosition,
             selectedItemController.HasItem ? selectedItemController.SelectedItem : null);
 
         if (!selectedItemController.HasItem)
@@ -217,22 +230,17 @@ public class InventoryController : MonoBehaviour
                 selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight))
             return;
 
-        List<InventoryItem> overlappedItems = selectedItemGrid.GetOverlappingItems(
+        var overlappedItems = selectedItemGrid.GetOverlappingItems(
             positionOnGrid.x, positionOnGrid.y,
             selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight
         );
 
-        if (overlappedItems.Count > 1)
-        {
-            return;
-        }
+        if (overlappedItems.Count > 1) return;
 
         InventoryItem overlapItem = overlappedItems.Count == 1 ? overlappedItems[0] : null;
 
         if (overlapItem != null)
-        {
             selectedItemGrid.ClearGridFromItem(overlapItem);
-        }
 
         selectedItemGrid.PlaceItem(selectedItem, positionOnGrid.x, positionOnGrid.y);
 
