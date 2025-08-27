@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemGrid : MonoBehaviour
@@ -165,30 +166,24 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-    public bool CheckOverlap(int posX, int posY, int sizeWidth, int sizeHeight, ref InventoryItem overlapItem)
+    public List<InventoryItem> GetOverlappingItems(int posX, int posY, int sizeWidth, int sizeHeight)
     {
+        List<InventoryItem> overlappedItems = new List<InventoryItem>();
+
         for (int x = 0; x < sizeWidth; x++)
         {
             for (int y = 0; y < sizeHeight; y++)
             {
-                if (inventoryItemGrid[posX + x, posY + y] != null)
+                InventoryItem item = inventoryItemGrid[posX + x, posY + y];
+                if (item != null && !overlappedItems.Contains(item))
                 {
-                    if (overlapItem == null)
-                    {
-                        overlapItem = inventoryItemGrid[posX + x, posY + y];
-                    }
-                    else
-                    {
-                        if (overlapItem != inventoryItemGrid[posX + x, posY + y])
-                        {
-                            return false;
-                        }
-                    }
+                    overlappedItems.Add(item);
                 }
             }
         }
 
-        return true;
+        return overlappedItems;
     }
+
 
 }

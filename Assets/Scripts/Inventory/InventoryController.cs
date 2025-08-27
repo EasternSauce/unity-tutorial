@@ -20,7 +20,6 @@ public class InventoryController : MonoBehaviour
     private EquipmentItemSlot selectedItemSlot;
     private Vector2 mousePosition;
     private Vector2Int positionOnGrid;
-    private InventoryItem overlapItem;
     private bool isOverUIElement;
 
     public EquipmentItemSlot SelectedItemSlot
@@ -50,7 +49,6 @@ public class InventoryController : MonoBehaviour
     private void Update()
     {
         isOverUIElement = EventSystem.current.IsPointerOverGameObject();
-
         ProcessMousePosition();
     }
 
@@ -229,10 +227,19 @@ public class InventoryController : MonoBehaviour
                 selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight))
             return;
 
-        bool hasOverlap = selectedItemGrid.CheckOverlap(positionOnGrid.x, positionOnGrid.y,
-            selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight, ref overlapItem);
+        List<InventoryItem> overlappedItems = selectedItemGrid.GetOverlappingItems(
+            positionOnGrid.x, positionOnGrid.y,
+            selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight
+        );
 
-        if (hasOverlap && overlapItem != null)
+        if (overlappedItems.Count > 1)
+        {
+            return;
+        }
+
+        InventoryItem overlapItem = overlappedItems.Count == 1 ? overlappedItems[0] : null;
+
+        if (overlapItem != null)
         {
             selectedItemGrid.ClearGridFromItem(overlapItem);
         }
@@ -246,7 +253,6 @@ public class InventoryController : MonoBehaviour
         {
             selectedItemController.SetSelectedItem(overlapItem);
             itemHighlightController.SetSelectedItem(overlapItem);
-            overlapItem = null;
         }
     }
 }
