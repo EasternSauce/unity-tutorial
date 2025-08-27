@@ -8,6 +8,8 @@ public class UiPanelManager : MonoBehaviour
 
     private bool canOpenPanels = true;
 
+    public bool IsInventoryOpen => inventoryPanel.activeInHierarchy && canOpenPanels;
+
     private void Start()
     {
         if (GameManager.instance != null && GameManager.instance.playerObject != null)
@@ -44,8 +46,17 @@ public class UiPanelManager : MonoBehaviour
     public void OpenInventory()
     {
         if (!canOpenPanels) return;
-        inventoryPanel.SetActive(!inventoryPanel.activeInHierarchy);
+        bool newState = !inventoryPanel.activeInHierarchy;
+        inventoryPanel.SetActive(newState);
+
+        if (newState)
+        {
+            var highlight = FindFirstObjectByType<ItemHighlightController>();
+            if (highlight != null)
+                highlight.ClearHighlight();
+        }
     }
+
 
     public void OpenStats()
     {

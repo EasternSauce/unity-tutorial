@@ -101,24 +101,36 @@ public class InventoryController : MonoBehaviour
     {
         if (context.phase != InputActionPhase.Started) return;
 
-        if (selectedItemController == null)
-        {
-            Debug.LogWarning("SelectedItemController not assigned!");
-            return;
-        }
+        bool hasItem = selectedItemController.HasItem;
+        bool inventoryOpen = FindFirstObjectByType<UiPanelManager>().IsInventoryOpen;
 
-        if (SelectedItemGrid == null && selectedItemSlot == null)
+        if (inventoryOpen)
         {
-            if (isOverUIElement) return;
-            if (selectedItemController.HasItem)
+            if (SelectedItemGrid != null)
+            {
+                ItemGridInput();
+                return;
+            }
+
+            if (selectedItemSlot != null)
+            {
+                ItemSlotInput();
+                return;
+            }
+
+            if (hasItem && !isOverUIElement)
+            {
                 ThrowItemOnGround();
+            }
+
             return;
         }
 
-        if (SelectedItemGrid != null) ItemGridInput();
-        if (selectedItemSlot != null) ItemSlotInput();
+        if (hasItem)
+        {
+            ThrowItemOnGround();
+        }
     }
-
 
     public void ThrowItemOnGround()
     {
