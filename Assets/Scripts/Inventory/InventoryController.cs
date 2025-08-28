@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -21,7 +20,6 @@ public class InventoryController : MonoBehaviour
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
     private Vector2 mousePosition;
-    private Vector2Int positionOnGrid;
 
     public EquipmentItemSlot SelectedItemSlot
     {
@@ -36,7 +34,6 @@ public class InventoryController : MonoBehaviour
         {
             selectedItemGrid = value;
             itemHighlightController.SetCurrentGrid(value);
-
             if (gridHandler != null)
             {
                 gridHandler.SetCurrentGrid(value);
@@ -108,7 +105,7 @@ public class InventoryController : MonoBehaviour
 
         if (SelectedItemGrid != null)
         {
-            gridHandler.ItemGridInput(mousePosition, selectedItemController, itemHighlightController, defeatHandler);
+            gridHandler.ItemGridInput();
             return;
         }
 
@@ -123,7 +120,6 @@ public class InventoryController : MonoBehaviour
             ThrowItemOnGround();
         }
     }
-
 
     private bool IsPointerOverUI(Vector2 screenPosition)
     {
@@ -151,10 +147,7 @@ public class InventoryController : MonoBehaviour
     {
         if (itemToDrop == null) return;
 
-        // Use ItemSpawnManager to spawn the item in the current area's scene
         ItemSpawnManager.instance.SpawnItem(dropPosition, itemToDrop.itemData);
-
-        // Destroy the inventory object
         Destroy(itemToDrop.gameObject);
     }
 
@@ -196,5 +189,4 @@ public class InventoryController : MonoBehaviour
             itemHighlightController.SetSelectedItem(replacedItem);
         }
     }
-
 }

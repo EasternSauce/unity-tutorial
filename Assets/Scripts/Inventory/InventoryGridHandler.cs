@@ -1,8 +1,23 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryGridHandler : MonoBehaviour
 {
+    [SerializeField] private MouseInput mouseInput;
+    [SerializeField] private SelectedItemController selectedItemController;
+    [SerializeField] private ItemHighlightController itemHighlightController;
+    [SerializeField] private CharacterDefeatHandler defeatHandler;
+
     private ItemGrid currentGrid;
+
+    private void Awake()
+    {
+        if (mouseInput == null) mouseInput = FindFirstObjectByType<MouseInput>();
+        if (selectedItemController == null) selectedItemController = FindFirstObjectByType<SelectedItemController>();
+        if (itemHighlightController == null) itemHighlightController = FindFirstObjectByType<ItemHighlightController>();
+        if (defeatHandler == null) defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
+    }
 
     public void SetCurrentGrid(ItemGrid grid)
     {
@@ -48,7 +63,7 @@ public class InventoryGridHandler : MonoBehaviour
         grid.PlaceItem(itemToInsert, posOnGrid.Value.x, posOnGrid.Value.y);
     }
 
-    public void PlaceItemInput(ItemGrid grid, InventoryItem selectedItem, SelectedItemController selectedItemController, ItemHighlightController itemHighlightController, Vector2Int positionOnGrid)
+    public void PlaceItemInput(ItemGrid grid, InventoryItem selectedItem, Vector2Int positionOnGrid)
     {
         if (selectedItem == null || grid == null) return;
 
@@ -81,11 +96,12 @@ public class InventoryGridHandler : MonoBehaviour
         }
     }
 
-    public void ItemGridInput(Vector2 mousePosition, SelectedItemController selectedItemController, ItemHighlightController itemHighlightController, CharacterDefeatHandler defeatHandler)
+    public void ItemGridInput()
     {
         if (currentGrid == null || defeatHandler != null && defeatHandler.IsDefeated)
             return;
 
+        Vector2 mousePosition = mouseInput.mouseInputPosition;
         Vector2Int positionOnGrid = GetTileGridPosition(mousePosition,
             selectedItemController.HasItem ? selectedItemController.SelectedItem : null);
 
@@ -103,7 +119,7 @@ public class InventoryGridHandler : MonoBehaviour
         }
         else
         {
-            PlaceItemInput(currentGrid, selectedItemController.SelectedItem, selectedItemController, itemHighlightController, positionOnGrid);
+            PlaceItemInput(currentGrid, selectedItemController.SelectedItem, positionOnGrid);
         }
     }
 }
