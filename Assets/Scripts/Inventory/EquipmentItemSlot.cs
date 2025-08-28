@@ -29,9 +29,7 @@ public class EquipmentItemSlot : MonoBehaviour
     public InventoryItem ReplaceItem(InventoryItem itemToPlace)
     {
         InventoryItem replaceItem = PickUpItem();
-
         PlaceItem(itemToPlace);
-
         return replaceItem;
     }
 
@@ -62,6 +60,11 @@ public class EquipmentItemSlot : MonoBehaviour
         {
             Debug.LogWarning("Item does not have RectTransform.");
         }
+
+        if (itemToPlace.itemData.equipmentSlot == EquipmentSlot.Weapon)
+        {
+            inventory.UpdateCurrentWeapon();
+        }
     }
 
     public InventoryItem PickUpItem()
@@ -73,13 +76,14 @@ public class EquipmentItemSlot : MonoBehaviour
             ClearSlot(pickUpItem);
         }
 
+        inventory.UpdateCurrentWeapon();
+
         return pickUpItem;
     }
 
     private void ClearSlot(InventoryItem pickUpItem)
     {
         itemInSlot = null;
-
         RectTransform rt = pickUpItem.GetComponent<RectTransform>();
         rt.SetParent(null);
     }
@@ -114,5 +118,10 @@ public class EquipmentItemSlot : MonoBehaviour
                 itemHighlightController?.SetSelectedItem(replacedItem);
             }
         }
+    }
+
+    public InventoryItem GetItem()
+    {
+        return itemInSlot;
     }
 }

@@ -41,25 +41,19 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private void AnimationTimerTick()
     {
         if (animationTimer > 0f)
-        {
             animationTimer -= Time.deltaTime;
-        }
     }
 
     private void AttackTimerTick()
     {
         if (attackTimer > 0f)
-        {
             attackTimer -= Time.deltaTime;
-        }
     }
 
     float GetAttackTime()
     {
         float attackTime = defaultTimeToAttack;
-
         attackTime /= character.GetStatsValue(Statistic.AttackSpeed).float_value;
-
         return attackTime;
     }
 
@@ -71,7 +65,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         float attackBuffer = 0.1f;
 
         Transform targetTransform = command.target.transform;
-
         RotateTowardsTarget(targetTransform);
 
         if (distance <= attackRange + attackBuffer)
@@ -85,12 +78,29 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
             ResetAttackTimer();
             SetAnimationTimer();
-            animator.SetTrigger("Attack");
+
+            // Determine trigger based on current weapon
+            string attackTrigger = "MeleeAttack"; // default
+            PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+            InventoryItem weapon = playerInventory?.CurrentWeapon;
+
+            if (weapon != null && weapon.itemData.weaponType != WeaponType.None)
+            {
+                switch (weapon.itemData.weaponType)
+                {
+                    case WeaponType.Melee:
+                        attackTrigger = "MeleeAttack";
+                        break;
+                    case WeaponType.Bow:
+                        attackTrigger = "BowAttack";
+                        break;
+                }
+            }
+
+            animator.SetTrigger(attackTrigger);
 
             if (attackCoroutine != null)
-            {
                 StopCoroutine(attackCoroutine);
-            }
 
             attackCoroutine = StartCoroutine(DelayedDamage(command));
         }
@@ -128,9 +138,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         DealDamage(command);
         command.isComplete = true;
-
         characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
-
         attackCoroutine = null;
     }
 
@@ -141,8 +149,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     public bool CheckAttack()
     {
-        if (attackTimer > 0f) { return false; }
-        return true;
+        return attackTimer <= 0f;
     }
 
     private void RotateTowardsTarget(Transform target, bool forceInstant = false)
@@ -160,14 +167,9 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         bool attackReady = CheckAttack();
 
         if (forceInstant || attackReady || isMoving)
-        {
             transform.rotation = targetRotation;
-        }
         else
-        {
-            float rotationSpeed = 3f;
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-        }
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);
     }
 
     private void ResetAttackTimer()
@@ -185,7 +187,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     public void ResetState()
     {
         animationTimer = 0f;
-        animator.ResetTrigger("Attack");
+        animator.ResetTrigger("MeleeAttack");
+        animator.ResetTrigger("BowAttack");
 
         if (attackCoroutine != null)
         {

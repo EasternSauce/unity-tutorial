@@ -4,14 +4,15 @@ using UnityEngine;
 public class PlayerInventory : MonoBehaviour
 {
     public int currency;
+
     [SerializeField] ItemGrid mainInventoryItemGrid;
     [SerializeField] public InventoryController inventoryController;
-
     [SerializeField] List<EquipmentItemSlot> slots;
 
     Character character;
-
     [SerializeField] List<ItemData> itemsOnStart;
+
+    public InventoryItem CurrentWeapon { get; private set; }
 
     private void Start()
     {
@@ -23,6 +24,8 @@ public class PlayerInventory : MonoBehaviour
         }
 
         character = GetComponent<Character>();
+
+        UpdateCurrentWeapon();
 
         if (itemsOnStart == null) { return; }
 
@@ -55,9 +58,7 @@ public class PlayerInventory : MonoBehaviour
         if (!added)
         {
             InventoryItem tempItem = inventoryController.CreateNewInventoryItem(itemData);
-
             inventoryController.DropItem(GameManager.instance.playerObject.transform.position, tempItem);
-
             return false;
         }
 
@@ -72,5 +73,20 @@ public class PlayerInventory : MonoBehaviour
     public void SubtractStats(List<StatsValue> stats)
     {
         character.SubstractStats(stats);
+    }
+
+
+    public void UpdateCurrentWeapon()
+    {
+        CurrentWeapon = null;
+        foreach (var slot in slots)
+        {
+            var item = slot.GetItem();
+            if (item != null && item.itemData.equipmentSlot == EquipmentSlot.Weapon)
+            {
+                CurrentWeapon = item;
+                break;
+            }
+        }
     }
 }
