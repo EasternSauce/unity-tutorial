@@ -37,7 +37,6 @@ public class InventoryController : MonoBehaviour
             selectedItemGrid = value;
             itemHighlightController.SetCurrentGrid(value);
 
-            // Update the grid handler's current grid as well
             if (gridHandler != null)
             {
                 gridHandler.SetCurrentGrid(value);
@@ -201,7 +200,6 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        // Use InventoryGridHandler for consistent grid position calculation
         positionOnGrid = gridHandler.GetTileGridPosition(mousePosition,
             selectedItemController.HasItem ? selectedItemController.SelectedItem : null);
 

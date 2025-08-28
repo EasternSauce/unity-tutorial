@@ -14,17 +14,28 @@ public class ItemHighlightController : MonoBehaviour
         currentGrid = grid;
         if (inventoryHighlight != null)
             inventoryHighlight.SetParent(grid);
+
         parentCanvas = grid != null ? grid.GetComponentInParent<Canvas>() : null;
+
         if (currentGrid == null || inventoryHighlight == null)
         {
             ClearHighlight();
             return;
         }
+
         if (!currentGrid.gameObject.activeInHierarchy)
         {
             ClearHighlight();
             return;
         }
+
+        // 🔧 NEW: Don’t try to place highlight if mouse isn’t inside the grid yet
+        if (!IsPointerInsideGrid())
+        {
+            ClearHighlight();
+            return;
+        }
+
         Vector2Int pos = currentGrid.GetTileGridPosition(Input.mousePosition, selectedItem);
         lastPosition = pos;
         UpdateHighlight(pos);
