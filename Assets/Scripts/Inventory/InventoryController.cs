@@ -10,7 +10,7 @@ public class InventoryController : MonoBehaviour
 
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
-    private GameObject selectedItemParentGO;
+    private GameObject selectedItemParentGameObject;
 
     public EquipmentItemSlot SelectedItemSlot
     {
@@ -38,14 +38,14 @@ public class InventoryController : MonoBehaviour
 
     private void CreateSelectedItemParentIfMissing()
     {
-        if (selectedItemParentGO == null)
+        if (selectedItemParentGameObject == null)
         {
-            selectedItemParentGO = GameObject.Find("SelectedItemContainer");
-            if (selectedItemParentGO == null)
+            selectedItemParentGameObject = GameObject.Find("SelectedItemContainer");
+            if (selectedItemParentGameObject == null)
             {
-                selectedItemParentGO = new GameObject("SelectedItemContainer");
+                selectedItemParentGameObject = new GameObject("SelectedItemContainer");
                 if (targetCanvas != null)
-                    selectedItemParentGO.transform.SetParent(targetCanvas, false);
+                    selectedItemParentGameObject.transform.SetParent(targetCanvas, false);
             }
         }
     }
@@ -54,8 +54,8 @@ public class InventoryController : MonoBehaviour
     {
         if (item == null) return;
         CreateSelectedItemParentIfMissing();
-        if (item.transform.parent != selectedItemParentGO.transform)
-            item.transform.SetParent(selectedItemParentGO.transform, false);
+        if (item.transform.parent != selectedItemParentGameObject.transform)
+            item.transform.SetParent(selectedItemParentGameObject.transform, false);
     }
 
     public void HandlePrimaryClick(Vector2 mousePosition)
