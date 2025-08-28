@@ -1,25 +1,25 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class InventoryController : MonoBehaviour
 {
     public bool HasItemOnCursor => selectedItemController != null && selectedItemController.HasItem;
     public InventoryGridHandler GridHandler => gridHandler;
+    public SelectedItemController SelectedItemController => selectedItemController;
+    public ItemHighlightController ItemHighlightController => itemHighlightController;
+    public Vector2 MousePosition { get; set; }
 
     [SerializeField] private MouseInput mouseInput;
     [SerializeField] private List<ItemData> itemDatas;
     [SerializeField] private GameObject inventoryItemPrefab;
     [SerializeField] private Transform targetCanvas;
     [SerializeField] private ItemHighlightController itemHighlightController;
-    [SerializeField] private RectTransform selectedItemParent;
     [SerializeField] private SelectedItemController selectedItemController;
     [SerializeField] private InventoryGridHandler gridHandler;
     [SerializeField] private CharacterDefeatHandler defeatHandler;
 
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
-    private Vector2 mousePosition;
 
     public EquipmentItemSlot SelectedItemSlot
     {
@@ -33,41 +33,24 @@ public class InventoryController : MonoBehaviour
         set
         {
             selectedItemGrid = value;
-            if (itemHighlightController != null)
-                itemHighlightController.SetCurrentGrid(value);
-            if (gridHandler != null)
-                gridHandler.SetCurrentGrid(value);
+            itemHighlightController?.SetCurrentGrid(value);
+            gridHandler?.SetCurrentGrid(value);
         }
     }
 
     private void Awake()
     {
         if (selectedItemController == null)
-        {
             selectedItemController = FindFirstObjectByType<SelectedItemController>();
-        }
 
         if (gridHandler == null)
-        {
             gridHandler = FindFirstObjectByType<InventoryGridHandler>();
-        }
 
         if (defeatHandler == null)
-        {
             defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
-        }
 
         if (mouseInput == null)
-        {
             mouseInput = FindFirstObjectByType<MouseInput>();
-            if (mouseInput == null) Debug.LogError("InventoryController: MouseInput is missing.");
-        }
-    }
-
-    private void Update()
-    {
-        if (mouseInput == null) return;
-        mousePosition = mouseInput.mouseInputPosition;
     }
 
     public void InsertRandomItem()

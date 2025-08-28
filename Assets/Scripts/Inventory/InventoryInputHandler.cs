@@ -25,9 +25,12 @@ public class InventoryInputHandler : MonoBehaviour
 
     private void ProcessLMBPress()
     {
-        if (inventoryController.SelectedItemGrid != null && inventoryController.GridHandler != null)
+        var grid = inventoryController.SelectedItemGrid;
+        var gridHandler = inventoryController.GridHandler;
+
+        if (grid != null && gridHandler != null)
         {
-            inventoryController.GridHandler.ItemGridInput();
+            HandleGridClick(grid, gridHandler);
             return;
         }
 
@@ -42,6 +45,30 @@ public class InventoryInputHandler : MonoBehaviour
             bool overUI = IsPointerOverUI(UnityEngine.Input.mousePosition);
             if (!overUI)
                 inventoryController.ThrowItemOnGround();
+        }
+    }
+
+    private void HandleGridClick(ItemGrid grid, InventoryGridHandler gridHandler)
+    {
+        InventoryItem selectedItem = inventoryController.SelectedItemController.HasItem
+            ? inventoryController.SelectedItemController.SelectedItem
+            : null;
+
+        Vector2 mousePos = UnityEngine.Input.mousePosition;
+        Vector2Int tilePos = gridHandler.GetTileGridPosition(mousePos, selectedItem);
+
+        if (selectedItem != null)
+        {
+            gridHandler.PlaceItemInput(grid, selectedItem, tilePos);
+        }
+        else
+        {
+            InventoryItem item = grid.PickUpItem(tilePos);
+            if (item != null)
+            {
+                inventoryController.SelectedItemController.PickUp(item);
+                inventoryController.ItemHighlightController?.SetSelectedItem(item);
+            }
         }
     }
 
