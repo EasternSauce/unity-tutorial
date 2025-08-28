@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,10 +12,28 @@ public class InventoryGridHandler : MonoBehaviour
 
     private void Awake()
     {
-        if (mouseInput == null) mouseInput = FindFirstObjectByType<MouseInput>();
-        if (selectedItemController == null) selectedItemController = FindFirstObjectByType<SelectedItemController>();
-        if (itemHighlightController == null) itemHighlightController = FindFirstObjectByType<ItemHighlightController>();
-        if (defeatHandler == null) defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
+        if (mouseInput == null)
+        {
+            mouseInput = FindFirstObjectByType<MouseInput>();
+            if (mouseInput == null) Debug.LogError("InventoryGridHandler: MouseInput is missing.");
+        }
+
+        if (selectedItemController == null)
+        {
+            selectedItemController = FindFirstObjectByType<SelectedItemController>();
+            if (selectedItemController == null) Debug.LogError("InventoryGridHandler: SelectedItemController is missing.");
+        }
+
+        if (itemHighlightController == null)
+        {
+            itemHighlightController = FindFirstObjectByType<ItemHighlightController>();
+            if (itemHighlightController == null) Debug.LogError("InventoryGridHandler: ItemHighlightController is missing.");
+        }
+
+        if (defeatHandler == null)
+        {
+            defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
+        }
     }
 
     public void SetCurrentGrid(ItemGrid grid)
@@ -26,20 +43,10 @@ public class InventoryGridHandler : MonoBehaviour
 
     public Vector2Int GetTileGridPosition(Vector2 mousePosition, InventoryItem item = null)
     {
-        if (currentGrid == null)
-        {
-            Debug.LogWarning("InventoryGridHandler: No grid set for GetTileGridPosition.");
-            return Vector2Int.zero;
-        }
+        if (currentGrid == null) return Vector2Int.zero;
 
         RectTransform rectTransform = currentGrid.GetComponent<RectTransform>();
-
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            rectTransform,
-            mousePosition,
-            null,
-            out Vector2 localMousePosition
-        );
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, mousePosition, null, out Vector2 localMousePosition);
 
         if (item != null)
         {
@@ -55,7 +62,7 @@ public class InventoryGridHandler : MonoBehaviour
 
     public void InsertItem(ItemGrid grid, InventoryItem itemToInsert)
     {
-        if (grid == null) return;
+        if (grid == null || itemToInsert == null) return;
 
         Vector2Int? posOnGrid = grid.FindSpaceForObject(itemToInsert.itemData);
         if (posOnGrid == null) return;
@@ -67,16 +74,10 @@ public class InventoryGridHandler : MonoBehaviour
     {
         if (selectedItem == null || grid == null) return;
 
-        if (!grid.BoundaryCheck(
-                positionOnGrid.x, positionOnGrid.y,
-                selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight))
+        if (!grid.BoundaryCheck(positionOnGrid.x, positionOnGrid.y, selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight))
             return;
 
-        var overlappedItems = grid.GetOverlappingItems(
-            positionOnGrid.x, positionOnGrid.y,
-            selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight
-        );
-
+        var overlappedItems = grid.GetOverlappingItems(positionOnGrid.x, positionOnGrid.y, selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight);
         if (overlappedItems.Count > 1) return;
 
         InventoryItem overlapItem = overlappedItems.Count == 1 ? overlappedItems[0] : null;
@@ -86,27 +87,26 @@ public class InventoryGridHandler : MonoBehaviour
 
         grid.PlaceItem(selectedItem, positionOnGrid.x, positionOnGrid.y);
 
-        selectedItemController.ClearSelectedItem();
-        itemHighlightController.SetSelectedItem(null);
+        selectedItemController?.ClearSelectedItem();
+        itemHighlightController?.SetSelectedItem(null);
 
         if (overlapItem != null)
         {
-            selectedItemController.SetSelectedItem(overlapItem);
-            itemHighlightController.SetSelectedItem(overlapItem);
+            selectedItemController?.SetSelectedItem(overlapItem);
+            itemHighlightController?.SetSelectedItem(overlapItem);
         }
     }
 
     public void ItemGridInput()
     {
-        if (currentGrid == null || defeatHandler != null && defeatHandler.IsDefeated)
-            return;
+        if (currentGrid == null || (defeatHandler != null && defeatHandler.IsDefeated)) return;
+
+        if (mouseInput == null || selectedItemController == null) return;
 
         Vector2 mousePosition = mouseInput.mouseInputPosition;
-        Vector2Int positionOnGrid = GetTileGridPosition(mousePosition,
-            selectedItemController.HasItem ? selectedItemController.SelectedItem : null);
+        Vector2Int positionOnGrid = GetTileGridPosition(mousePosition, selectedItemController.HasItem ? selectedItemController.SelectedItem : null);
 
-        if (!currentGrid.PositionCheck(positionOnGrid.x, positionOnGrid.y))
-            return;
+        if (!currentGrid.PositionCheck(positionOnGrid.x, positionOnGrid.y)) return;
 
         if (!selectedItemController.HasItem)
         {
@@ -114,7 +114,7 @@ public class InventoryGridHandler : MonoBehaviour
             if (itemToSelect != null)
             {
                 selectedItemController.PickUp(itemToSelect);
-                itemHighlightController.SetSelectedItem(itemToSelect);
+                itemHighlightController?.SetSelectedItem(itemToSelect);
             }
         }
         else

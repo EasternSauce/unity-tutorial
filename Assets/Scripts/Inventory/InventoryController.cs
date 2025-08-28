@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 
 public class InventoryController : MonoBehaviour
 {
-    public bool HasItemOnCursor => selectedItemController.HasItem;
+    public bool HasItemOnCursor => selectedItemController != null && selectedItemController.HasItem;
+    public InventoryGridHandler GridHandler => gridHandler;
 
     [SerializeField] private MouseInput mouseInput;
     [SerializeField] private List<ItemData> itemDatas;
@@ -33,138 +33,102 @@ public class InventoryController : MonoBehaviour
         set
         {
             selectedItemGrid = value;
-            itemHighlightController.SetCurrentGrid(value);
+            if (itemHighlightController != null)
+                itemHighlightController.SetCurrentGrid(value);
             if (gridHandler != null)
-            {
                 gridHandler.SetCurrentGrid(value);
-            }
         }
     }
 
     private void Awake()
     {
         if (selectedItemController == null)
+        {
             selectedItemController = FindFirstObjectByType<SelectedItemController>();
+        }
 
         if (gridHandler == null)
+        {
             gridHandler = FindFirstObjectByType<InventoryGridHandler>();
+        }
 
         if (defeatHandler == null)
+        {
             defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
+        }
+
+        if (mouseInput == null)
+        {
+            mouseInput = FindFirstObjectByType<MouseInput>();
+            if (mouseInput == null) Debug.LogError("InventoryController: MouseInput is missing.");
+        }
     }
 
     private void Update()
     {
+        if (mouseInput == null) return;
         mousePosition = mouseInput.mouseInputPosition;
     }
 
-    private void InsertRandomItem()
+    public void InsertRandomItem()
     {
-        if (selectedItemGrid == null) return;
+        if (selectedItemGrid == null || selectedItemController == null) return;
 
         CreateRandomItem();
         InventoryItem itemToInsert = selectedItemController.SelectedItem;
         selectedItemController.ClearSelectedItem();
-        gridHandler.InsertItem(selectedItemGrid, itemToInsert);
+        gridHandler?.InsertItem(selectedItemGrid, itemToInsert);
     }
 
     private void CreateRandomItem()
     {
-        if (selectedItemController.HasItem) return;
+        if (selectedItemController.HasItem || itemDatas == null || itemDatas.Count == 0) return;
 
-        int selectedItemId = UnityEngine.Random.Range(0, itemDatas.Count);
+        int selectedItemId = Random.Range(0, itemDatas.Count);
         InventoryItem newItem = CreateNewInventoryItem(itemDatas[selectedItemId]);
         selectedItemController.SetSelectedItem(newItem);
-        itemHighlightController.SetSelectedItem(newItem);
+        itemHighlightController?.SetSelectedItem(newItem);
     }
 
     public InventoryItem CreateNewInventoryItem(ItemData itemData)
     {
+        if (inventoryItemPrefab == null || targetCanvas == null) return null;
+
         GameObject newItemGO = Instantiate(inventoryItemPrefab, targetCanvas);
         InventoryItem newInventoryItem = newItemGO.GetComponent<InventoryItem>();
         RectTransform newItemRectTransform = newItemGO.GetComponent<RectTransform>();
         newItemRectTransform.SetParent(targetCanvas);
-        newInventoryItem.Set(itemData);
+        newInventoryItem?.Set(itemData);
         return newInventoryItem;
-    }
-
-    public void ProcessLMBPress(InputAction.CallbackContext context)
-    {
-        if (context.phase != InputActionPhase.Started) return;
-
-        if (defeatHandler == null)
-            defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
-
-        if (defeatHandler != null && defeatHandler.IsDefeated)
-            return;
-
-        mousePosition = mouseInput.mouseInputPosition;
-        bool hasItem = selectedItemController.HasItem;
-
-        bool overUI = IsPointerOverUI(mousePosition);
-
-        if (SelectedItemGrid != null)
-        {
-            gridHandler.ItemGridInput();
-            return;
-        }
-
-        if (selectedItemSlot != null)
-        {
-            ItemSlotInput();
-            return;
-        }
-
-        if (hasItem && !overUI)
-        {
-            ThrowItemOnGround();
-        }
-    }
-
-    private bool IsPointerOverUI(Vector2 screenPosition)
-    {
-        if (EventSystem.current == null) return false;
-
-        var eventData = new PointerEventData(EventSystem.current)
-        {
-            position = screenPosition
-        };
-        var results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(eventData, results);
-        return results.Count > 0;
     }
 
     public void ThrowItemOnGround()
     {
+        if (selectedItemController == null) return;
+
         InventoryItem itemToDrop = selectedItemController.Drop();
         if (itemToDrop != null)
-        {
             DropItem(GameManager.instance.playerObject.transform.position, itemToDrop);
-        }
     }
 
     public void DropItem(Vector3 dropPosition, InventoryItem itemToDrop)
     {
         if (itemToDrop == null) return;
-
         ItemSpawnManager.instance.SpawnItem(dropPosition, itemToDrop.itemData);
         Destroy(itemToDrop.gameObject);
     }
 
-    private void DestroyInventoryObject(InventoryItem itemToDrop)
+    public void ItemSlotInput()
     {
-        Destroy(itemToDrop.gameObject);
-    }
+        if (selectedItemController == null || selectedItemSlot == null) return;
 
-    private void ItemSlotInput()
-    {
         if (!selectedItemController.HasItem)
         {
             InventoryItem item = selectedItemSlot.PickUpItem();
             if (item != null)
             {
                 selectedItemController.PickUp(item);
-                itemHighlightController.SetSelectedItem(item);
+                itemHighlightController?.SetSelectedItem(item);
             }
         }
         else
@@ -175,18 +139,20 @@ public class InventoryController : MonoBehaviour
 
     private void PlaceItemIntoSlot()
     {
+        if (selectedItemController == null || selectedItemSlot == null) return;
+
         if (!selectedItemSlot.Check(selectedItemController.SelectedItem)) return;
 
         InventoryItem replacedItem = selectedItemSlot.ReplaceItem(selectedItemController.SelectedItem);
         if (replacedItem == null)
         {
             selectedItemController.ClearSelectedItem();
-            itemHighlightController.SetSelectedItem(null);
+            itemHighlightController?.SetSelectedItem(null);
         }
         else
         {
             selectedItemController.SetSelectedItem(replacedItem);
-            itemHighlightController.SetSelectedItem(replacedItem);
+            itemHighlightController?.SetSelectedItem(replacedItem);
         }
     }
 }
