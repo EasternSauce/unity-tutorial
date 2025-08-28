@@ -46,11 +46,11 @@ public class SelectedItemController : MonoBehaviour
         selectedItemRectTransform.SetAsLastSibling();
     }
 
-public void ClearSelectedItem()
-{
-    SelectedItem = null;
-    selectedItemRectTransform = null;
-}
+    public void ClearSelectedItem()
+    {
+        SelectedItem = null;
+        selectedItemRectTransform = null;
+    }
 
     public InventoryItem PickUp(InventoryItem item)
     {

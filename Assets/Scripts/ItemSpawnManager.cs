@@ -18,21 +18,16 @@ public class ItemSpawnManager : MonoBehaviour
         instance = this;
     }
 
-    /// <summary>
-    /// Spawns an item on the ground in the current area scene.
-    /// </summary>
     public void SpawnItem(Vector3 position, ItemData itemToSpawn)
     {
         if (itemToSpawn == null || itemPrefab == null) return;
 
-        position += Vector3.up * 50f; // lift above terrain
+        position += Vector3.up * 50f;
 
         if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, Mathf.Infinity, terrainLayerMask))
         {
-            // Find the current scene by name
             Scene currentScene = SceneManager.GetSceneByName(GameSceneManager.instance.CurrentScene);
 
-            // Look for "GroundItems" in root objects
             GameObject groundItemsParent = null;
             foreach (var root in currentScene.GetRootGameObjects())
             {
@@ -43,24 +38,21 @@ public class ItemSpawnManager : MonoBehaviour
                 }
             }
 
-            // Create "GroundItems" if missing
             if (groundItemsParent == null)
             {
                 groundItemsParent = new GameObject("GroundItems");
                 SceneManager.MoveGameObjectToScene(groundItemsParent, currentScene);
             }
 
-            // Instantiate item
-            GameObject newItemGO = Instantiate(
+            GameObject newItemGameObject = Instantiate(
                 itemPrefab,
                 hit.point + Vector3.up * (itemPrefab.GetComponent<Renderer>().bounds.size.y / 2f),
                 Quaternion.identity
             );
 
-            newItemGO.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
+            newItemGameObject.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
 
-            // Parent under GroundItems
-            newItemGO.transform.SetParent(groundItemsParent.transform);
+            newItemGameObject.transform.SetParent(groundItemsParent.transform);
         }
         else
         {
