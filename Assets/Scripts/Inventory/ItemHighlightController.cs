@@ -29,7 +29,6 @@ public class ItemHighlightController : MonoBehaviour
             return;
         }
 
-        // 🔧 NEW: Don’t try to place highlight if mouse isn’t inside the grid yet
         if (!IsPointerInsideGrid())
         {
             ClearHighlight();

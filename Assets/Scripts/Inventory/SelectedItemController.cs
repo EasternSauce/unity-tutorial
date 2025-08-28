@@ -7,8 +7,15 @@ public class SelectedItemController : MonoBehaviour
 
     [SerializeField] private RectTransform parentTransform;
     [SerializeField] private MouseInput mouseInput;
+    [SerializeField] private CharacterDefeatHandler defeatHandler;
 
     private RectTransform selectedItemRectTransform;
+
+    private void Awake()
+    {
+        if (defeatHandler == null)
+            defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
+    }
 
     private void Update()
     {
@@ -16,6 +23,10 @@ public class SelectedItemController : MonoBehaviour
         {
             Vector2 mousePosition = mouseInput.mouseInputPosition;
             selectedItemRectTransform.position = mousePosition;
+
+            bool canShow = defeatHandler == null || !defeatHandler.IsDefeated;
+            if (selectedItemRectTransform.gameObject.activeSelf != canShow)
+                selectedItemRectTransform.gameObject.SetActive(canShow);
         }
     }
 
@@ -35,11 +46,11 @@ public class SelectedItemController : MonoBehaviour
         selectedItemRectTransform.SetAsLastSibling();
     }
 
-    public void ClearSelectedItem()
-    {
-        SelectedItem = null;
-        selectedItemRectTransform = null;
-    }
+public void ClearSelectedItem()
+{
+    SelectedItem = null;
+    selectedItemRectTransform = null;
+}
 
     public InventoryItem PickUp(InventoryItem item)
     {
@@ -49,6 +60,9 @@ public class SelectedItemController : MonoBehaviour
 
     public InventoryItem Drop()
     {
+        if (defeatHandler != null && defeatHandler.IsDefeated)
+            return null;
+
         InventoryItem temp = SelectedItem;
         ClearSelectedItem();
         return temp;

@@ -15,13 +15,13 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private ItemHighlightController itemHighlightController;
     [SerializeField] private RectTransform selectedItemParent;
     [SerializeField] private SelectedItemController selectedItemController;
-    [SerializeField] private InventoryGridHandler gridHandler; // new reference
+    [SerializeField] private InventoryGridHandler gridHandler;
+    [SerializeField] private CharacterDefeatHandler defeatHandler;
 
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
     private Vector2 mousePosition;
     private Vector2Int positionOnGrid;
-    private bool isOverUIElement;
 
     public EquipmentItemSlot SelectedItemSlot
     {
@@ -47,19 +47,17 @@ public class InventoryController : MonoBehaviour
     private void Awake()
     {
         if (selectedItemController == null)
-        {
             selectedItemController = FindFirstObjectByType<SelectedItemController>();
-        }
 
         if (gridHandler == null)
-        {
             gridHandler = FindFirstObjectByType<InventoryGridHandler>();
-        }
+
+        if (defeatHandler == null)
+            defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
     }
 
     private void Update()
     {
-        isOverUIElement = EventSystem.current.IsPointerOverGameObject();
         mousePosition = mouseInput.mouseInputPosition;
     }
 
@@ -105,35 +103,47 @@ public class InventoryController : MonoBehaviour
     {
         if (context.phase != InputActionPhase.Started) return;
 
+        if (defeatHandler == null)
+            defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
+
+        if (defeatHandler != null && defeatHandler.IsDefeated)
+            return;
+
+        mousePosition = mouseInput.mouseInputPosition;
         bool hasItem = selectedItemController.HasItem;
-        bool inventoryOpen = FindFirstObjectByType<UiPanelManager>().IsInventoryOpen;
 
-        if (inventoryOpen)
+        bool overUI = IsPointerOverUI(mousePosition);
+
+        if (SelectedItemGrid != null)
         {
-            if (SelectedItemGrid != null)
-            {
-                ItemGridInput();
-                return;
-            }
-
-            if (selectedItemSlot != null)
-            {
-                ItemSlotInput();
-                return;
-            }
-
-            if (hasItem && !isOverUIElement)
-            {
-                ThrowItemOnGround();
-            }
-
+            ItemGridInput();
             return;
         }
 
-        if (hasItem)
+        if (selectedItemSlot != null)
+        {
+            ItemSlotInput();
+            return;
+        }
+
+        if (hasItem && !overUI)
         {
             ThrowItemOnGround();
         }
+    }
+
+
+    private bool IsPointerOverUI(Vector2 screenPosition)
+    {
+        if (EventSystem.current == null) return false;
+
+        var eventData = new PointerEventData(EventSystem.current)
+        {
+            position = screenPosition
+        };
+        var results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+        return results.Count > 0;
     }
 
     public void ThrowItemOnGround()
@@ -194,6 +204,9 @@ public class InventoryController : MonoBehaviour
 
     private void ItemGridInput()
     {
+        if (selectedItemGrid == null || defeatHandler != null && defeatHandler.IsDefeated)
+            return;
+
         if (gridHandler == null)
         {
             Debug.LogWarning("InventoryController: InventoryGridHandler is not assigned.");
@@ -202,6 +215,9 @@ public class InventoryController : MonoBehaviour
 
         positionOnGrid = gridHandler.GetTileGridPosition(mousePosition,
             selectedItemController.HasItem ? selectedItemController.SelectedItem : null);
+
+        if (!selectedItemGrid.PositionCheck(positionOnGrid.x, positionOnGrid.y))
+            return;
 
         if (!selectedItemController.HasItem)
         {
@@ -224,7 +240,8 @@ public class InventoryController : MonoBehaviour
 
         InventoryItem selectedItem = selectedItemController.SelectedItem;
 
-        if (!selectedItemGrid.BoundaryCheck(positionOnGrid.x, positionOnGrid.y,
+        if (!selectedItemGrid.BoundaryCheck(
+                positionOnGrid.x, positionOnGrid.y,
                 selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight))
             return;
 

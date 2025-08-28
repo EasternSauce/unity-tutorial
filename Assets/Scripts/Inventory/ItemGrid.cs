@@ -119,9 +119,12 @@ public class ItemGrid : MonoBehaviour
 
     public InventoryItem PickUpItem(Vector2Int tilePositionOnGrid)
     {
+        if (!PositionCheck(tilePositionOnGrid.x, tilePositionOnGrid.y))
+            return null;
+
         InventoryItem pickedItem = inventoryItemGrid[tilePositionOnGrid.x, tilePositionOnGrid.y];
 
-        if (pickedItem == null) { return null; }
+        if (pickedItem == null) return null;
 
         ClearGridFromItem(pickedItem);
 

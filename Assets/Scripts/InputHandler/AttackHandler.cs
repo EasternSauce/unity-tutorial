@@ -121,7 +121,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         if (currentDistance > attackRange + attackBuffer)
         {
-            Debug.Log("Attack missed: target moved out of range.");
             command.isComplete = true;
             characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
             yield break;
