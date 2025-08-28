@@ -49,7 +49,6 @@ public class EquipmentItemSlot : MonoBehaviour
             return;
         }
 
-
         itemInSlot = itemToPlace;
         inventory.AddStats(itemInSlot.itemData.stats);
 
@@ -83,5 +82,37 @@ public class EquipmentItemSlot : MonoBehaviour
 
         RectTransform rt = pickUpItem.GetComponent<RectTransform>();
         rt.SetParent(null);
+    }
+
+    public void HandleClick(SelectedItemController selectedItemController, ItemHighlightController itemHighlightController)
+    {
+        InventoryItem selectedItem = selectedItemController.SelectedItem;
+
+        if (!selectedItemController.HasItem)
+        {
+            InventoryItem item = PickUpItem();
+            if (item != null)
+            {
+                selectedItemController.PickUp(item);
+                itemHighlightController?.SetSelectedItem(item);
+            }
+        }
+        else
+        {
+            if (!Check(selectedItem)) return;
+
+            InventoryItem replacedItem = ReplaceItem(selectedItem);
+
+            if (replacedItem == null)
+            {
+                selectedItemController.ClearSelectedItem();
+                itemHighlightController?.SetSelectedItem(null);
+            }
+            else
+            {
+                selectedItemController.SetSelectedItem(replacedItem);
+                itemHighlightController?.SetSelectedItem(replacedItem);
+            }
+        }
     }
 }
