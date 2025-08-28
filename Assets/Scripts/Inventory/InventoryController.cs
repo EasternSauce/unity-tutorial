@@ -151,16 +151,19 @@ public class InventoryController : MonoBehaviour
         InventoryItem itemToDrop = selectedItemController.Drop();
         if (itemToDrop != null)
         {
-            DropItem(GameManager.instance.playerObject.transform.position, itemToDrop, gameObject);
+            DropItem(GameManager.instance.playerObject.transform.position, itemToDrop);
         }
     }
 
-    public void DropItem(Vector3 dropPosition, InventoryItem itemToDrop, GameObject caller)
+    public void DropItem(Vector3 dropPosition, InventoryItem itemToDrop)
     {
         if (itemToDrop == null) return;
 
-        ItemSpawnManager.instance.SpawnItem(dropPosition, itemToDrop.itemData, caller);
-        DestroyInventoryObject(itemToDrop);
+        // Use ItemSpawnManager to spawn the item in the current area's scene
+        ItemSpawnManager.instance.SpawnItem(dropPosition, itemToDrop.itemData);
+
+        // Destroy the inventory object
+        Destroy(itemToDrop.gameObject);
     }
 
     private void DestroyInventoryObject(InventoryItem itemToDrop)

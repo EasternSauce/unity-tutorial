@@ -56,7 +56,7 @@ public class PlayerInventory : MonoBehaviour
         {
             InventoryItem tempItem = inventoryController.CreateNewInventoryItem(itemData);
 
-            inventoryController.DropItem(GameManager.instance.playerObject.transform.position, tempItem, this.gameObject);
+            inventoryController.DropItem(GameManager.instance.playerObject.transform.position, tempItem);
 
             return false;
         }

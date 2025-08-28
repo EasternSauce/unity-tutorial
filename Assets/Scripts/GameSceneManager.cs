@@ -6,15 +6,17 @@ public class GameSceneManager : MonoBehaviour
 {
     public static GameSceneManager instance;
 
+    [SerializeField] string currentScene;
+
+    public string CurrentScene => currentScene; // public getter for current scene
+
+    AsyncOperation load;
+    AsyncOperation unload;
+
     private void Awake()
     {
         instance = this;
     }
-
-    [SerializeField] string currentScene;
-
-    AsyncOperation load;
-    AsyncOperation unload;
 
     private void Start()
     {
@@ -38,7 +40,7 @@ public class GameSceneManager : MonoBehaviour
     {
         SwitchScenes(toSceneName);
 
-        while (load.isDone == false && unload.isDone == false)
+        while (!load.isDone || !unload.isDone)
         {
             yield return new WaitForSeconds(0.1f);
         }

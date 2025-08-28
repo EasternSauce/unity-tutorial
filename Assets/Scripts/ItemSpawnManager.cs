@@ -5,56 +5,66 @@ public class ItemSpawnManager : MonoBehaviour
 {
     public static ItemSpawnManager instance;
 
-    [SerializeField] private LayerMask terrainLayerMask;
-    [SerializeField] private GameObject itemPrefab;
+    [SerializeField] LayerMask terrainLayerMask;
+    [SerializeField] GameObject itemPrefab;
 
     private void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         instance = this;
     }
 
-    public void SpawnItem(Vector3 position, ItemData itemToSpawn, GameObject caller)
+    /// <summary>
+    /// Spawns an item on the ground in the current area scene.
+    /// </summary>
+    public void SpawnItem(Vector3 position, ItemData itemToSpawn)
     {
-        if (caller == null)
-        {
-            Debug.LogError("ItemSpawnManager: caller cannot be null when using Option 2.");
-            return;
-        }
+        if (itemToSpawn == null || itemPrefab == null) return;
 
-        Scene targetScene = caller.scene;
+        position += Vector3.up * 50f; // lift above terrain
 
-        Transform groundParent = null;
-        foreach (var root in targetScene.GetRootGameObjects())
-        {
-            if (root.name == "GroundItems")
-            {
-                groundParent = root.transform;
-                break;
-            }
-        }
-
-        if (groundParent == null)
-        {
-            GameObject newParent = new GameObject("GroundItems");
-            SceneManager.MoveGameObjectToScene(newParent, targetScene);
-            groundParent = newParent.transform;
-        }
-
-        position += Vector3.up * 50f;
         if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, Mathf.Infinity, terrainLayerMask))
         {
-            float height = itemPrefab.GetComponent<Renderer>().bounds.size.y;
+            // Find the current scene by name
+            Scene currentScene = SceneManager.GetSceneByName(GameSceneManager.instance.CurrentScene);
 
-            GameObject newItem = GameObject.Instantiate(
+            // Look for "GroundItems" in root objects
+            GameObject groundItemsParent = null;
+            foreach (var root in currentScene.GetRootGameObjects())
+            {
+                if (root.name == "GroundItems")
+                {
+                    groundItemsParent = root;
+                    break;
+                }
+            }
+
+            // Create "GroundItems" if missing
+            if (groundItemsParent == null)
+            {
+                groundItemsParent = new GameObject("GroundItems");
+                SceneManager.MoveGameObjectToScene(groundItemsParent, currentScene);
+            }
+
+            // Instantiate item
+            GameObject newItemGO = Instantiate(
                 itemPrefab,
-                hit.point + Vector3.up * (height / 2f),
+                hit.point + Vector3.up * (itemPrefab.GetComponent<Renderer>().bounds.size.y / 2f),
                 Quaternion.identity
             );
 
-            newItem.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
+            newItemGO.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
 
-            SceneManager.MoveGameObjectToScene(newItem, targetScene);
-            newItem.transform.SetParent(groundParent, true);
+            // Parent under GroundItems
+            newItemGO.transform.SetParent(groundItemsParent.transform);
+        }
+        else
+        {
+            Debug.LogWarning("ItemSpawnManager: Could not find valid ground to spawn item.");
         }
     }
 }
