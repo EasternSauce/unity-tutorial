@@ -20,6 +20,7 @@ public class InventoryController : MonoBehaviour
 
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
+    private GameObject selectedItemParentGO;
 
     public EquipmentItemSlot SelectedItemSlot
     {
@@ -42,21 +43,41 @@ public class InventoryController : MonoBehaviour
     {
         if (selectedItemController == null)
             selectedItemController = FindFirstObjectByType<SelectedItemController>();
-
         if (gridHandler == null)
             gridHandler = FindFirstObjectByType<InventoryGridHandler>();
-
         if (defeatHandler == null)
             defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
-
         if (mouseInput == null)
             mouseInput = FindFirstObjectByType<MouseInput>();
+
+        CreateSelectedItemParentIfMissing();
+    }
+
+    private void CreateSelectedItemParentIfMissing()
+    {
+        if (selectedItemParentGO == null)
+        {
+            selectedItemParentGO = GameObject.Find("SelectedItem");
+            if (selectedItemParentGO == null)
+            {
+                selectedItemParentGO = new GameObject("SelectedItem");
+                if (targetCanvas != null)
+                    selectedItemParentGO.transform.SetParent(targetCanvas, false);
+            }
+        }
+    }
+
+    private void ParentSelectedItem(InventoryItem item)
+    {
+        if (item == null) return;
+        CreateSelectedItemParentIfMissing();
+        if (item.transform.parent != selectedItemParentGO.transform)
+            item.transform.SetParent(selectedItemParentGO.transform, false);
     }
 
     public void InsertRandomItem()
     {
         if (selectedItemGrid == null || selectedItemController == null) return;
-
         CreateRandomItem();
         InventoryItem itemToInsert = selectedItemController.SelectedItem;
         selectedItemController.ClearSelectedItem();
@@ -66,9 +87,9 @@ public class InventoryController : MonoBehaviour
     private void CreateRandomItem()
     {
         if (selectedItemController.HasItem || itemDatas == null || itemDatas.Count == 0) return;
-
         int selectedItemId = Random.Range(0, itemDatas.Count);
         InventoryItem newItem = CreateNewInventoryItem(itemDatas[selectedItemId]);
+        ParentSelectedItem(newItem);
         selectedItemController.SetSelectedItem(newItem);
         itemHighlightController?.SetSelectedItem(newItem);
     }
@@ -76,7 +97,6 @@ public class InventoryController : MonoBehaviour
     public InventoryItem CreateNewInventoryItem(ItemData itemData)
     {
         if (inventoryItemPrefab == null || targetCanvas == null) return null;
-
         GameObject newItemGO = Instantiate(inventoryItemPrefab, targetCanvas);
         InventoryItem newInventoryItem = newItemGO.GetComponent<InventoryItem>();
         RectTransform newItemRectTransform = newItemGO.GetComponent<RectTransform>();
@@ -88,7 +108,6 @@ public class InventoryController : MonoBehaviour
     public void ThrowItemOnGround()
     {
         if (selectedItemController == null) return;
-
         InventoryItem itemToDrop = selectedItemController.Drop();
         if (itemToDrop != null)
             DropItem(GameManager.instance.playerObject.transform.position, itemToDrop);
@@ -104,12 +123,12 @@ public class InventoryController : MonoBehaviour
     public void ItemSlotInput()
     {
         if (selectedItemController == null || selectedItemSlot == null) return;
-
         if (!selectedItemController.HasItem)
         {
             InventoryItem item = selectedItemSlot.PickUpItem();
             if (item != null)
             {
+                ParentSelectedItem(item);
                 selectedItemController.PickUp(item);
                 itemHighlightController?.SetSelectedItem(item);
             }
@@ -123,9 +142,7 @@ public class InventoryController : MonoBehaviour
     private void PlaceItemIntoSlot()
     {
         if (selectedItemController == null || selectedItemSlot == null) return;
-
         if (!selectedItemSlot.Check(selectedItemController.SelectedItem)) return;
-
         InventoryItem replacedItem = selectedItemSlot.ReplaceItem(selectedItemController.SelectedItem);
         if (replacedItem == null)
         {
@@ -134,8 +151,17 @@ public class InventoryController : MonoBehaviour
         }
         else
         {
+            ParentSelectedItem(replacedItem);
             selectedItemController.SetSelectedItem(replacedItem);
             itemHighlightController?.SetSelectedItem(replacedItem);
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (selectedItemController != null && selectedItemController.HasItem)
+        {
+            ParentSelectedItem(selectedItemController.SelectedItem);
         }
     }
 }
