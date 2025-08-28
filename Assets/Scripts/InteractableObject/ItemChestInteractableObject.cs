@@ -27,7 +27,7 @@ public class ItemChestInteractableObject : MonoBehaviour
         // Spawn 50 items under "GroundItems"
         for (int i = 0; i < 50; i++)
         {
-            ItemSpawnManager.instance.SpawnItem(SelectRandomPosition(), dropList.GetDrop());
+            ItemSpawnManager.instance.SpawnItem(SelectRandomPosition(), dropList.GetDrop(), gameObject);
         }
 
         isOpened = true;

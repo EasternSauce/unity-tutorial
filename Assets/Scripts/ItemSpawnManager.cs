@@ -1,60 +1,60 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ItemSpawnManager : MonoBehaviour
 {
     public static ItemSpawnManager instance;
 
-    [SerializeField] LayerMask terrainLayerMask;
-    [SerializeField] GameObject itemPrefab;
-
-    private Transform groundItemsParent;
+    [SerializeField] private LayerMask terrainLayerMask;
+    [SerializeField] private GameObject itemPrefab;
 
     private void Awake()
     {
         instance = this;
-        InitializeGroundItemsParent();
     }
 
-    private void InitializeGroundItemsParent()
+    public void SpawnItem(Vector3 position, ItemData itemToSpawn, GameObject caller)
     {
-        GameObject existingParent = GameObject.Find("GroundItems");
-        if (existingParent != null)
+        if (caller == null)
         {
-            groundItemsParent = existingParent.transform;
+            Debug.LogError("ItemSpawnManager: caller cannot be null when using Option 2.");
+            return;
         }
-        else
+
+        Scene targetScene = caller.scene;
+
+        Transform groundParent = null;
+        foreach (var root in targetScene.GetRootGameObjects())
+        {
+            if (root.name == "GroundItems")
+            {
+                groundParent = root.transform;
+                break;
+            }
+        }
+
+        if (groundParent == null)
         {
             GameObject newParent = new GameObject("GroundItems");
-            groundItemsParent = newParent.transform;
+            SceneManager.MoveGameObjectToScene(newParent, targetScene);
+            groundParent = newParent.transform;
         }
-    }
 
-    /// <summary>
-    /// Spawns an item on the ground. Parent is always "GroundItems".
-    /// </summary>
-    public void SpawnItem(Vector3 position, ItemData itemToSpawn)
-    {
-        // Force parent to GroundItems
-        Transform parent = groundItemsParent;
-
-        position += Vector3.up * 50;
-
-        Ray findSurfaceRay = new Ray(position, Vector3.down);
-        RaycastHit hit;
-
-        if (Physics.Raycast(findSurfaceRay, out hit, Mathf.Infinity, terrainLayerMask))
+        position += Vector3.up * 50f;
+        if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, Mathf.Infinity, terrainLayerMask))
         {
             float height = itemPrefab.GetComponent<Renderer>().bounds.size.y;
 
-            // Instantiate under GroundItems
-            GameObject newItemOnGround = GameObject.Instantiate(
+            GameObject newItem = GameObject.Instantiate(
                 itemPrefab,
                 hit.point + Vector3.up * (height / 2f),
-                Quaternion.identity,
-                parent
+                Quaternion.identity
             );
 
-            newItemOnGround.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
+            newItem.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
+
+            SceneManager.MoveGameObjectToScene(newItem, targetScene);
+            newItem.transform.SetParent(groundParent, true);
         }
     }
 }
