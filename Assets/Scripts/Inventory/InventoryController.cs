@@ -68,15 +68,7 @@ public class InventoryController : MonoBehaviour
         CreateRandomItem();
         InventoryItem itemToInsert = selectedItemController.SelectedItem;
         selectedItemController.ClearSelectedItem();
-        InsertItem(itemToInsert);
-    }
-
-    private void InsertItem(InventoryItem itemToInsert)
-    {
-        Vector2Int? posOnGrid = SelectedItemGrid.FindSpaceForObject(itemToInsert.itemData);
-        if (posOnGrid == null) return;
-
-        selectedItemGrid.PlaceItem(itemToInsert, posOnGrid.Value.x, posOnGrid.Value.y);
+        gridHandler.InsertItem(selectedItemGrid, itemToInsert);
     }
 
     private void CreateRandomItem()
@@ -116,7 +108,7 @@ public class InventoryController : MonoBehaviour
 
         if (SelectedItemGrid != null)
         {
-            ItemGridInput();
+            gridHandler.ItemGridInput(mousePosition, selectedItemController, itemHighlightController, defeatHandler);
             return;
         }
 
@@ -205,70 +197,4 @@ public class InventoryController : MonoBehaviour
         }
     }
 
-    private void ItemGridInput()
-    {
-        if (selectedItemGrid == null || defeatHandler != null && defeatHandler.IsDefeated)
-            return;
-
-        if (gridHandler == null)
-        {
-            Debug.LogWarning("InventoryController: InventoryGridHandler is not assigned.");
-            return;
-        }
-
-        positionOnGrid = gridHandler.GetTileGridPosition(mousePosition,
-            selectedItemController.HasItem ? selectedItemController.SelectedItem : null);
-
-        if (!selectedItemGrid.PositionCheck(positionOnGrid.x, positionOnGrid.y))
-            return;
-
-        if (!selectedItemController.HasItem)
-        {
-            InventoryItem itemToSelect = selectedItemGrid.PickUpItem(positionOnGrid);
-            if (itemToSelect != null)
-            {
-                selectedItemController.PickUp(itemToSelect);
-                itemHighlightController.SetSelectedItem(itemToSelect);
-            }
-        }
-        else
-        {
-            PlaceItemInput();
-        }
-    }
-
-    private void PlaceItemInput()
-    {
-        if (!selectedItemController.HasItem) return;
-
-        InventoryItem selectedItem = selectedItemController.SelectedItem;
-
-        if (!selectedItemGrid.BoundaryCheck(
-                positionOnGrid.x, positionOnGrid.y,
-                selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight))
-            return;
-
-        var overlappedItems = selectedItemGrid.GetOverlappingItems(
-            positionOnGrid.x, positionOnGrid.y,
-            selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight
-        );
-
-        if (overlappedItems.Count > 1) return;
-
-        InventoryItem overlapItem = overlappedItems.Count == 1 ? overlappedItems[0] : null;
-
-        if (overlapItem != null)
-            selectedItemGrid.ClearGridFromItem(overlapItem);
-
-        selectedItemGrid.PlaceItem(selectedItem, positionOnGrid.x, positionOnGrid.y);
-
-        selectedItemController.ClearSelectedItem();
-        itemHighlightController.SetSelectedItem(null);
-
-        if (overlapItem != null)
-        {
-            selectedItemController.SetSelectedItem(overlapItem);
-            itemHighlightController.SetSelectedItem(overlapItem);
-        }
-    }
 }
