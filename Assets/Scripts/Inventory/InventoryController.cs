@@ -76,6 +76,8 @@ public class InventoryController : MonoBehaviour
 
     private void HandleSlotClick()
     {
+        InventoryItem selectedItem = selectedItemController.SelectedItem;
+
         if (!selectedItemController.HasItem)
         {
             InventoryItem item = selectedItemSlot.PickUpItem();
@@ -87,7 +89,11 @@ public class InventoryController : MonoBehaviour
         }
         else
         {
-            InventoryItem replacedItem = selectedItemSlot.ReplaceItem(selectedItemController.SelectedItem);
+            if (!selectedItemSlot.Check(selectedItem))
+                return;
+
+            InventoryItem replacedItem = selectedItemSlot.ReplaceItem(selectedItem);
+
             if (replacedItem == null)
             {
                 selectedItemController.ClearSelectedItem();
@@ -104,11 +110,9 @@ public class InventoryController : MonoBehaviour
     private bool IsPointerOverUI(Vector2 screenPosition)
     {
         if (EventSystem.current == null) return false;
-
         var eventData = new PointerEventData(EventSystem.current) { position = screenPosition };
         var results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(eventData, results);
-
         return results.Count > 0;
     }
 
