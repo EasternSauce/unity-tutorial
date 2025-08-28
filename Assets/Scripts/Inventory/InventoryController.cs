@@ -10,6 +10,7 @@ public class InventoryController : MonoBehaviour
 
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
+    private GameObject selectedItemParentGO;
 
     public EquipmentItemSlot SelectedItemSlot
     {
@@ -29,6 +30,33 @@ public class InventoryController : MonoBehaviour
     }
 
     public bool HasItemOnCursor => selectedItemController.HasItem;
+
+    private void Awake()
+    {
+        CreateSelectedItemParentIfMissing();
+    }
+
+    private void CreateSelectedItemParentIfMissing()
+    {
+        if (selectedItemParentGO == null)
+        {
+            selectedItemParentGO = GameObject.Find("SelectedItemContainer");
+            if (selectedItemParentGO == null)
+            {
+                selectedItemParentGO = new GameObject("SelectedItemContainer");
+                if (targetCanvas != null)
+                    selectedItemParentGO.transform.SetParent(targetCanvas, false);
+            }
+        }
+    }
+
+    private void ParentSelectedItem(InventoryItem item)
+    {
+        if (item == null) return;
+        CreateSelectedItemParentIfMissing();
+        if (item.transform.parent != selectedItemParentGO.transform)
+            item.transform.SetParent(selectedItemParentGO.transform, false);
+    }
 
     public void HandlePrimaryClick(Vector2 mousePosition)
     {
@@ -68,6 +96,15 @@ public class InventoryController : MonoBehaviour
         RectTransform newItemRectTransform = newItemGameObject.GetComponent<RectTransform>();
         newItemRectTransform.SetParent(targetCanvas);
         newInventoryItem?.Set(itemData);
+        ParentSelectedItem(newInventoryItem);
         return newInventoryItem;
+    }
+
+    private void LateUpdate()
+    {
+        if (selectedItemController != null && selectedItemController.HasItem)
+        {
+            ParentSelectedItem(selectedItemController.SelectedItem);
+        }
     }
 }
