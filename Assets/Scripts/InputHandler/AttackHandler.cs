@@ -79,25 +79,41 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             ResetAttackTimer();
             SetAnimationTimer();
 
-            // Determine trigger based on current weapon
-            string attackTrigger = "MeleeAttack"; // default
+            string attackTrigger = null;
             PlayerInventory playerInventory = GetComponent<PlayerInventory>();
-            InventoryItem weapon = playerInventory?.CurrentWeapon;
 
-            if (weapon != null && weapon.itemData.weaponType != WeaponType.None)
+            if (playerInventory != null)
             {
-                switch (weapon.itemData.weaponType)
+                InventoryItem weapon = playerInventory.CurrentWeapon;
+                if (weapon == null || weapon.itemData.weaponType == WeaponType.None)
                 {
-                    case WeaponType.None:
-                        attackTrigger = "MeleeAttack";
-                        break;
-                    case WeaponType.Bow:
+                    if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
+                        attackTrigger = "FistAttack";
+                }
+                else if (weapon.itemData.weaponType == WeaponType.OneHandedAxe)
+                {
+                    if (AnimatorHasParameter("OneHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
+                        attackTrigger = "OneHandedMeleeAttack";
+                }
+                else if (weapon.itemData.weaponType == WeaponType.TwoHandedAxe)
+                {
+                    if (AnimatorHasParameter("TwoHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
+                        attackTrigger = "TwoHandedMeleeAttack";
+                }
+                else if (weapon.itemData.weaponType == WeaponType.Bow)
+                {
+                    if (AnimatorHasParameter("BowAttack", AnimatorControllerParameterType.Trigger))
                         attackTrigger = "BowAttack";
-                        break;
                 }
             }
+            else
+            {
+                if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
+                    attackTrigger = "Attack";
+            }
 
-            animator.SetTrigger(attackTrigger);
+            if (!string.IsNullOrEmpty(attackTrigger))
+                animator.SetTrigger(attackTrigger);
 
             if (attackCoroutine != null)
                 StopCoroutine(attackCoroutine);
@@ -113,6 +129,16 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             characterMovement.Agent.isStopped = false;
             characterMovement.SetDestination(destination);
         }
+    }
+
+    private bool AnimatorHasParameter(string paramName, AnimatorControllerParameterType type)
+    {
+        foreach (var param in animator.parameters)
+        {
+            if (param.type == type && param.name == paramName)
+                return true;
+        }
+        return false;
     }
 
     private IEnumerator DelayedDamage(Command command)
@@ -187,8 +213,18 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     public void ResetState()
     {
         animationTimer = 0f;
-        animator.ResetTrigger("MeleeAttack");
-        animator.ResetTrigger("BowAttack");
+
+        if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
+            animator.ResetTrigger("FistAttack");
+
+        if (AnimatorHasParameter("BowAttack", AnimatorControllerParameterType.Trigger))
+            animator.ResetTrigger("BowAttack");
+
+        if (AnimatorHasParameter("TwoHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
+            animator.ResetTrigger("TwoHandedMeleeAttack");
+
+        if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
+            animator.ResetTrigger("Attack");
 
         if (attackCoroutine != null)
         {

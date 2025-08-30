@@ -53,7 +53,17 @@ public class WeaponVisibilityController : MonoBehaviour
                 }
                 break;
 
-            case WeaponType.Axe:
+            case WeaponType.OneHandedAxe:
+                if (isAttacking)
+                {
+                    axeInHand.SetActive(true);
+                }
+                else
+                {
+                    axeOnBack.SetActive(true);
+                }
+                break;
+            case WeaponType.TwoHandedAxe:
                 if (isAttacking)
                 {
                     axeInHand.SetActive(true);

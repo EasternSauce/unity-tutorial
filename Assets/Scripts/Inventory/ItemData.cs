@@ -19,7 +19,8 @@ public enum WeaponType
 {
     None,
     Bow,
-    Axe
+    OneHandedAxe,
+    TwoHandedAxe
 }
 
 [CreateAssetMenu]

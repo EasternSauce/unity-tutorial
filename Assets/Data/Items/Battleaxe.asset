@@ -21,3 +21,4 @@ MonoBehaviour:
     integer_value: 200
     float_value: 0
   icon: {fileID: 21300000, guid: d8f00a2434c4ed849b70456382078531, type: 3}
+  weaponType: 3
