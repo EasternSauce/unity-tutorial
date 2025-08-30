@@ -78,7 +78,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
             if (!CheckAttack()) return;
 
-            RotateTowardsTarget(targetTransform, forceInstant: true);
+            RotateTowardsTarget(targetTransform, true);
 
             ResetAttackTimer();
             SetAnimationTimer();
@@ -109,6 +109,41 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             characterMovement.Agent.stoppingDistance = 0f;
             characterMovement.Agent.isStopped = false;
             characterMovement.SetDestination(destination);
+        }
+    }
+
+    public void LMB_InputHandle(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+    }
+
+    public void RMB_InputHandle(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+        if (!CheckAttack()) return;
+        ResetAttackTimer();
+        SetAnimationTimer();
+
+        PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+        InventoryItem weapon = playerInventory?.CurrentWeapon;
+
+        if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
+        {
+            string trigger = GetAttackTrigger();
+            if (!string.IsNullOrEmpty(trigger))
+                animator.SetTrigger(trigger);
+            SpawnArrow();
+        }
+        else
+        {
+            Command command = characterMovement.CurrentCommand;
+            if (command == null || command.target == null) return;
+
+            string trigger = GetAttackTrigger();
+            if (!string.IsNullOrEmpty(trigger))
+                animator.SetTrigger(trigger);
+
+            if (attackCoroutine != null)
+                StopCoroutine(attackCoroutine);
+            attackCoroutine = StartCoroutine(DelayedDamage(command));
         }
     }
 
@@ -160,12 +195,10 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
         GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
-        Debug.Log($"Arrow spawned at {spawnPos}");
 
         Arrow arrowScript = arrowObject.GetComponent<Arrow>();
         if (arrowScript == null)
         {
-            Debug.LogError("Arrow prefab missing Arrow component!");
             Destroy(arrowObject);
             return;
         }

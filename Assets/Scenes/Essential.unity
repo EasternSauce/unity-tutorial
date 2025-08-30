@@ -2155,7 +2155,19 @@ MonoBehaviour:
     m_ActionId: 0fd7b0ec-38c9-4669-bfbe-99d418537520
     m_ActionName: 'Player/CloseAllPanels[/Keyboard/escape]'
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6365066707932090198}
+        m_TargetAssemblyTypeName: AttackHandler, Assembly-CSharp
+        m_MethodName: RMB_InputHandle
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 91bf4069-d076-4c2c-b26e-45ed303fe850
     m_ActionName: 'Player/RightMouseButton[/Mouse/rightButton]'
   m_NeverAutoSwitchControlSchemes: 0
@@ -11169,6 +11181,17 @@ MonoBehaviour:
   axeOnBack: {fileID: 1924188119}
   bowInHand: {fileID: 785057505}
   bowOnBack: {fileID: 94984895}
+--- !u!114 &6365066707932090198 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4965133185813602848, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+  m_PrefabInstance: {fileID: 6365066707932090169}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 796244759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a311255ec7f4b854ca35e5df8391c489, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

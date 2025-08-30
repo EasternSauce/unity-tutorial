@@ -21,9 +21,6 @@ public class SelectedItemController : MonoBehaviour
     {
         if (HasItem && selectedItemRectTransform != null)
         {
-            Vector2 mousePosition = mouseInput.mouseInputPosition;
-            selectedItemRectTransform.position = mousePosition;
-
             bool canShow = defeatHandler == null || !defeatHandler.IsDefeated;
             if (selectedItemRectTransform.gameObject.activeSelf != canShow)
                 selectedItemRectTransform.gameObject.SetActive(canShow);

@@ -102,7 +102,7 @@ public class ItemHighlightController : MonoBehaviour
             inventoryHighlight.Show(true);
             inventoryHighlight.SetSize(item);
             inventoryHighlight.SetPosition(currentGrid, item);
-            inventoryHighlight.transform.SetAsFirstSibling(); // ensure behind items
+            inventoryHighlight.transform.SetAsFirstSibling();
         }
         else ClearHighlight();
     }
@@ -120,7 +120,7 @@ public class ItemHighlightController : MonoBehaviour
             inventoryHighlight.Show(true);
             inventoryHighlight.SetSize(selectedItem);
             inventoryHighlight.SetPosition(currentGrid, selectedItem, position.x, position.y);
-            inventoryHighlight.transform.SetAsFirstSibling(); // ensure behind items
+            inventoryHighlight.transform.SetAsFirstSibling();
         }
         else ClearHighlight();
     }

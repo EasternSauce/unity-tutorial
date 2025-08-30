@@ -9,7 +9,6 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
     [SerializeField] private NavMeshAgent agent;
 
     public NavMeshAgent Agent => agent;
-
     public float DefaultStoppingDistance => defaultStoppingDistance;
 
     Character character;
@@ -19,6 +18,7 @@ public class CharacterMovement : MonoBehaviour, ICommandHandle
     CanMoveState canMoveState;
 
     private Command currentCommand;
+    public Command CurrentCommand => currentCommand;
 
     private void Awake()
     {
