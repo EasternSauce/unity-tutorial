@@ -24,6 +24,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "RightMouseButton",
+                    "type": "Button",
+                    "id": "91bf4069-d076-4c2c-b26e-45ed303fe850",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "OpenInventory",
                     "type": "Button",
                     "id": "1566b4b0-94fe-4de0-9e15-a18815b8d48b",
@@ -364,6 +373,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "CloseAllPanels",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2bd1a7cf-bc6d-483f-8b1c-8e346cdfc845",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightMouseButton",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -1884,10 +1884,10 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 72065790}
-        m_TargetAssemblyTypeName: InventoryController, Assembly-CSharp
-        m_MethodName: ProcessLMBPress
-        m_Mode: 0
+      - m_Target: {fileID: 72065793}
+        m_TargetAssemblyTypeName: InventoryInputHandler, Assembly-CSharp
+        m_MethodName: LMB_InputHandle
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2154,6 +2154,10 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 0fd7b0ec-38c9-4669-bfbe-99d418537520
     m_ActionName: 'Player/CloseAllPanels[/Keyboard/escape]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 91bf4069-d076-4c2c-b26e-45ed303fe850
+    m_ActionName: 'Player/RightMouseButton[/Mouse/rightButton]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -10488,6 +10492,10 @@ PrefabInstance:
       propertyPath: textOnScreen
       value: 
       objectReference: {fileID: 768288270}
+    - target: {fileID: 4965133185813602848, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: arrowPrefab
+      value: 
+      objectReference: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}
     - target: {fileID: 5198210232003667224, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: isPlayer
       value: 1

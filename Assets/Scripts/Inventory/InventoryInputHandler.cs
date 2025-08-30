@@ -15,11 +15,8 @@ public class InventoryInputHandler : MonoBehaviour
             Debug.LogError("InventoryInputHandler: InventoryController is missing.");
     }
 
-    private void Update()
+    public void LMB_InputHandle()
     {
-        if (inventoryController == null) return;
-
-        if (UnityEngine.Input.GetMouseButtonDown(0))
-            inventoryController.HandlePrimaryClick(UnityEngine.Input.mousePosition);
+        inventoryController.HandlePrimaryClick(UnityEngine.Input.mousePosition);
     }
 }

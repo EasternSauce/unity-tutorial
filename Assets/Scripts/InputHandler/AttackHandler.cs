@@ -12,6 +12,10 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     [SerializeField] float attackAnimationTime = 1f;
     float animationTimer;
 
+    [SerializeField] GameObject arrowPrefab;
+    [SerializeField] float arrowSpeed = 15f;
+    [SerializeField] float arrowHeightOffset = 1.2f;
+
     Animator animator;
     CharacterMovement characterMovement;
     CanMoveState canMoveState;
@@ -79,46 +83,23 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             ResetAttackTimer();
             SetAnimationTimer();
 
-            string attackTrigger = null;
-            PlayerInventory playerInventory = GetComponent<PlayerInventory>();
-
-            if (playerInventory != null)
-            {
-                InventoryItem weapon = playerInventory.CurrentWeapon;
-                if (weapon == null || weapon.itemData.weaponType == WeaponType.None)
-                {
-                    if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
-                        attackTrigger = "FistAttack";
-                }
-                else if (weapon.itemData.weaponType == WeaponType.OneHandedAxe)
-                {
-                    if (AnimatorHasParameter("OneHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
-                        attackTrigger = "OneHandedMeleeAttack";
-                }
-                else if (weapon.itemData.weaponType == WeaponType.TwoHandedAxe)
-                {
-                    if (AnimatorHasParameter("TwoHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
-                        attackTrigger = "TwoHandedMeleeAttack";
-                }
-                else if (weapon.itemData.weaponType == WeaponType.Bow)
-                {
-                    if (AnimatorHasParameter("BowAttack", AnimatorControllerParameterType.Trigger))
-                        attackTrigger = "BowAttack";
-                }
-            }
-            else
-            {
-                if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
-                    attackTrigger = "Attack";
-            }
-
+            string attackTrigger = GetAttackTrigger();
             if (!string.IsNullOrEmpty(attackTrigger))
                 animator.SetTrigger(attackTrigger);
 
             if (attackCoroutine != null)
                 StopCoroutine(attackCoroutine);
 
-            attackCoroutine = StartCoroutine(DelayedDamage(command));
+            PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+            InventoryItem weapon = playerInventory?.CurrentWeapon;
+            if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
+            {
+                SpawnArrow();
+            }
+            else
+            {
+                attackCoroutine = StartCoroutine(DelayedDamage(command));
+            }
         }
         else
         {
@@ -131,6 +112,38 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
     }
 
+    private string GetAttackTrigger()
+    {
+        PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+        if (playerInventory != null)
+        {
+            InventoryItem weapon = playerInventory.CurrentWeapon;
+            if (weapon == null || weapon.itemData.weaponType == WeaponType.None)
+            {
+                if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
+                    return "FistAttack";
+            }
+            else if (weapon.itemData.weaponType == WeaponType.OneHandedAxe)
+            {
+                if (AnimatorHasParameter("OneHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
+                    return "OneHandedMeleeAttack";
+            }
+            else if (weapon.itemData.weaponType == WeaponType.TwoHandedAxe)
+            {
+                if (AnimatorHasParameter("TwoHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
+                    return "TwoHandedMeleeAttack";
+            }
+            else if (weapon.itemData.weaponType == WeaponType.Bow)
+            {
+                if (AnimatorHasParameter("BowAttack", AnimatorControllerParameterType.Trigger))
+                    return "BowAttack";
+            }
+        }
+        if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
+            return "Attack";
+        return null;
+    }
+
     private bool AnimatorHasParameter(string paramName, AnimatorControllerParameterType type)
     {
         foreach (var param in animator.parameters)
@@ -141,9 +154,29 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         return false;
     }
 
-    private IEnumerator DelayedDamage(Command command)
+    private void SpawnArrow()
+    {
+        if (arrowPrefab == null) return;
+
+        Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
+        GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
+        Debug.Log($"Arrow spawned at {spawnPos}");
+
+        Arrow arrowScript = arrowObject.GetComponent<Arrow>();
+        if (arrowScript == null)
+        {
+            Debug.LogError("Arrow prefab missing Arrow component!");
+            Destroy(arrowObject);
+            return;
+        }
+
+        arrowScript.Initialize(character, transform.forward, arrowSpeed, arrowHeightOffset);
+    }
+
+    private IEnumerator DelayedDamage(Command command, float delay = -1f)
     {
         float hitTime = attackAnimationTime * 0.4f;
+        if (delay >= 0f) hitTime = delay;
         yield return new WaitForSeconds(hitTime);
 
         if (command == null || command.isComplete || command.target == null)
