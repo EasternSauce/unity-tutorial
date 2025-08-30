@@ -63,88 +63,77 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     public void ProcessCommand(Command command)
     {
-        if (command == null || command.target == null) return;
+        if (command == null || (command.target == null && command.commandType != CommandType.Attack)) return;
 
-        float distance = Vector3.Distance(transform.position, command.target.transform.position);
-        float attackBuffer = 0.1f;
-
-        Transform targetTransform = command.target.transform;
-        RotateTowardsTarget(targetTransform);
-
-        if (distance <= attackRange + attackBuffer)
+        if (command.target != null)
         {
-            characterMovement.Stop();
-            characterMovement.Agent.isStopped = true;
+            float distance = Vector3.Distance(transform.position, command.target.transform.position);
+            float attackBuffer = 0.1f;
+            Transform targetTransform = command.target.transform;
+            RotateTowardsTarget(targetTransform);
 
-            if (!CheckAttack()) return;
-
-            RotateTowardsTarget(targetTransform, true);
-
-            ResetAttackTimer();
-            SetAnimationTimer();
-
-            string attackTrigger = GetAttackTrigger();
-            if (!string.IsNullOrEmpty(attackTrigger))
-                animator.SetTrigger(attackTrigger);
-
-            if (attackCoroutine != null)
-                StopCoroutine(attackCoroutine);
-
-            PlayerInventory playerInventory = GetComponent<PlayerInventory>();
-            InventoryItem weapon = playerInventory?.CurrentWeapon;
-            if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
+            if (distance <= attackRange + attackBuffer)
             {
-                SpawnArrow();
+                characterMovement.Stop();
+                characterMovement.Agent.isStopped = true;
+
+                if (!CheckAttack()) return;
+
+                RotateTowardsTarget(targetTransform, true);
+
+                ResetAttackTimer();
+                SetAnimationTimer();
+
+                string attackTrigger = GetAttackTrigger();
+                if (!string.IsNullOrEmpty(attackTrigger))
+                    animator.SetTrigger(attackTrigger);
+
+                if (attackCoroutine != null)
+                    StopCoroutine(attackCoroutine);
+
+                PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+                InventoryItem weapon = playerInventory?.CurrentWeapon;
+                if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
+                {
+                    SpawnArrow();
+                }
+                else
+                {
+                    attackCoroutine = StartCoroutine(DelayedDamage(command));
+                }
             }
             else
             {
-                attackCoroutine = StartCoroutine(DelayedDamage(command));
+                Vector3 direction = (targetTransform.position - transform.position).normalized;
+                Vector3 destination = targetTransform.position - direction * attackRange;
+
+                characterMovement.Agent.stoppingDistance = 0f;
+                characterMovement.Agent.isStopped = false;
+                characterMovement.SetDestination(destination);
             }
         }
         else
         {
-            Vector3 direction = (targetTransform.position - transform.position).normalized;
-            Vector3 destination = targetTransform.position - direction * attackRange;
-
-            characterMovement.Agent.stoppingDistance = 0f;
-            characterMovement.Agent.isStopped = false;
-            characterMovement.SetDestination(destination);
+            if (command.commandType == CommandType.Attack)
+            {
+                SpawnArrowAtPosition(command.worldPoint);
+            }
         }
     }
 
-    public void LMB_InputHandle(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    private void SpawnArrowAtPosition(Vector3 position)
     {
-    }
-
-    public void RMB_InputHandle(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
-    {
-        if (!CheckAttack()) return;
-        ResetAttackTimer();
-        SetAnimationTimer();
-
-        PlayerInventory playerInventory = GetComponent<PlayerInventory>();
-        InventoryItem weapon = playerInventory?.CurrentWeapon;
-
-        if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
+        if (arrowPrefab == null) return;
+        Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
+        GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
+        Arrow arrowScript = arrowObject.GetComponent<Arrow>();
+        if (arrowScript == null)
         {
-            string trigger = GetAttackTrigger();
-            if (!string.IsNullOrEmpty(trigger))
-                animator.SetTrigger(trigger);
-            SpawnArrow();
+            Destroy(arrowObject);
+            return;
         }
-        else
-        {
-            Command command = characterMovement.CurrentCommand;
-            if (command == null || command.target == null) return;
-
-            string trigger = GetAttackTrigger();
-            if (!string.IsNullOrEmpty(trigger))
-                animator.SetTrigger(trigger);
-
-            if (attackCoroutine != null)
-                StopCoroutine(attackCoroutine);
-            attackCoroutine = StartCoroutine(DelayedDamage(command));
-        }
+        Vector3 dir = (position - spawnPos).normalized;
+        arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
     }
 
     private string GetAttackTrigger()

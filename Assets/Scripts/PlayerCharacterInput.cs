@@ -6,7 +6,6 @@ using UnityEngine.InputSystem;
 public class PlayerCharacterInput : MonoBehaviour
 {
     [SerializeField] private InventoryController inventoryController;
-
     [SerializeField] MouseInput mouseInput;
     CommandHandler commandHandler;
 
@@ -15,7 +14,6 @@ public class PlayerCharacterInput : MonoBehaviour
 
     bool isOverUIElement;
     bool isLMBPressed;
-
     bool isHoldActive = false;
 
     private bool commandLock = false;
@@ -25,7 +23,6 @@ public class PlayerCharacterInput : MonoBehaviour
     private void Awake()
     {
         commandHandler = GetComponent<CommandHandler>();
-
         attackInput = GetComponent<AttackInput>();
         interactInput = GetComponent<InteractInput>();
     }
@@ -63,19 +60,12 @@ public class PlayerCharacterInput : MonoBehaviour
                 return;
             }
 
-            if (attackInput.AttackTargetCheck())
-            {
-                AttackCommand(interactInput.hoveringOverObject.gameObject);
-                return;
-            }
-
             if (interactInput.TryGetTerrainPoint(out var point))
             {
                 MoveCommand(point);
             }
         }
     }
-
 
     public void LMB_InputHandle(InputAction.CallbackContext callbackContext)
     {
@@ -103,13 +93,6 @@ public class PlayerCharacterInput : MonoBehaviour
         if (inventoryController.HasItemOnCursor)
         {
             inventoryController.ThrowItemOnGround();
-            SetCommandLock();
-            return;
-        }
-
-        if (attackInput.AttackTargetCheck())
-        {
-            AttackCommand(interactInput.hoveringOverObject.gameObject);
             SetCommandLock();
             return;
         }
@@ -142,11 +125,6 @@ public class PlayerCharacterInput : MonoBehaviour
     private void InteractCommand(GameObject target)
     {
         commandHandler.SetCommand(new Command(CommandType.Interact, target));
-    }
-
-    private void AttackCommand(GameObject target)
-    {
-        commandHandler.SetCommand(new Command(CommandType.Attack, target));
     }
 
     private void CancelOngoingAttack()

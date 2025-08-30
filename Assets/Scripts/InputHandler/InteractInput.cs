@@ -30,7 +30,6 @@ public class InteractInput : MonoBehaviour
         RaycastHit hit;
 
         float hoverRadius = 0.5f;
-
         int interactMask = ~LayerMask.GetMask("Player", "Terrain");
 
         if (Physics.SphereCast(ray, hoverRadius, out hit, float.MaxValue, interactMask))
@@ -44,12 +43,11 @@ public class InteractInput : MonoBehaviour
                 currentHoverOverObject = hitObject;
                 SetOutlineEnabled(currentHoverOverObject, true);
 
-                InteractableObject interactableObject = hitObject.GetComponent<InteractableObject>();
-                hoveringOverObject = interactableObject;
-                attackTarget = interactableObject?.GetComponent<IDamageable>();
-                hoveringCharacter = interactableObject?.GetComponent<Character>();
+                hoveringOverObject = hitObject.GetComponent<InteractableObject>();
+                attackTarget = hitObject.GetComponent<IDamageable>();
+                hoveringCharacter = hitObject.GetComponent<Character>();
 
-                textOnScreen.text = hoveringCharacter != null ? hoveringOverObject.objectName : "";
+                textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
 
                 UpdateHPBar();
             }
@@ -70,7 +68,6 @@ public class InteractInput : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         RaycastHit hit;
-
         int terrainMask = LayerMask.GetMask("Terrain");
 
         if (Physics.Raycast(ray, out hit, float.MaxValue, terrainMask))
@@ -103,7 +100,6 @@ public class InteractInput : MonoBehaviour
     private void SetOutlineEnabled(GameObject obj, bool enabled)
     {
         if (obj == null) return;
-
         var outline = obj.GetComponent<Outline>();
         if (outline != null)
         {
