@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public class InventoryInputHandler : MonoBehaviour
 {
@@ -15,8 +16,11 @@ public class InventoryInputHandler : MonoBehaviour
             Debug.LogError("InventoryInputHandler: InventoryController is missing.");
     }
 
-    public void LMB_InputHandle()
+    public void LMB_InputHandle(InputAction.CallbackContext ctx)
     {
-        inventoryController.HandlePrimaryClick(UnityEngine.Input.mousePosition);
+        if (ctx.started)
+        {
+            inventoryController.HandlePrimaryClick(UnityEngine.Input.mousePosition);
+        }
     }
 }
