@@ -17,9 +17,9 @@ public enum EquipmentSlot
 
 public enum WeaponType
 {
-    None,   // use this for non-weapons
-    Melee,
-    Bow
+    None,
+    Bow,
+    Axe
 }
 
 [CreateAssetMenu]

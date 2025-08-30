@@ -88,7 +88,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             {
                 switch (weapon.itemData.weaponType)
                 {
-                    case WeaponType.Melee:
+                    case WeaponType.None:
                         attackTrigger = "MeleeAttack";
                         break;
                     case WeaponType.Bow:
