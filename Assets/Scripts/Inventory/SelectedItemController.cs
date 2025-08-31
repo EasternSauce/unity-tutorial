@@ -3,7 +3,7 @@ using UnityEngine;
 public class SelectedItemController : MonoBehaviour
 {
     public InventoryItem SelectedItem { get; private set; }
-    public bool HasItem => SelectedItem != null;
+    public bool HasItem => SelectedItem != null && !SelectedItem.IsEquipped;
 
     [SerializeField] private RectTransform parentTransform;
     [SerializeField] private CharacterDefeatHandler defeatHandler;
@@ -34,7 +34,7 @@ public class SelectedItemController : MonoBehaviour
 
     public void SetSelectedItem(InventoryItem item)
     {
-        if (item == null)
+        if (item == null || item.IsEquipped)
         {
             ClearSelectedItem();
             return;
@@ -56,6 +56,9 @@ public class SelectedItemController : MonoBehaviour
 
     public InventoryItem PickUp(InventoryItem item)
     {
+        if (item == null || item.IsEquipped)
+            return null;
+
         SetSelectedItem(item);
         return SelectedItem;
     }
@@ -63,6 +66,9 @@ public class SelectedItemController : MonoBehaviour
     public InventoryItem Drop()
     {
         if (defeatHandler != null && defeatHandler.IsDefeated)
+            return null;
+
+        if (SelectedItem == null || SelectedItem.IsEquipped)
             return null;
 
         InventoryItem temp = SelectedItem;

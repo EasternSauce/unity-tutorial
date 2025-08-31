@@ -29,7 +29,7 @@ public class InventoryController : MonoBehaviour
         }
     }
 
-    public bool HasItemOnCursor => selectedItemController.HasItem;
+    public bool HasItemOnCursor => selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped;
     public SelectedItemController SelectedItemController => selectedItemController;
 
     private void Awake()
@@ -73,7 +73,7 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        if (selectedItemController.HasItem && !UIUtility.IsPointerOverUI(mousePosition))
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped && !UIUtility.IsPointerOverUI(mousePosition))
         {
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
         }
@@ -81,7 +81,7 @@ public class InventoryController : MonoBehaviour
 
     public void ThrowItemOnGround()
     {
-        if (selectedItemController.HasItem)
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped)
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
     }
 
@@ -104,7 +104,7 @@ public class InventoryController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (selectedItemController != null && selectedItemController.HasItem)
+        if (selectedItemController != null && selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped)
         {
             ParentSelectedItem(selectedItemController.SelectedItem);
         }

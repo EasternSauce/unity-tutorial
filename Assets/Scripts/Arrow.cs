@@ -1,10 +1,9 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class Arrow : MonoBehaviour
 {
-    Rigidbody rb;
-    public Character shooter;
+    private Character shooter;
+    private Rigidbody rb;
 
     public void Initialize(Character shooter, Vector3 direction, float speed, float heightOffset)
     {
@@ -13,42 +12,19 @@ public class Arrow : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-
         rb.linearVelocity = direction.normalized * speed;
 
         Quaternion rotation = Quaternion.LookRotation(rb.linearVelocity);
-        rotation *= Quaternion.Euler(-90f, 0f, 0f);
+        rotation *= Quaternion.Euler(0f, 90f, 0f); // adjust this axis offset to match your prefab
         transform.rotation = rotation;
     }
 
-
-    private void FixedUpdate()
+    private void OnTriggerEnter(Collider other)
     {
-        if (rb != null && rb.linearVelocity.sqrMagnitude > 0.1f)
+        if (other.TryGetComponent(out IDamageable damageable) && other.gameObject != shooter.gameObject)
         {
-            transform.forward = rb.linearVelocity.normalized;
-        }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject == shooter.gameObject) return;
-
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Terrain"))
-        {
+            damageable.TakeDamage(shooter.GetDamage());
             Destroy(gameObject);
-            return;
         }
-
-        IDamageable damageable = collision.gameObject.GetComponent<IDamageable>();
-        if (damageable != null)
-        {
-            int damage = shooter.GetDamage();
-            damageable.TakeDamage(damage);
-            Destroy(gameObject);
-            return;
-        }
-
-        Destroy(gameObject);
     }
 }
