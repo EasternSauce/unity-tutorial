@@ -95,7 +95,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
                 InventoryItem weapon = playerInventory?.CurrentWeapon;
                 if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
                 {
-                    SpawnArrow();
+                    attackCoroutine = StartCoroutine(SpawnArrowDelayed(targetTransform.position, 0.3f));
                 }
                 else
                 {
@@ -116,9 +116,21 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         {
             if (command.commandType == CommandType.Attack)
             {
-                SpawnArrowAtPosition(command.worldPoint);
+                ResetAttackTimer();
+                SetAnimationTimer();
+                string attackTrigger = GetAttackTrigger();
+                if (!string.IsNullOrEmpty(attackTrigger))
+                    animator.SetTrigger(attackTrigger);
+
+                attackCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, 0.3f));
             }
         }
+    }
+
+    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SpawnArrowAtPosition(targetPos);
     }
 
     private void SpawnArrowAtPosition(Vector3 position)
@@ -134,6 +146,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
         Vector3 dir = (position - spawnPos).normalized;
         arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
+        attackCoroutine = null;
     }
 
     private string GetAttackTrigger()
@@ -178,23 +191,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         return false;
     }
 
-    private void SpawnArrow()
-    {
-        if (arrowPrefab == null) return;
-
-        Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
-        GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
-
-        Arrow arrowScript = arrowObject.GetComponent<Arrow>();
-        if (arrowScript == null)
-        {
-            Destroy(arrowObject);
-            return;
-        }
-
-        arrowScript.Initialize(character, transform.forward, arrowSpeed, arrowHeightOffset);
-    }
-
     private IEnumerator DelayedDamage(Command command, float delay = -1f)
     {
         float hitTime = attackAnimationTime * 0.4f;
@@ -236,17 +232,12 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private void RotateTowardsTarget(Transform target, bool forceInstant = false)
     {
         if (target == null) return;
-
         Vector3 lookVector = target.position - transform.position;
         lookVector.y = 0f;
-
         if (lookVector == Vector3.zero) return;
-
         Quaternion targetRotation = Quaternion.LookRotation(lookVector);
-
         bool isMoving = characterMovement.Agent.velocity.magnitude > 0.1f;
         bool attackReady = CheckAttack();
-
         if (forceInstant || attackReady || isMoving)
             transform.rotation = targetRotation;
         else
@@ -268,19 +259,14 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     public void ResetState()
     {
         animationTimer = 0f;
-
         if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
             animator.ResetTrigger("FistAttack");
-
         if (AnimatorHasParameter("BowAttack", AnimatorControllerParameterType.Trigger))
             animator.ResetTrigger("BowAttack");
-
         if (AnimatorHasParameter("TwoHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
             animator.ResetTrigger("TwoHandedMeleeAttack");
-
         if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
             animator.ResetTrigger("Attack");
-
         if (attackCoroutine != null)
         {
             StopCoroutine(attackCoroutine);
