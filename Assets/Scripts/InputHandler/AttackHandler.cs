@@ -143,9 +143,10 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         SpawnArrowAtPosition(targetPos);
     }
 
-    private void SpawnArrowAtPosition(Vector3 position)
+    private void SpawnArrowAtPosition(Vector3 mouseWorldPos)
     {
         if (arrowPrefab == null) return;
+
         Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
         GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
         Arrow arrowScript = arrowObject.GetComponent<Arrow>();
@@ -154,9 +155,12 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             Destroy(arrowObject);
             return;
         }
-        Vector3 dir = (position - spawnPos).normalized;
+
+        Vector3 targetPos = mouseWorldPos;
+        targetPos.y = spawnPos.y; // keep arrow level with spawn height
+        Vector3 dir = (targetPos - spawnPos).normalized;
+
         arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
-        attackCoroutine = null;
     }
 
     private string GetAttackTrigger()
