@@ -21,6 +21,8 @@ public class SelectedItemController : MonoBehaviour
     {
         if (HasItem && selectedItemRectTransform != null)
         {
+            if (SelectedItem.IsEquipped) return;
+
             bool canShow = defeatHandler == null || !defeatHandler.IsDefeated;
             if (selectedItemRectTransform.gameObject.activeSelf != canShow)
                 selectedItemRectTransform.gameObject.SetActive(canShow);
@@ -56,6 +58,7 @@ public class SelectedItemController : MonoBehaviour
 
     public InventoryItem PickUp(InventoryItem item)
     {
+        item.IsEquipped = false;
         SetSelectedItem(item);
         return SelectedItem;
     }

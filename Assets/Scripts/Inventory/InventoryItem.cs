@@ -4,9 +4,9 @@ using UnityEngine.UI;
 public class InventoryItem : MonoBehaviour
 {
     public ItemData itemData;
-
     public int positionOnGridX;
     public int positionOnGridY;
+    public bool IsEquipped { get; set; }
 
     public void Set(ItemData itemData)
     {
@@ -15,7 +15,7 @@ public class InventoryItem : MonoBehaviour
         Vector2 size = new Vector2(
             itemData.sizeWidth * ItemGrid.TileSizeWidth,
             itemData.sizeHeight * ItemGrid.TileSizeHeight
-            );
+        );
         GetComponent<RectTransform>().sizeDelta = size;
     }
 }

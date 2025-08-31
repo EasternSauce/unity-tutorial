@@ -102,7 +102,7 @@ public class InventoryController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (selectedItemController != null && selectedItemController.HasItem)
+        if (selectedItemController != null && selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped)
         {
             ParentSelectedItem(selectedItemController.SelectedItem);
         }
