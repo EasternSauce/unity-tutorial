@@ -15,6 +15,9 @@ public class ItemGrid : MonoBehaviour
 
     [SerializeField] GameObject inventoryItemPrefab;
 
+    public int Width => gridSizeWidth;
+    public int Height => gridSizeHeight;
+
     public void Init()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -83,6 +86,7 @@ public class ItemGrid : MonoBehaviour
 
     public InventoryItem GetItem(int x, int y)
     {
+        if (!PositionCheck(x, y)) return null;
         return inventoryItemGrid[x, y];
     }
 
@@ -111,8 +115,11 @@ public class ItemGrid : MonoBehaviour
             localMousePosition.y += (item.itemData.sizeHeight - 1) * TileSizeHeight / 2;
         }
 
-        int x = (int)(localMousePosition.x / TileSizeWidth);
-        int y = (int)(-localMousePosition.y / TileSizeHeight);
+        int x = Mathf.FloorToInt(localMousePosition.x / TileSizeWidth);
+        int y = Mathf.FloorToInt(-localMousePosition.y / TileSizeHeight);
+
+        x = Mathf.Clamp(x, 0, gridSizeWidth - 1);
+        y = Mathf.Clamp(y, 0, gridSizeHeight - 1);
 
         return new Vector2Int(x, y);
     }
@@ -159,12 +166,12 @@ public class ItemGrid : MonoBehaviour
 
     public bool BoundaryCheck(int posX, int posY, int width, int height)
     {
-        if (PositionCheck(posX, posY) == false) { return false; }
+        if (!PositionCheck(posX, posY)) return false;
 
         posX += width - 1;
         posY += height - 1;
 
-        if (PositionCheck(posX, posY) == false) { return false; }
+        if (!PositionCheck(posX, posY)) return false;
 
         return true;
     }
@@ -187,6 +194,4 @@ public class ItemGrid : MonoBehaviour
 
         return overlappedItems;
     }
-
-
 }

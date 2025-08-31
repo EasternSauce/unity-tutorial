@@ -31,16 +31,27 @@ public class InventoryGridHandler : MonoBehaviour
         if (currentGrid == null) return Vector2Int.zero;
 
         RectTransform rectTransform = currentGrid.GetComponent<RectTransform>();
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, mousePosition, null, out Vector2 localMousePosition);
+        Vector2 localMousePosition;
+        Camera cam = rectTransform.GetComponentInParent<Canvas>()?.worldCamera;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, mousePosition, cam, out localMousePosition);
+
+        Vector2 pivotOffset = new Vector2(
+            rectTransform.rect.width * rectTransform.pivot.x,
+            rectTransform.rect.height * rectTransform.pivot.y
+        );
+        localMousePosition += pivotOffset;
 
         if (item != null)
         {
-            localMousePosition.x -= (item.itemData.sizeWidth - 1) * ItemGrid.TileSizeWidth / 2;
-            localMousePosition.y += (item.itemData.sizeHeight - 1) * ItemGrid.TileSizeHeight / 2;
+            localMousePosition.x -= (item.itemData.sizeWidth - 1) * ItemGrid.TileSizeWidth / 2f;
+            localMousePosition.y += (item.itemData.sizeHeight - 1) * ItemGrid.TileSizeHeight / 2f;
         }
 
         int x = Mathf.FloorToInt(localMousePosition.x / ItemGrid.TileSizeWidth);
-        int y = Mathf.FloorToInt(-localMousePosition.y / ItemGrid.TileSizeHeight);
+        int y = Mathf.FloorToInt((rectTransform.rect.height - localMousePosition.y) / ItemGrid.TileSizeHeight);
+
+        x = Mathf.Clamp(x, 0, currentGrid.Width - 1);
+        y = Mathf.Clamp(y, 0, currentGrid.Height - 1);
 
         return new Vector2Int(x, y);
     }
