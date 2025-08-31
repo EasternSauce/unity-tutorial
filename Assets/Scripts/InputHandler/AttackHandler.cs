@@ -95,7 +95,11 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
                 InventoryItem weapon = playerInventory?.CurrentWeapon;
                 if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
                 {
-                    attackCoroutine = StartCoroutine(SpawnArrowDelayed(targetTransform.position, 0.3f));
+                    if (!command.isComplete)
+                    {
+                        command.isComplete = true;
+                        attackCoroutine = StartCoroutine(SpawnArrowDelayed(targetTransform.position, 0.3f));
+                    }
                 }
                 else
                 {
@@ -114,8 +118,14 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
         else
         {
-            if (command.commandType == CommandType.Attack)
+            if (command.commandType == CommandType.Attack && !command.isComplete)
             {
+                command.isComplete = true;
+
+                characterMovement.Stop();
+                if (characterMovement.Agent != null)
+                    characterMovement.Agent.isStopped = true;
+
                 ResetAttackTimer();
                 SetAnimationTimer();
                 string attackTrigger = GetAttackTrigger();
@@ -126,6 +136,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             }
         }
     }
+
 
     private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
     {
