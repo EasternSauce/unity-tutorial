@@ -3,7 +3,7 @@ using UnityEngine;
 public class SelectedItemController : MonoBehaviour
 {
     public InventoryItem SelectedItem { get; private set; }
-    public bool HasItem => SelectedItem != null && !SelectedItem.IsEquipped;
+    public bool HasItem => SelectedItem != null;
 
     [SerializeField] private RectTransform parentTransform;
     [SerializeField] private CharacterDefeatHandler defeatHandler;
@@ -40,8 +40,6 @@ public class SelectedItemController : MonoBehaviour
             return;
         }
 
-        if (item.IsEquipped) return;
-
         SelectedItem = item;
         selectedItemRectTransform = item.GetComponent<RectTransform>();
         selectedItemRectTransform.SetParent(parentTransform, false);
@@ -58,7 +56,6 @@ public class SelectedItemController : MonoBehaviour
 
     public InventoryItem PickUp(InventoryItem item)
     {
-        if (item.IsEquipped) return null;
         SetSelectedItem(item);
         return SelectedItem;
     }

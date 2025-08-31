@@ -15,8 +15,12 @@ public class Arrow : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
         rb.linearVelocity = direction.normalized * speed;
-        transform.forward = rb.linearVelocity.normalized;
+
+        Quaternion rotation = Quaternion.LookRotation(rb.linearVelocity);
+        rotation *= Quaternion.Euler(-90f, 0f, 0f);
+        transform.rotation = rotation;
     }
+
 
     private void FixedUpdate()
     {
