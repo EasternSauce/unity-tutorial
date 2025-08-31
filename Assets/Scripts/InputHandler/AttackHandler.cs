@@ -157,7 +157,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
 
         Vector3 targetPos = mouseWorldPos;
-        targetPos.y = spawnPos.y; // keep arrow level with spawn height
+        targetPos.y = spawnPos.y;
         Vector3 dir = (targetPos - spawnPos).normalized;
 
         arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
