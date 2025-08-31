@@ -50,6 +50,12 @@ public class InventoryGridHandler : MonoBehaviour
         int x = Mathf.FloorToInt(localMousePosition.x / ItemGrid.TileSizeWidth);
         int y = Mathf.FloorToInt((rectTransform.rect.height - localMousePosition.y) / ItemGrid.TileSizeHeight);
 
+        if (item != null)
+        {
+            x = Mathf.Min(x, currentGrid.Width - item.itemData.sizeWidth);
+            y = Mathf.Min(y, currentGrid.Height - item.itemData.sizeHeight);
+        }
+
         x = Mathf.Clamp(x, 0, currentGrid.Width - 1);
         y = Mathf.Clamp(y, 0, currentGrid.Height - 1);
 
