@@ -5,34 +5,29 @@ public class PlayerInventory : MonoBehaviour
 {
     public int currency;
 
-    [SerializeField] ItemGrid mainInventoryItemGrid;
-    [SerializeField] public InventoryController inventoryController;
-    [SerializeField] List<EquipmentItemSlot> slots;
+    [SerializeField] private ItemGrid mainInventoryItemGrid;
+    [SerializeField] private InventoryController inventoryController;
+    public InventoryController InventoryController => inventoryController;
+    [SerializeField] private List<EquipmentItemSlot> slots;
+    [SerializeField] private List<ItemData> itemsOnStart;
 
-    Character character;
-    [SerializeField] List<ItemData> itemsOnStart;
-
+    private Character character;
     public InventoryItem CurrentWeapon { get; private set; }
 
     private void Start()
     {
         mainInventoryItemGrid.Init();
 
-        for (int i = 0; i < slots.Count; i++)
-        {
-            slots[i].Init(this);
-        }
+        foreach (var slot in slots)
+            slot.Init(this);
 
         character = GetComponent<Character>();
-
         UpdateCurrentWeapon();
 
-        if (itemsOnStart == null) { return; }
+        if (itemsOnStart == null) return;
 
-        for (int i = 0; i < itemsOnStart.Count; i++)
-        {
-            AddItem(itemsOnStart[i]);
-        }
+        foreach (var item in itemsOnStart)
+            AddItem(item);
     }
 
     public void AddCurrency(int amount)
@@ -42,27 +37,21 @@ public class PlayerInventory : MonoBehaviour
 
     public bool AddItem(ItemData itemData)
     {
-        Vector2Int? positionToPlace = mainInventoryItemGrid.FindSpaceForObject(itemData);
-
-        if (positionToPlace == null) { return false; }
+        Vector2Int? position = mainInventoryItemGrid.FindSpaceForObject(itemData);
+        if (position == null) return false;
 
         InventoryItem newItem = inventoryController.CreateNewInventoryItem(itemData);
-        mainInventoryItemGrid.PlaceItem(newItem, positionToPlace.Value.x, positionToPlace.Value.y);
-
+        mainInventoryItemGrid.PlaceItem(newItem, position.Value.x, position.Value.y);
         return true;
     }
 
-    public bool TryAddItemOrDrop(ItemData itemData, InventoryController inventoryController)
+    public bool TryAddItemOrDrop(ItemData itemData, InventoryController controller)
     {
-        bool added = AddItem(itemData);
-        if (!added)
-        {
-            InventoryItem tempItem = inventoryController.CreateNewInventoryItem(itemData);
-            inventoryController.DropItem(GameManager.instance.playerObject.transform.position, tempItem);
-            return false;
-        }
+        if (AddItem(itemData)) return true;
 
-        return true;
+        InventoryItem tempItem = controller.CreateNewInventoryItem(itemData);
+        controller.DropItem(GameManager.instance.playerObject.transform.position, tempItem);
+        return false;
     }
 
     public void AddStats(List<StatsValue> statsValues)
@@ -75,7 +64,6 @@ public class PlayerInventory : MonoBehaviour
         character.SubstractStats(stats);
     }
 
-
     public void UpdateCurrentWeapon()
     {
         CurrentWeapon = null;
@@ -85,10 +73,8 @@ public class PlayerInventory : MonoBehaviour
             if (item != null && item.itemData.equipmentSlot == EquipmentSlot.Weapon)
             {
                 CurrentWeapon = item;
-                item.IsEquipped = true;
                 break;
             }
         }
     }
-
 }
