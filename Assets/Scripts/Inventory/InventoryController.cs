@@ -29,7 +29,8 @@ public class InventoryController : MonoBehaviour
         }
     }
 
-    public bool HasItemOnCursor => selectedItemController.HasItem;
+    public bool HasItemOnCursor => selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped;
+    public SelectedItemController SelectedItemController => selectedItemController;
 
     private void Awake()
     {
@@ -72,7 +73,7 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        if (selectedItemController.HasItem && !UIUtility.IsPointerOverUI(mousePosition))
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped && !UIUtility.IsPointerOverUI(mousePosition))
         {
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
         }
@@ -80,7 +81,8 @@ public class InventoryController : MonoBehaviour
 
     public void ThrowItemOnGround()
     {
-        ItemDropUtility.ThrowItemOnGround(selectedItemController);
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped)
+            ItemDropUtility.ThrowItemOnGround(selectedItemController);
     }
 
     public void DropItem(Vector3 dropPosition, InventoryItem itemToDrop)

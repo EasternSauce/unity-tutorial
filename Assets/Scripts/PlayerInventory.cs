@@ -85,8 +85,10 @@ public class PlayerInventory : MonoBehaviour
             if (item != null && item.itemData.equipmentSlot == EquipmentSlot.Weapon)
             {
                 CurrentWeapon = item;
+                item.IsEquipped = true;
                 break;
             }
         }
     }
+
 }
