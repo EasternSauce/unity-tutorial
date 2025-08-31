@@ -4,10 +4,17 @@ public class ItemHighlightController : MonoBehaviour
 {
     [SerializeField] private InventoryHighlight inventoryHighlight;
     [SerializeField] private ItemGrid currentGrid;
+    [SerializeField] private InventoryGridHandler gridHandler;
 
     private InventoryItem selectedItem;
     private Vector2Int lastPosition = new Vector2Int(int.MinValue, int.MinValue);
     private Canvas parentCanvas;
+
+    private void Awake()
+    {
+        if (gridHandler == null)
+            gridHandler = FindFirstObjectByType<InventoryGridHandler>();
+    }
 
     public void SetCurrentGrid(ItemGrid grid)
     {
@@ -29,13 +36,7 @@ public class ItemHighlightController : MonoBehaviour
             return;
         }
 
-        if (!IsPointerInsideGrid())
-        {
-            ClearHighlight();
-            return;
-        }
-
-        Vector2Int pos = currentGrid.GetTileGridPosition(Input.mousePosition, selectedItem);
+        Vector2Int pos = gridHandler.GetClampedTileGridPosition(Input.mousePosition, selectedItem);
         lastPosition = pos;
         UpdateHighlight(pos);
     }
@@ -53,7 +54,7 @@ public class ItemHighlightController : MonoBehaviour
 
     private void Update()
     {
-        if (currentGrid == null || inventoryHighlight == null)
+        if (currentGrid == null || inventoryHighlight == null || gridHandler == null)
         {
             ClearHighlight();
             return;
@@ -63,24 +64,11 @@ public class ItemHighlightController : MonoBehaviour
             ClearHighlight();
             return;
         }
-        if (!IsPointerInsideGrid())
-        {
-            ClearHighlight();
-            return;
-        }
-        Vector2Int positionOnGrid = currentGrid.GetTileGridPosition(Input.mousePosition, selectedItem);
+
+        Vector2Int positionOnGrid = gridHandler.GetClampedTileGridPosition(Input.mousePosition, selectedItem);
         if (positionOnGrid == lastPosition) return;
         lastPosition = positionOnGrid;
         UpdateHighlight(positionOnGrid);
-    }
-
-    private bool IsPointerInsideGrid()
-    {
-        RectTransform rectTransform = currentGrid.GetComponent<RectTransform>();
-        Vector2 localMousePos;
-        Camera cam = parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? parentCanvas.worldCamera : null;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, Input.mousePosition, cam, out localMousePos);
-        return rectTransform.rect.Contains(localMousePos);
     }
 
     private void UpdateHighlight(Vector2Int positionOnGrid)

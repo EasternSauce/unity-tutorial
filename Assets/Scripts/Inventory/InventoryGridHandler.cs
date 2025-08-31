@@ -50,16 +50,25 @@ public class InventoryGridHandler : MonoBehaviour
         int x = Mathf.FloorToInt(localMousePosition.x / ItemGrid.TileSizeWidth);
         int y = Mathf.FloorToInt((rectTransform.rect.height - localMousePosition.y) / ItemGrid.TileSizeHeight);
 
-        if (item != null)
-        {
-            x = Mathf.Min(x, currentGrid.Width - item.itemData.sizeWidth);
-            y = Mathf.Min(y, currentGrid.Height - item.itemData.sizeHeight);
-        }
-
         x = Mathf.Clamp(x, 0, currentGrid.Width - 1);
         y = Mathf.Clamp(y, 0, currentGrid.Height - 1);
 
         return new Vector2Int(x, y);
+    }
+
+    public Vector2Int GetClampedTileGridPosition(Vector2 mousePosition, InventoryItem item)
+    {
+        if (currentGrid == null) return Vector2Int.zero;
+
+        Vector2Int pos = GetTileGridPosition(mousePosition, item);
+        if (item != null)
+        {
+            pos.x = Mathf.Min(pos.x, currentGrid.Width - item.itemData.sizeWidth);
+            pos.y = Mathf.Min(pos.y, currentGrid.Height - item.itemData.sizeHeight);
+        }
+        pos.x = Mathf.Clamp(pos.x, 0, currentGrid.Width - 1);
+        pos.y = Mathf.Clamp(pos.y, 0, currentGrid.Height - 1);
+        return pos;
     }
 
     public void InsertItem(ItemGrid grid, InventoryItem itemToInsert)
@@ -102,7 +111,7 @@ public class InventoryGridHandler : MonoBehaviour
     public void HandleClick(ItemGrid grid, Vector2 mousePosition, SelectedItemController selectedItemController, ItemHighlightController itemHighlightController)
     {
         InventoryItem selectedItem = selectedItemController.HasItem ? selectedItemController.SelectedItem : null;
-        Vector2Int tilePos = GetTileGridPosition(mousePosition, selectedItem);
+        Vector2Int tilePos = GetClampedTileGridPosition(mousePosition, selectedItem);
 
         if (selectedItem != null)
         {
