@@ -35,15 +35,11 @@ public class PlayerCharacterInput : MonoBehaviour
         {
             commandLockTimer -= Time.deltaTime;
             if (commandLockTimer <= 0f)
-            {
                 commandLock = false;
-            }
         }
 
         if (isHoldActive && !isOverUIElement && !commandLock)
-        {
             LMB_Hold_CommandProcess();
-        }
     }
 
     private void LMB_Hold_CommandProcess()
@@ -53,7 +49,7 @@ public class PlayerCharacterInput : MonoBehaviour
 
         if (isLMBPressed && !isOverUIElement)
         {
-            if (inventoryController.HasItemOnCursor)
+            if (inventoryController.HasItemOnCursor && !inventoryController.SelectedItemController.SelectedItem.IsEquipped)
             {
                 inventoryController.ThrowItemOnGround();
                 SetCommandLock();
@@ -61,9 +57,7 @@ public class PlayerCharacterInput : MonoBehaviour
             }
 
             if (interactInput.TryGetTerrainPoint(out var point))
-            {
                 MoveCommand(point);
-            }
         }
     }
 
@@ -75,9 +69,7 @@ public class PlayerCharacterInput : MonoBehaviour
             isHoldActive = true;
 
             if (!isOverUIElement)
-            {
                 LMB_Press_ProcessCommand();
-            }
         }
 
         if (callbackContext.canceled)
@@ -90,7 +82,7 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void LMB_Press_ProcessCommand()
     {
-        if (inventoryController.HasItemOnCursor)
+        if (inventoryController.HasItemOnCursor && !inventoryController.SelectedItemController.SelectedItem.IsEquipped)
         {
             inventoryController.ThrowItemOnGround();
             SetCommandLock();
@@ -105,9 +97,7 @@ public class PlayerCharacterInput : MonoBehaviour
         }
 
         if (interactInput.TryGetTerrainPoint(out var point))
-        {
             MoveCommand(point);
-        }
     }
 
     private void SetCommandLock()
@@ -131,8 +121,6 @@ public class PlayerCharacterInput : MonoBehaviour
     {
         var attackHandler = GetComponent<AttackHandler>();
         if (attackHandler != null)
-        {
             attackHandler.ResetState();
-        }
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 public class SelectedItemController : MonoBehaviour
 {
     public InventoryItem SelectedItem { get; private set; }
-    public bool HasItem => SelectedItem != null && !SelectedItem.IsEquipped;
+    public bool HasItem => SelectedItem != null && SelectedItem.gameObject.activeInHierarchy && !SelectedItem.IsEquipped;
 
     [SerializeField] private RectTransform parentTransform;
     [SerializeField] private CharacterDefeatHandler defeatHandler;
@@ -19,22 +19,21 @@ public class SelectedItemController : MonoBehaviour
 
     private void Update()
     {
-        if (HasItem && selectedItemRectTransform != null)
-        {
-            bool canShow = defeatHandler == null || !defeatHandler.IsDefeated;
-            if (selectedItemRectTransform.gameObject.activeSelf != canShow)
-                selectedItemRectTransform.gameObject.SetActive(canShow);
+        if (!HasItem || selectedItemRectTransform == null) return;
 
-            Vector2 mousePos = Input.mousePosition;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                parentTransform, mousePos, canvas.worldCamera, out Vector2 localPoint);
-            selectedItemRectTransform.localPosition = localPoint;
-        }
+        bool canShow = defeatHandler == null || !defeatHandler.IsDefeated;
+        if (selectedItemRectTransform.gameObject.activeSelf != canShow)
+            selectedItemRectTransform.gameObject.SetActive(canShow);
+
+        Vector2 mousePos = Input.mousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            parentTransform, mousePos, canvas.worldCamera, out Vector2 localPoint);
+        selectedItemRectTransform.localPosition = localPoint;
     }
 
     public void SetSelectedItem(InventoryItem item)
     {
-        if (item == null || item.IsEquipped)
+        if (!IsValidItem(item))
         {
             ClearSelectedItem();
             return;
@@ -56,23 +55,26 @@ public class SelectedItemController : MonoBehaviour
 
     public InventoryItem PickUp(InventoryItem item)
     {
-        if (item == null || item.IsEquipped)
-            return null;
-
+        if (!IsValidItem(item)) return null;
         SetSelectedItem(item);
         return SelectedItem;
     }
 
     public InventoryItem Drop()
     {
-        if (defeatHandler != null && defeatHandler.IsDefeated)
-            return null;
-
-        if (SelectedItem == null || SelectedItem.IsEquipped)
-            return null;
+        if (!HasItem) return null;
+        if (defeatHandler != null && defeatHandler.IsDefeated) return null;
 
         InventoryItem temp = SelectedItem;
         ClearSelectedItem();
         return temp;
+    }
+
+    private bool IsValidItem(InventoryItem item)
+    {
+        if (item == null) return false;
+        if (item.IsEquipped) return false;
+        if (!item.gameObject.activeInHierarchy) return false;
+        return true;
     }
 }
