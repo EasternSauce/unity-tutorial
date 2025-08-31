@@ -30,7 +30,7 @@ public class ItemHighlightController : MonoBehaviour
             return;
         }
 
-        if (!currentGrid.gameObject.activeInHierarchy)
+        if (!currentGrid.gameObject.activeInHierarchy || !IsPointerInsideGrid())
         {
             ClearHighlight();
             return;
@@ -59,7 +59,8 @@ public class ItemHighlightController : MonoBehaviour
             ClearHighlight();
             return;
         }
-        if (!currentGrid.gameObject.activeInHierarchy)
+
+        if (!currentGrid.gameObject.activeInHierarchy || !IsPointerInsideGrid())
         {
             ClearHighlight();
             return;
@@ -69,6 +70,15 @@ public class ItemHighlightController : MonoBehaviour
         if (positionOnGrid == lastPosition) return;
         lastPosition = positionOnGrid;
         UpdateHighlight(positionOnGrid);
+    }
+
+    private bool IsPointerInsideGrid()
+    {
+        RectTransform rectTransform = currentGrid.GetComponent<RectTransform>();
+        Vector2 localMousePos;
+        Camera cam = parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? parentCanvas.worldCamera : null;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, Input.mousePosition, cam, out localMousePos);
+        return rectTransform.rect.Contains(localMousePos);
     }
 
     private void UpdateHighlight(Vector2Int positionOnGrid)
