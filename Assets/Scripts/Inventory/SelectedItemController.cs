@@ -6,8 +6,8 @@ public class SelectedItemController : MonoBehaviour
     public bool HasItem => SelectedItem != null;
 
     [SerializeField] private RectTransform parentTransform;
-    [SerializeField] private MouseInput mouseInput;
     [SerializeField] private CharacterDefeatHandler defeatHandler;
+    [SerializeField] private Canvas canvas;
 
     private RectTransform selectedItemRectTransform;
 
@@ -24,6 +24,11 @@ public class SelectedItemController : MonoBehaviour
             bool canShow = defeatHandler == null || !defeatHandler.IsDefeated;
             if (selectedItemRectTransform.gameObject.activeSelf != canShow)
                 selectedItemRectTransform.gameObject.SetActive(canShow);
+
+            Vector2 mousePos = Input.mousePosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentTransform, mousePos, canvas.worldCamera, out Vector2 localPoint);
+            selectedItemRectTransform.localPosition = localPoint;
         }
     }
 
@@ -37,7 +42,7 @@ public class SelectedItemController : MonoBehaviour
 
         SelectedItem = item;
         selectedItemRectTransform = item.GetComponent<RectTransform>();
-        selectedItemRectTransform.SetParent(parentTransform, true);
+        selectedItemRectTransform.SetParent(parentTransform, false);
         selectedItemRectTransform.localScale = Vector3.one;
         selectedItemRectTransform.pivot = new Vector2(0.5f, 0.5f);
         selectedItemRectTransform.SetAsLastSibling();
