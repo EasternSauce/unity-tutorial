@@ -65,8 +65,36 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     {
         if (command == null || (command.target == null && command.commandType != CommandType.Attack)) return;
 
-        if (command.target != null)
+        PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+        InventoryItem weapon = playerInventory?.CurrentWeapon;
+
+        bool isBow = weapon != null && weapon.itemData.weaponType == WeaponType.Bow;
+
+        if (isBow)
         {
+            if (!command.isComplete)
+            {
+                command.isComplete = true;
+
+                characterMovement.Stop();
+                if (characterMovement.Agent != null)
+                    characterMovement.Agent.isStopped = true;
+
+                ResetAttackTimer();
+                SetAnimationTimer();
+                string attackTrigger = GetAttackTrigger();
+                if (!string.IsNullOrEmpty(attackTrigger))
+                    animator.SetTrigger(attackTrigger);
+
+                RotateTowardsPoint(command.worldPoint);
+
+                attackCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, 0.3f));
+            }
+        }
+        else
+        {
+            if (command.target == null) return;
+
             float distance = Vector3.Distance(transform.position, command.target.transform.position);
             float attackBuffer = 0.1f;
             Transform targetTransform = command.target.transform;
@@ -91,20 +119,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
                 if (attackCoroutine != null)
                     StopCoroutine(attackCoroutine);
 
-                PlayerInventory playerInventory = GetComponent<PlayerInventory>();
-                InventoryItem weapon = playerInventory?.CurrentWeapon;
-                if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
-                {
-                    if (!command.isComplete)
-                    {
-                        command.isComplete = true;
-                        attackCoroutine = StartCoroutine(SpawnArrowDelayed(targetTransform.position, 0.3f));
-                    }
-                }
-                else
-                {
-                    attackCoroutine = StartCoroutine(DelayedDamage(command));
-                }
+                attackCoroutine = StartCoroutine(DelayedDamage(command));
             }
             else
             {
@@ -114,25 +129,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
                 characterMovement.Agent.stoppingDistance = 0f;
                 characterMovement.Agent.isStopped = false;
                 characterMovement.SetDestination(destination);
-            }
-        }
-        else
-        {
-            if (command.commandType == CommandType.Attack && !command.isComplete)
-            {
-                command.isComplete = true;
-
-                characterMovement.Stop();
-                if (characterMovement.Agent != null)
-                    characterMovement.Agent.isStopped = true;
-
-                ResetAttackTimer();
-                SetAnimationTimer();
-                string attackTrigger = GetAttackTrigger();
-                if (!string.IsNullOrEmpty(attackTrigger))
-                    animator.SetTrigger(attackTrigger);
-
-                attackCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, 0.3f));
             }
         }
     }
@@ -156,10 +152,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             return;
         }
 
-        Vector3 targetPos = mouseWorldPos;
-        targetPos.y = spawnPos.y;
-        Vector3 dir = (targetPos - spawnPos).normalized;
-
+        Vector3 dir = (mouseWorldPos - spawnPos).normalized;
+        dir.y = 0f;
         arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
     }
 
@@ -249,13 +243,24 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         Vector3 lookVector = target.position - transform.position;
         lookVector.y = 0f;
         if (lookVector == Vector3.zero) return;
+
         Quaternion targetRotation = Quaternion.LookRotation(lookVector);
+
         bool isMoving = characterMovement.Agent.velocity.magnitude > 0.1f;
         bool attackReady = CheckAttack();
+
         if (forceInstant || attackReady || isMoving)
             transform.rotation = targetRotation;
         else
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);
+    }
+
+    private void RotateTowardsPoint(Vector3 point)
+    {
+        Vector3 lookVector = point - transform.position;
+        lookVector.y = 0f;
+        if (lookVector == Vector3.zero) return;
+        transform.rotation = Quaternion.LookRotation(lookVector);
     }
 
     private void ResetAttackTimer()
