@@ -15,15 +15,17 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     float attackTimer;
     float animationTimer;
 
-    [Tooltip("Fraction of attack progress after which it cannot be canceled (0.3 = 30%)")]
-    [SerializeField] float attackLockThreshold = 0.45f;
+    [Tooltip("Fraction of animation progress after which movement/attack is locked")]
+    [SerializeField] float attackLockStart = 0.3f;
+    [Tooltip("Fraction of animation progress at which movement/attack unlocks")]
+    [SerializeField] float attackLockEnd = 0.6f;
     bool isAttackLocked = false;
 
     [Header("Bow Settings")]
     [SerializeField] GameObject arrowPrefab;
     [SerializeField] float arrowSpeed = 15f;
     [SerializeField] float arrowHeightOffset = 1.2f;
-    [Tooltip("Fraction of animation progress at which arrow is shot (0-1)")]
+    [Tooltip("Fraction of animation progress at which arrow is shot")]
     [SerializeField] float arrowSpawnProgress = 0.3f;
 
     Animator animator;
@@ -48,7 +50,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     private void UpdateCanMoveState()
     {
-        canMoveState.isAttacking = animationTimer > 0f;
+        canMoveState.isAttacking = isAttackLocked;
     }
 
     private void AnimationTimerTick()
@@ -56,11 +58,12 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         if (animationTimer > 0f)
         {
             animationTimer -= Time.deltaTime;
-
             float progress = 1f - (animationTimer / attackAnimationTime);
 
-            if (!isAttackLocked && progress >= attackLockThreshold)
+            if (!isAttackLocked && progress >= attackLockStart && progress <= attackLockEnd)
                 isAttackLocked = true;
+            else if (isAttackLocked && progress > attackLockEnd)
+                isAttackLocked = false;
         }
         else
         {
