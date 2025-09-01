@@ -5,13 +5,21 @@ using UnityEngine;
 public class AttackHandler : MonoBehaviour, ICommandHandle
 {
     Character character;
+
+    [Header("Melee Settings")]
     [SerializeField] float attackRange = 2.5f;
     [SerializeField] float defaultTimeToAttack = 1f;
-    float attackTimer;
 
+    [Header("Animation Settings")]
     [SerializeField] float attackAnimationTime = 1f;
+    float attackTimer;
     float animationTimer;
 
+    [Tooltip("Fraction of attack progress after which it cannot be canceled (0.3 = 30%)")]
+    [SerializeField] float attackLockThreshold = 0.45f;
+    bool isAttackLocked = false;
+
+    [Header("Bow Settings")]
     [SerializeField] GameObject arrowPrefab;
     [SerializeField] float arrowSpeed = 15f;
     [SerializeField] float arrowHeightOffset = 1.2f;
@@ -19,7 +27,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     Animator animator;
     CharacterMovement characterMovement;
     CanMoveState canMoveState;
-
     Coroutine attackCoroutine;
 
     private void Awake()
@@ -45,7 +52,18 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private void AnimationTimerTick()
     {
         if (animationTimer > 0f)
+        {
             animationTimer -= Time.deltaTime;
+
+            float progress = 1f - (animationTimer / attackAnimationTime);
+
+            if (!isAttackLocked && progress >= attackLockThreshold)
+                isAttackLocked = true;
+        }
+        else
+        {
+            isAttackLocked = false;
+        }
     }
 
     private void AttackTimerTick()
@@ -63,73 +81,77 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     public void ProcessCommand(Command command)
     {
-        if (command == null || (command.target == null && command.commandType != CommandType.Attack)) return;
+        if (command == null || (command.target == null && command.commandType != CommandType.Attack))
+            return;
 
         PlayerInventory playerInventory = GetComponent<PlayerInventory>();
         InventoryItem weapon = playerInventory?.CurrentWeapon;
-
         bool isBow = weapon != null && weapon.itemData.weaponType == WeaponType.Bow;
 
         if (isBow)
+            HandleBowAttack(command);
+        else
+            HandleMeleeAttack(command);
+    }
+
+    private void HandleBowAttack(Command command)
+    {
+        if (command.isComplete) return;
+
+        command.isComplete = true;
+
+        characterMovement.Stop();
+        if (characterMovement.Agent != null)
+            characterMovement.Agent.isStopped = true;
+
+        ResetAttackTimer();
+        SetAnimationTimer();
+        TriggerAttackAnimation();
+
+        RotateTowardsPoint(command.worldPoint);
+
+        if (attackCoroutine != null)
+            StopCoroutine(attackCoroutine);
+
+        attackCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, 0.3f));
+    }
+
+    private void HandleMeleeAttack(Command command)
+    {
+        if (command.target == null) return;
+
+        float distance = Vector3.Distance(transform.position, command.target.transform.position);
+        float attackBuffer = 0.1f;
+        Transform targetTransform = command.target.transform;
+
+        RotateTowardsTarget(targetTransform);
+
+        if (distance <= attackRange + attackBuffer)
         {
-            if (!command.isComplete)
-            {
-                command.isComplete = true;
+            characterMovement.Stop();
+            characterMovement.Agent.isStopped = true;
 
-                characterMovement.Stop();
-                if (characterMovement.Agent != null)
-                    characterMovement.Agent.isStopped = true;
+            if (!CheckAttack()) return;
 
-                ResetAttackTimer();
-                SetAnimationTimer();
-                string attackTrigger = GetAttackTrigger();
-                if (!string.IsNullOrEmpty(attackTrigger))
-                    animator.SetTrigger(attackTrigger);
+            RotateTowardsTarget(targetTransform, true);
 
-                RotateTowardsPoint(command.worldPoint);
+            ResetAttackTimer();
+            SetAnimationTimer();
+            TriggerAttackAnimation();
 
-                attackCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, 0.3f));
-            }
+            if (attackCoroutine != null)
+                StopCoroutine(attackCoroutine);
+
+            attackCoroutine = StartCoroutine(DelayedDamage(command));
         }
         else
         {
-            if (command.target == null) return;
+            Vector3 direction = (targetTransform.position - transform.position).normalized;
+            Vector3 destination = targetTransform.position - direction * attackRange;
 
-            float distance = Vector3.Distance(transform.position, command.target.transform.position);
-            float attackBuffer = 0.1f;
-            Transform targetTransform = command.target.transform;
-            RotateTowardsTarget(targetTransform);
-
-            if (distance <= attackRange + attackBuffer)
-            {
-                characterMovement.Stop();
-                characterMovement.Agent.isStopped = true;
-
-                if (!CheckAttack()) return;
-
-                RotateTowardsTarget(targetTransform, true);
-
-                ResetAttackTimer();
-                SetAnimationTimer();
-
-                string attackTrigger = GetAttackTrigger();
-                if (!string.IsNullOrEmpty(attackTrigger))
-                    animator.SetTrigger(attackTrigger);
-
-                if (attackCoroutine != null)
-                    StopCoroutine(attackCoroutine);
-
-                attackCoroutine = StartCoroutine(DelayedDamage(command));
-            }
-            else
-            {
-                Vector3 direction = (targetTransform.position - transform.position).normalized;
-                Vector3 destination = targetTransform.position - direction * attackRange;
-
-                characterMovement.Agent.stoppingDistance = 0f;
-                characterMovement.Agent.isStopped = false;
-                characterMovement.SetDestination(destination);
-            }
+            characterMovement.Agent.stoppingDistance = 0f;
+            characterMovement.Agent.isStopped = false;
+            characterMovement.SetDestination(destination);
         }
     }
 
@@ -146,6 +168,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
         GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
         Arrow arrowScript = arrowObject.GetComponent<Arrow>();
+
         if (arrowScript == null)
         {
             Destroy(arrowObject);
@@ -154,6 +177,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         Vector3 dir = (mouseWorldPos - spawnPos).normalized;
         dir.y = 0f;
+
         arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
     }
 
@@ -186,7 +210,15 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
         if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
             return "Attack";
+
         return null;
+    }
+
+    private void TriggerAttackAnimation()
+    {
+        string attackTrigger = GetAttackTrigger();
+        if (!string.IsNullOrEmpty(attackTrigger))
+            animator.SetTrigger(attackTrigger);
     }
 
     private bool AnimatorHasParameter(string paramName, AnimatorControllerParameterType type)
@@ -203,6 +235,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     {
         float hitTime = attackAnimationTime * 0.4f;
         if (delay >= 0f) hitTime = delay;
+
         yield return new WaitForSeconds(hitTime);
 
         if (command == null || command.isComplete || command.target == null)
@@ -230,6 +263,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private void SetAnimationTimer()
     {
         animationTimer = attackAnimationTime;
+        isAttackLocked = false;
     }
 
     public bool CheckAttack()
@@ -240,6 +274,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private void RotateTowardsTarget(Transform target, bool forceInstant = false)
     {
         if (target == null) return;
+
         Vector3 lookVector = target.position - transform.position;
         lookVector.y = 0f;
         if (lookVector == Vector3.zero) return;
@@ -260,12 +295,15 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         Vector3 lookVector = point - transform.position;
         lookVector.y = 0f;
         if (lookVector == Vector3.zero) return;
+
         transform.rotation = Quaternion.LookRotation(lookVector);
     }
 
     private void ResetAttackTimer()
     {
         attackTimer = GetAttackTime();
+        animationTimer = attackAnimationTime;
+        isAttackLocked = false;
     }
 
     private void DealDamage(Command command)
@@ -277,7 +315,12 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     public void ResetState()
     {
+        if (isAttackLocked)
+            return;
+
         animationTimer = 0f;
+        isAttackLocked = false;
+
         if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
             animator.ResetTrigger("FistAttack");
         if (AnimatorHasParameter("BowAttack", AnimatorControllerParameterType.Trigger))
@@ -286,6 +329,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             animator.ResetTrigger("TwoHandedMeleeAttack");
         if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
             animator.ResetTrigger("Attack");
+
         if (attackCoroutine != null)
         {
             StopCoroutine(attackCoroutine);
