@@ -6,15 +6,14 @@ public class Arrow : MonoBehaviour
     private Vector3 velocity;
 
     [SerializeField] private float lifetime = 10f;
+    [SerializeField] private Vector3 rotationOffset = new Vector3(0f, 90f, 0f);
 
     public void Initialize(Character shooter, Vector3 direction, float speed, float heightOffset)
     {
         this.shooter = shooter;
         velocity = direction.normalized * speed;
 
-        Quaternion rotation = Quaternion.LookRotation(velocity);
-        rotation *= Quaternion.Euler(0f, 90f, 0f);
-        transform.rotation = rotation;
+        transform.rotation = Quaternion.LookRotation(velocity) * Quaternion.Euler(rotationOffset);
 
         Destroy(gameObject, lifetime);
     }
@@ -22,7 +21,7 @@ public class Arrow : MonoBehaviour
     private void Update()
     {
         transform.position += velocity * Time.deltaTime;
-        transform.rotation = Quaternion.LookRotation(velocity);
+        transform.rotation = Quaternion.LookRotation(velocity) * Quaternion.Euler(rotationOffset);
     }
 
     private void OnTriggerEnter(Collider other)
