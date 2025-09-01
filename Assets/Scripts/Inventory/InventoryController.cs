@@ -7,6 +7,7 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private ItemHighlightController itemHighlightController;
     [SerializeField] private GameObject inventoryItemPrefab;
     [SerializeField] private Transform targetCanvas;
+    [SerializeField] private UiPanelManager uiPanelManager;
 
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
@@ -34,6 +35,9 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
+        if (uiPanelManager == null)
+            uiPanelManager = FindFirstObjectByType<UiPanelManager>();
+
         CreateSelectedItemParentIfMissing();
     }
 
@@ -62,6 +66,8 @@ public class InventoryController : MonoBehaviour
 
     public void HandlePrimaryClick(Vector2 mousePosition)
     {
+        if (!uiPanelManager || !uiPanelManager.IsInventoryOpen) return;
+
         if (selectedItemGrid != null)
         {
             gridHandler.HandleClick(selectedItemGrid, mousePosition, selectedItemController, itemHighlightController);
@@ -74,7 +80,7 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        if (selectedItemController.HasItem && !UIUtility.IsPointerOverUI(mousePosition))
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped && !UIUtility.IsPointerOverUI(mousePosition))
         {
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
         }
@@ -82,13 +88,16 @@ public class InventoryController : MonoBehaviour
 
     public void ThrowItemOnGround()
     {
-        if (selectedItemController.HasItem)
+        if (!uiPanelManager || !uiPanelManager.IsInventoryOpen) return;
+
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped)
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
     }
 
     public void DropItem(Vector3 dropPosition, InventoryItem itemToDrop)
     {
-        ItemDropUtility.DropItem(dropPosition, itemToDrop);
+        if (itemToDrop != null && !itemToDrop.IsEquipped)
+            ItemDropUtility.DropItem(dropPosition, itemToDrop);
     }
 
     public InventoryItem CreateNewInventoryItem(ItemData itemData)
@@ -107,7 +116,10 @@ public class InventoryController : MonoBehaviour
     {
         if (selectedItemController != null && selectedItemController.HasItem)
         {
-            ParentSelectedItem(selectedItemController.SelectedItem);
+            if (!selectedItemController.SelectedItem.IsEquipped)
+                ParentSelectedItem(selectedItemController.SelectedItem);
+            else
+                selectedItemController.ClearSelectedItem();
         }
     }
 }

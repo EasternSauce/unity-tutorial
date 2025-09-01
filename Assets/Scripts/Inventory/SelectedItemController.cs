@@ -3,7 +3,7 @@ using UnityEngine;
 public class SelectedItemController : MonoBehaviour
 {
     public InventoryItem SelectedItem { get; private set; }
-    public bool HasItem => SelectedItem != null && SelectedItem.gameObject.activeInHierarchy && !SelectedItem.IsEquipped;
+    public bool HasItem => IsValidItem(SelectedItem);
 
     [SerializeField] private RectTransform parentTransform;
     [SerializeField] private CharacterDefeatHandler defeatHandler;
@@ -73,8 +73,8 @@ public class SelectedItemController : MonoBehaviour
     private bool IsValidItem(InventoryItem item)
     {
         if (item == null) return false;
-        if (item.IsEquipped) return false;
         if (!item.gameObject.activeInHierarchy) return false;
+        if (item.IsEquipped) return false;
         return true;
     }
 }
