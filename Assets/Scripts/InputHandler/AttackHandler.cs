@@ -23,6 +23,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     [SerializeField] GameObject arrowPrefab;
     [SerializeField] float arrowSpeed = 15f;
     [SerializeField] float arrowHeightOffset = 1.2f;
+    [Tooltip("Fraction of animation progress at which arrow is shot (0-1)")]
+    [SerializeField] float arrowSpawnProgress = 0.3f;
 
     Animator animator;
     CharacterMovement characterMovement;
@@ -113,7 +115,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         if (attackCoroutine != null)
             StopCoroutine(attackCoroutine);
 
-        attackCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, 0.3f));
+        float delay = attackAnimationTime * arrowSpawnProgress;
+        attackCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, delay));
     }
 
     private void HandleMeleeAttack(Command command)
