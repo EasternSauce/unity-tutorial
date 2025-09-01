@@ -18,7 +18,7 @@ MonoBehaviour:
   stats:
   - statisticType: 2
     typeFloat: 0
-    integer_value: 150
+    integer_value: 20
     float_value: 0
   icon: {fileID: 21300000, guid: cade23acb5625a3468ebc83ff4ec119b, type: 3}
   weaponType: 1
