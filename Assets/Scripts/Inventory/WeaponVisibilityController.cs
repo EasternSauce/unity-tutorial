@@ -3,13 +3,18 @@ using UnityEngine;
 public class WeaponVisibilityController : MonoBehaviour
 {
     [Header("Weapon References")]
-    [SerializeField] GameObject axeInHand;   // child of RIGHT_HAND_COMBAT
-    [SerializeField] GameObject axeOnBack;   // child of 2H_REST
-    [SerializeField] GameObject bowInHand;   // child of LEFT_HAND_COMBAT
-    [SerializeField] GameObject bowOnBack;   // child of 2H_REST
+    [SerializeField] GameObject axeInHand;
+    [SerializeField] GameObject axeOnBack;
+    [SerializeField] GameObject bowInHand;
+    [SerializeField] GameObject bowOnBack;
+
+    [Header("Settings")]
+    [SerializeField] float lingerTime = 1.5f;
 
     PlayerInventory inventory;
     CanMoveState canMoveState;
+
+    float lingerTimer;
 
     private void Awake()
     {
@@ -24,7 +29,6 @@ public class WeaponVisibilityController : MonoBehaviour
 
     private void UpdateWeaponVisibility()
     {
-        // Default: disable everything
         axeInHand.SetActive(false);
         axeOnBack.SetActive(false);
         bowInHand.SetActive(false);
@@ -36,42 +40,32 @@ public class WeaponVisibilityController : MonoBehaviour
         var weaponType = inventory.CurrentWeapon.itemData.weaponType;
         bool isAttacking = canMoveState != null && canMoveState.isAttacking;
 
+        if (isAttacking)
+            lingerTimer = lingerTime;
+
+        if (lingerTimer > 0f)
+            lingerTimer -= Time.deltaTime;
+
+        bool keepInHand = isAttacking || lingerTimer > 0f;
+
         switch (weaponType)
         {
             case WeaponType.None:
-                // Nothing to show
                 break;
 
             case WeaponType.Bow:
-                if (isAttacking)
-                {
+                if (keepInHand)
                     bowInHand.SetActive(true);
-                }
                 else
-                {
                     bowOnBack.SetActive(true);
-                }
                 break;
 
             case WeaponType.OneHandedAxe:
-                if (isAttacking)
-                {
-                    axeInHand.SetActive(true);
-                }
-                else
-                {
-                    axeOnBack.SetActive(true);
-                }
-                break;
             case WeaponType.TwoHandedAxe:
-                if (isAttacking)
-                {
+                if (keepInHand)
                     axeInHand.SetActive(true);
-                }
                 else
-                {
                     axeOnBack.SetActive(true);
-                }
                 break;
         }
     }

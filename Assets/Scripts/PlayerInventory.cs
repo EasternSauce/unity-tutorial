@@ -11,8 +11,13 @@ public class PlayerInventory : MonoBehaviour
     [SerializeField] private List<EquipmentItemSlot> slots;
     [SerializeField] private List<ItemData> itemsOnStart;
 
+    [Header("Weapon Slots")]
+    [SerializeField] private Transform handSlot;
+    [SerializeField] private Transform backSlot;
+
     private Character character;
     public InventoryItem CurrentWeapon { get; private set; }
+    private GameObject currentWeaponObject;
 
     private void Start()
     {
@@ -73,8 +78,29 @@ public class PlayerInventory : MonoBehaviour
             if (item != null && item.itemData.equipmentSlot == EquipmentSlot.Weapon)
             {
                 CurrentWeapon = item;
+                currentWeaponObject = item.GetComponentInChildren<MeshRenderer>()?.gameObject;
                 break;
             }
+        }
+    }
+
+    public void EquipToHandSlot()
+    {
+        if (currentWeaponObject != null && handSlot != null)
+        {
+            currentWeaponObject.transform.SetParent(handSlot);
+            currentWeaponObject.transform.localPosition = Vector3.zero;
+            currentWeaponObject.transform.localRotation = Quaternion.identity;
+        }
+    }
+
+    public void EquipToRestSlot()
+    {
+        if (currentWeaponObject != null && backSlot != null)
+        {
+            currentWeaponObject.transform.SetParent(backSlot);
+            currentWeaponObject.transform.localPosition = Vector3.zero;
+            currentWeaponObject.transform.localRotation = Quaternion.identity;
         }
     }
 }
