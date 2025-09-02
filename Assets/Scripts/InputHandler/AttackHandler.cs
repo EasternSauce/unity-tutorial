@@ -12,10 +12,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     [Header("Animation Settings")]
     [SerializeField] float attackAnimationTime = 1f;
-    [SerializeField] float weaponLingerTime = 1f;
     float attackTimer;
     float animationTimer;
-    float lingerTimer;
 
     [SerializeField] float attackLockStart = 0.3f;
     [SerializeField] float attackLockEnd = 0.6f;
@@ -32,10 +30,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     CanMoveState canMoveState;
     Coroutine attackCoroutine;
     PlayerInventory playerInventory;
-
-    [SerializeField] Transform weaponHandTransform;
-    [SerializeField] Transform weaponRestTransform;
-    GameObject currentWeaponObject;
 
     private void Awake()
     {
@@ -68,21 +62,10 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
                 isAttackLocked = true;
             else if (isAttackLocked && progress > attackLockEnd)
                 isAttackLocked = false;
-
-            if (currentWeaponObject != null && weaponHandTransform != null)
-                currentWeaponObject.transform.SetParent(weaponHandTransform, false);
-        }
-        else if (lingerTimer > 0f)
-        {
-            lingerTimer -= Time.deltaTime;
-            if (currentWeaponObject != null && weaponHandTransform != null)
-                currentWeaponObject.transform.SetParent(weaponHandTransform, false);
         }
         else
         {
             isAttackLocked = false;
-            if (currentWeaponObject != null && weaponRestTransform != null)
-                currentWeaponObject.transform.SetParent(weaponRestTransform, false);
         }
     }
 
@@ -102,6 +85,9 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     public void ProcessCommand(Command command)
     {
         if (command == null || (command.target == null && command.commandType != CommandType.Attack))
+            return;
+
+        if (!CheckAttack())
             return;
 
         InventoryItem weapon = playerInventory?.CurrentWeapon;
@@ -125,8 +111,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         ResetAttackTimer();
         SetAnimationTimer();
-
-        EquipWeaponToHand();
         TriggerAttackAnimation();
 
         RotateTowardsPoint(command.worldPoint);
@@ -159,8 +143,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
             ResetAttackTimer();
             SetAnimationTimer();
-
-            EquipWeaponToHand();
             TriggerAttackAnimation();
 
             if (attackCoroutine != null)
@@ -292,7 +274,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private void SetAnimationTimer()
     {
         animationTimer = attackAnimationTime;
-        lingerTimer = weaponLingerTime;
         isAttackLocked = false;
     }
 
@@ -333,7 +314,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     {
         attackTimer = GetAttackTime();
         animationTimer = attackAnimationTime;
-        lingerTimer = weaponLingerTime;
         isAttackLocked = false;
     }
 
@@ -344,20 +324,9 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         target.TakeDamage(damage);
     }
 
-    private void EquipWeaponToHand()
-    {
-        if (playerInventory?.CurrentWeapon != null)
-        {
-            currentWeaponObject = playerInventory.CurrentWeapon.gameObject;
-            if (currentWeaponObject != null && weaponHandTransform != null)
-                currentWeaponObject.transform.SetParent(weaponHandTransform, false);
-        }
-    }
-
     public void ResetState()
     {
         animationTimer = 0f;
-        lingerTimer = 0f;
         isAttackLocked = false;
 
         if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
@@ -374,8 +343,5 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             StopCoroutine(attackCoroutine);
             attackCoroutine = null;
         }
-
-        if (currentWeaponObject != null && weaponRestTransform != null)
-            currentWeaponObject.transform.SetParent(weaponRestTransform, false);
     }
 }
