@@ -1,28 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum EquipmentSlot
-{
-    None,
-    Weapon,
-    OffHand,
-    Armor,
-    Helmet,
-    Belt,
-    Boots,
-    Ring,
-    Amulet,
-    Gloves
-}
-
-public enum WeaponType
-{
-    None,
-    Bow,
-    OneHandedAxe,
-    TwoHandedAxe
-}
-
 [CreateAssetMenu]
 public class ItemData : ScriptableObject
 {
