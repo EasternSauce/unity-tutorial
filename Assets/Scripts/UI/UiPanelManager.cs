@@ -51,7 +51,7 @@ public class UiPanelManager : MonoBehaviour
 
         if (newState)
         {
-            var highlight = FindFirstObjectByType<ItemHighlightController>();
+            var highlight = FindFirstObjectByType<InventoryItemHighlightController>();
             if (highlight != null)
                 highlight.ClearHighlight();
         }

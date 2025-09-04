@@ -4,7 +4,7 @@ public class InventoryController : MonoBehaviour
 {
     [SerializeField] private InventoryGridHandler gridHandler;
     [SerializeField] private SelectedItemController selectedItemController;
-    [SerializeField] private ItemHighlightController itemHighlightController;
+    [SerializeField] private InventoryItemHighlightController itemHighlightController;
     [SerializeField] private GameObject inventoryItemPrefab;
     [SerializeField] private Transform targetCanvas;
     [SerializeField] private UiPanelManager uiPanelManager;

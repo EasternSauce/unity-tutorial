@@ -4,7 +4,7 @@ using UnityEngine;
 public class InventoryGridHandler : MonoBehaviour
 {
     [SerializeField] private SelectedItemController selectedItemController;
-    [SerializeField] private ItemHighlightController itemHighlightController;
+    [SerializeField] private InventoryItemHighlightController itemHighlightController;
     [SerializeField] private CharacterDefeatHandler defeatHandler;
 
     private ItemGrid currentGrid;
@@ -15,7 +15,7 @@ public class InventoryGridHandler : MonoBehaviour
             selectedItemController = FindFirstObjectByType<SelectedItemController>();
 
         if (itemHighlightController == null)
-            itemHighlightController = FindFirstObjectByType<ItemHighlightController>();
+            itemHighlightController = FindFirstObjectByType<InventoryItemHighlightController>();
 
         if (defeatHandler == null)
             defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
@@ -108,7 +108,7 @@ public class InventoryGridHandler : MonoBehaviour
         }
     }
 
-    public void HandleClick(ItemGrid grid, Vector2 mousePosition, SelectedItemController selectedItemController, ItemHighlightController itemHighlightController)
+    public void HandleClick(ItemGrid grid, Vector2 mousePosition, SelectedItemController selectedItemController, InventoryItemHighlightController itemHighlightController)
     {
         InventoryItem selectedItem = selectedItemController.HasItem ? selectedItemController.SelectedItem : null;
         Vector2Int tilePos = GetClampedTileGridPosition(mousePosition, selectedItem);

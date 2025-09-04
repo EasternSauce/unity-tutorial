@@ -88,7 +88,7 @@ public class EquipmentItemSlot : MonoBehaviour
         rt.SetParent(null);
     }
 
-    public void HandleClick(SelectedItemController selectedItemController, ItemHighlightController itemHighlightController)
+    public void HandleClick(SelectedItemController selectedItemController, InventoryItemHighlightController itemHighlightController)
     {
         InventoryItem selectedItem = selectedItemController.SelectedItem;
 
