@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class InventoryHighlight : MonoBehaviour
+public class InventoryHighlighter : MonoBehaviour
 {
     [SerializeField] RectTransform highlighter;
 

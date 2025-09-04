@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class InventoryItemHighlightController : MonoBehaviour
 {
-    [SerializeField] private InventoryHighlight inventoryHighlight;
+    [SerializeField] private InventoryHighlighter inventoryHighlight;
     [SerializeField] private ItemGrid currentGrid;
     [SerializeField] private InventoryGridHandler gridHandler;
 
