@@ -21,6 +21,8 @@ GameObject:
   - component: {fileID: 7617368940083294593}
   - component: {fileID: 7599319321417753288}
   - component: {fileID: 3810563472766681406}
+  - component: {fileID: 2678309537643834986}
+  - component: {fileID: 1338710687925481526}
   m_Layer: 8
   m_Name: EnemyCharacter
   m_TagString: Untagged
@@ -112,9 +114,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a311255ec7f4b854ca35e5df8391c489, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackRange: 2.5
   defaultTimeToAttack: 1
   attackAnimationTime: 1
+  attackLockStart: 0.3
+  attackLockEnd: 0.6
 --- !u!114 &8927179593164126509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -127,6 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8ae3b8dbbd803f4896fe2a4c65fa479, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isPlayer: 0
   attributes:
     attributeValues: []
   stats:
@@ -392,3 +396,32 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &2678309537643834986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6313870040128712383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aebcc438c75d914abefc94897319347, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrowPrefab: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}
+  arrowSpeed: 15
+  arrowHeightOffset: 1.2
+  arrowSpawnProgress: 0.5
+--- !u!114 &1338710687925481526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6313870040128712383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66e1b3f88672789418666d882fc36128, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackRange: 2.5

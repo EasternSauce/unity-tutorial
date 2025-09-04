@@ -34,6 +34,7 @@ public class AttackInput : MonoBehaviour
         else
         {
             IDamageable target = interactInput.attackTarget;
+
             if (target != null)
             {
                 MonoBehaviour mb = target as MonoBehaviour;
@@ -42,6 +43,11 @@ public class AttackInput : MonoBehaviour
                     Command meleeAttackCommand = new Command(CommandType.Attack, mb.gameObject);
                     commandHandler.SetCommand(meleeAttackCommand);
                 }
+            }
+            else
+            {
+                Command whiffAttackCommand = new Command(CommandType.Attack, (GameObject)null);
+                commandHandler.SetCommand(whiffAttackCommand);
             }
         }
     }

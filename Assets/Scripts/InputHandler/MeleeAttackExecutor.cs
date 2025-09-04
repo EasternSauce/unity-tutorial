@@ -19,12 +19,29 @@ public class MeleeAttackExecutor : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
     }
 
-    public void HandleMeleeAttack(Command command, float attackAnimationTime,
-        System.Func<bool> checkAttack, System.Action resetAttackTimer,
-        System.Action setAnimationTimer, System.Action triggerAttackAnimation,
-        ref Coroutine attackCoroutineRef)
+    public void HandleMeleeAttack(Command command,
+        float attackAnimationTime,
+        System.Func<bool> checkAttack,
+        System.Action resetAttackTimer,
+        System.Action setAnimationTimer,
+        System.Action triggerAttackAnimation,
+        ref Coroutine attackCoroutine)
     {
-        if (command.target == null) return;
+        if (!checkAttack()) return;
+
+        if (command.target == null)
+        {
+            characterMovement.Stop();
+            if (characterMovement.Agent != null)
+                characterMovement.Agent.isStopped = true;
+
+            resetAttackTimer();
+            setAnimationTimer();
+            triggerAttackAnimation();
+
+            command.isComplete = true;
+            return;
+        }
 
         float distance = Vector3.Distance(transform.position, command.target.transform.position);
         float attackBuffer = 0.1f;
@@ -45,11 +62,10 @@ public class MeleeAttackExecutor : MonoBehaviour
             setAnimationTimer();
             triggerAttackAnimation();
 
-            if (attackCoroutineRef != null)
-                StopCoroutine(attackCoroutineRef);
+            if (attackCoroutine != null)
+                StopCoroutine(attackCoroutine);
 
-            attackCoroutineRef = StartCoroutine(DelayedDamage(command, attackAnimationTime));
-            attackCoroutine = attackCoroutineRef;
+            attackCoroutine = StartCoroutine(DelayedDamage(command, attackAnimationTime));
         }
         else
         {
@@ -60,10 +76,10 @@ public class MeleeAttackExecutor : MonoBehaviour
             characterMovement.Agent.isStopped = false;
             characterMovement.SetDestination(destination);
 
-            if (attackCoroutineRef != null)
+            if (attackCoroutine != null)
             {
-                StopCoroutine(attackCoroutineRef);
-                attackCoroutineRef = null;
+                StopCoroutine(attackCoroutine);
+                attackCoroutine = null;
             }
         }
     }
