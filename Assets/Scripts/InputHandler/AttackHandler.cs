@@ -19,17 +19,12 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     [SerializeField] float attackLockEnd = 0.6f;
     bool isAttackLocked = false;
 
-    [Header("Bow Settings")]
-    [SerializeField] GameObject arrowPrefab;
-    [SerializeField] float arrowSpeed = 15f;
-    [SerializeField] float arrowHeightOffset = 1.2f;
-    [SerializeField] float arrowSpawnProgress = 0.5f;
-
     Animator animator;
     CharacterMovement characterMovement;
     CanMoveState canMoveState;
     Coroutine attackCoroutine;
     PlayerInventory playerInventory;
+    BowAttackExecutor bowAttackExecutor;
 
     private void Awake()
     {
@@ -38,6 +33,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         character = GetComponent<Character>();
         canMoveState = GetComponent<CanMoveState>();
         playerInventory = GetComponent<PlayerInventory>();
+        bowAttackExecutor = GetComponent<BowAttackExecutor>();
     }
 
     private void Update()
@@ -94,32 +90,14 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         bool isBow = weapon != null && weapon.itemData.weaponType == WeaponType.Bow;
 
         if (isBow)
-            HandleBowAttack(command);
+        {
+            bowAttackExecutor.HandleBowAttack(command, attackAnimationTime,
+                ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+        }
         else
+        {
             HandleMeleeAttack(command);
-    }
-
-    private void HandleBowAttack(Command command)
-    {
-        if (command.isComplete) return;
-
-        command.isComplete = true;
-
-        characterMovement.Stop();
-        if (characterMovement.Agent != null)
-            characterMovement.Agent.isStopped = true;
-
-        ResetAttackTimer();
-        SetAnimationTimer();
-        TriggerAttackAnimation();
-
-        RotateTowardsPoint(command.worldPoint);
-
-        if (attackCoroutine != null)
-            StopCoroutine(attackCoroutine);
-
-        float delay = attackAnimationTime * arrowSpawnProgress;
-        attackCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, delay));
+        }
     }
 
     private void HandleMeleeAttack(Command command)
@@ -165,32 +143,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
                 attackCoroutine = null;
             }
         }
-    }
-
-    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        SpawnArrowAtPosition(targetPos);
-    }
-
-    private void SpawnArrowAtPosition(Vector3 mouseWorldPos)
-    {
-        if (arrowPrefab == null) return;
-
-        Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
-        GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
-        Arrow arrowScript = arrowObject.GetComponent<Arrow>();
-
-        if (arrowScript == null)
-        {
-            Destroy(arrowObject);
-            return;
-        }
-
-        Vector3 dir = (mouseWorldPos - spawnPos).normalized;
-        dir.y = 0f;
-
-        arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
     }
 
     private string GetAttackTrigger()
@@ -301,15 +253,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);
     }
 
-    private void RotateTowardsPoint(Vector3 point)
-    {
-        Vector3 lookVector = point - transform.position;
-        lookVector.y = 0f;
-        if (lookVector == Vector3.zero) return;
-
-        transform.rotation = Quaternion.LookRotation(lookVector);
-    }
-
     private void ResetAttackTimer()
     {
         attackTimer = GetAttackTime();
@@ -343,5 +286,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             StopCoroutine(attackCoroutine);
             attackCoroutine = null;
         }
+
+        bowAttackExecutor?.ResetState();
     }
 }

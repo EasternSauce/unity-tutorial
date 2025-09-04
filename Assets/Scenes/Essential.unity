@@ -385,6 +385,7 @@ MonoBehaviour:
   itemHighlightController: {fileID: 72065791}
   inventoryItemPrefab: {fileID: 2762296068298152622, guid: f1cdd60fb1920ac41ac6c014e1b1c463, type: 3}
   targetCanvas: {fileID: 1825286069}
+  uiPanelManager: {fileID: 0}
 --- !u!114 &72065791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,6 +400,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inventoryHighlight: {fileID: 72065789}
   currentGrid: {fileID: 2120118265}
+  gridHandler: {fileID: 0}
 --- !u!114 &72065792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11127,6 +11129,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8591223694103453509, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6365066707932090194}
+    - targetCorrespondingSourceObject: {fileID: 8591223694103453509, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6365066707932090195}
   m_SourcePrefab: {fileID: 100100000, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
 --- !u!114 &6365066707932090170 stripped
 MonoBehaviour:
@@ -11209,6 +11214,23 @@ MonoBehaviour:
   axeOnBack: {fileID: 1924188119}
   bowInHand: {fileID: 785057505}
   bowOnBack: {fileID: 94984895}
+  lingerTime: 15
+--- !u!114 &6365066707932090195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 796244759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aebcc438c75d914abefc94897319347, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrowPrefab: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}
+  arrowSpeed: 15
+  arrowHeightOffset: 1.2
+  arrowSpawnProgress: 0.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
