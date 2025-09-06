@@ -68,35 +68,50 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     public void ProcessCommand(Command command)
     {
-        if (command == null || command.commandType != CommandType.Attack) return;
+        if (command == null || command.commandType != CommandType.Attack)
+            return;
 
         InventoryItem weapon = playerInventory?.CurrentWeapon;
         WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
 
+        currentAttackWeapon = weaponType;
+
         if (currentTarget != null && currentTarget != command.target)
             CancelAttack();
 
-        currentAttackWeapon = weaponType;
         currentTarget = command.target;
 
         if (weaponType == WeaponType.Bow)
         {
             if (bowAttackExecutor != null)
             {
-                bowAttackExecutor.HandleBowAttack(command, attackAnimationTime,
-                    ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+                bowAttackExecutor.HandleBowAttack(
+                    command,
+                    attackAnimationTime,
+                    ResetAttackTimer,
+                    SetAnimationTimer,
+                    TriggerAttackAnimation,
+                    ref attackCoroutine
+                );
             }
         }
         else
         {
             if (meleeAttackExecutor != null)
             {
-                meleeAttackExecutor.HandleMeleeAttack(command, attackAnimationTime,
-                    () => CheckAttack() && currentAttackWeapon == weaponType,
-                    ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+                meleeAttackExecutor.HandleMeleeAttack(
+                    command,
+                    attackAnimationTime,
+                    () => CheckAttack(),
+                    ResetAttackTimer,
+                    SetAnimationTimer,
+                    TriggerAttackAnimation,
+                    ref attackCoroutine
+                );
             }
         }
     }
+
 
     private string GetAttackTrigger()
     {
@@ -122,9 +137,14 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private void TriggerAttackAnimation()
     {
         string trigger = GetAttackTrigger();
-        if (!string.IsNullOrEmpty(trigger))
-            animator.SetTrigger(trigger);
+        if (string.IsNullOrEmpty(trigger)) return;
+
+        animator.Play("Idle", 0, 0f);
+        animator.Update(0f);
+
+        animator.SetTrigger(trigger);
     }
+
 
     private bool AnimatorHasParameter(string paramName)
     {
