@@ -285,7 +285,7 @@ public class Character : MonoBehaviour, IDamageable
         }
     }
 
-    private void SustractStats(StatsValue statsValue)
+    private void SubtractStats(StatsValue statsValue)
     {
         stats.Subtract(statsValue);
     }
