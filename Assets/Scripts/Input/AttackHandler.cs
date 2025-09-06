@@ -177,17 +177,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         isAttackLocked = false;
     }
 
-    public void ResetState()
+    public void CancelAttack()
     {
-        animationTimer = 0f;
-        isAttackLocked = false;
-
-        foreach (string trigger in attackTriggers)
-        {
-            if (AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
-                animator.ResetTrigger(trigger);
-        }
-
         if (attackCoroutine != null)
         {
             StopCoroutine(attackCoroutine);
@@ -196,6 +187,20 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         bowAttackExecutor?.ResetState();
         meleeAttackExecutor?.ResetState();
+
+        foreach (string trigger in attackTriggers)
+        {
+            if (AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+                animator.ResetTrigger(trigger);
+        }
+
+        animationTimer = 0f;
+        isAttackLocked = false;
         currentAttackWeapon = WeaponType.None;
+    }
+
+    public void ResetState()
+    {
+        CancelAttack();
     }
 }
