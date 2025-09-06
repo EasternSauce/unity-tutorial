@@ -11,40 +11,36 @@ public class BowAttackExecutor : AttackExecutor
     [SerializeField] float arrowSpawnProgress = 0.5f;
 
     public void HandleBowAttack(Command command, float attackAnimationTime,
-        System.Action resetAttackTimer, System.Action setAnimationTimer,
+        System.Action setAnimationTimer,
         System.Action triggerAttackAnimation, ref Coroutine attackCoroutineRef,
-        System.Action onAttackFinished)
+        System.Action onArrowSpawned)
     {
         if (command.isComplete) return;
-
         command.isComplete = true;
 
         StopMovement();
-
-        resetAttackTimer();
         setAnimationTimer();
         triggerAttackAnimation();
-
         RotateTowardsPoint(command.worldPoint);
 
         if (attackCoroutineRef != null)
             StopCoroutine(attackCoroutineRef);
 
         float delay = attackAnimationTime * arrowSpawnProgress;
-        attackCoroutineRef = StartCoroutine(SpawnArrowDelayed(command.worldPoint, delay, onAttackFinished));
+        attackCoroutineRef = StartCoroutine(SpawnArrowDelayed(command.worldPoint, delay, onArrowSpawned));
         attackCoroutine = attackCoroutineRef;
     }
 
-    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay, System.Action onAttackFinished)
+    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay, System.Action onArrowSpawned)
     {
         yield return new WaitForSeconds(delay);
 
         if (attackCoroutine == null) yield break;
 
         SpawnArrowAtPosition(targetPos);
+        onArrowSpawned?.Invoke();
 
         attackCoroutine = null;
-        onAttackFinished?.Invoke();
     }
 
     private void SpawnArrowAtPosition(Vector3 mouseWorldPos)

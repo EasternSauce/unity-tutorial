@@ -77,7 +77,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         currentAttackWeapon = weaponType;
 
-        if (CheckAttack() && attackCoroutine == null)
+        if (CheckAttack())
         {
             queuedCommand = null;
             StartAttack(command, weaponType);
@@ -88,6 +88,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         }
     }
 
+
     private void StartAttack(Command command, WeaponType weaponType)
     {
         if (currentTarget != null && currentTarget != command.target)
@@ -95,10 +96,12 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         currentTarget = command.target;
 
+        ResetAttackTimer(); // start cooldown immediately
+
         if (weaponType == WeaponType.Bow)
         {
             bowAttackExecutor?.HandleBowAttack(command, attackAnimationTime,
-                ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine, OnAttackFinished);
+                SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine, OnAttackFinished);
         }
         else
         {
@@ -107,6 +110,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
                 ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine, OnAttackFinished);
         }
     }
+
 
     private string GetAttackTrigger()
     {
