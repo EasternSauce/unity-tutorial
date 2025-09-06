@@ -22,6 +22,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private float animationTimer;
     private bool isAttackLocked;
     private Coroutine attackCoroutine;
+    private WeaponType currentAttackWeapon = WeaponType.None;
 
     private void Awake()
     {
@@ -79,7 +80,18 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             return;
 
         InventoryItem weapon = playerInventory?.CurrentWeapon;
-        bool isBow = weapon != null && weapon.itemData.weaponType == WeaponType.Bow;
+        WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
+        bool isBow = weaponType == WeaponType.Bow;
+
+        if (attackCoroutine != null)
+        {
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
+            bowAttackExecutor?.ResetState();
+            meleeAttackExecutor?.ResetState();
+        }
+
+        currentAttackWeapon = weaponType;
 
         if (isBow)
         {
@@ -94,7 +106,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             if (meleeAttackExecutor != null)
             {
                 meleeAttackExecutor.HandleMeleeAttack(command, attackAnimationTime,
-                    CheckAttack, ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+                    () => CheckAttack() && currentAttackWeapon == weaponType, ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
             }
         }
     }
@@ -188,5 +200,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         bowAttackExecutor?.ResetState();
         meleeAttackExecutor?.ResetState();
+        currentAttackWeapon = WeaponType.None;
     }
 }
