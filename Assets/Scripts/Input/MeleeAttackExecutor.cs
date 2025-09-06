@@ -12,30 +12,24 @@ public class MeleeAttackExecutor : AttackExecutor
         System.Action resetAttackTimer,
         System.Action setAnimationTimer,
         System.Action triggerAttackAnimation,
-        ref Coroutine attackCoroutineRef)
+        ref Coroutine attackCoroutineRef,
+        System.Action onAttackFinished)
     {
         if (!checkAttack()) return;
-        if (command.target == null)
-        {
-            StopMovement();
-            resetAttackTimer();
-            setAnimationTimer();
-            triggerAttackAnimation();
-            command.isComplete = true;
-            return;
-        }
 
         if (attackCoroutineRef != null)
             StopCoroutine(attackCoroutineRef);
 
-        attackCoroutineRef = StartCoroutine(MeleeAttackRoutine(command, attackAnimationTime, resetAttackTimer, setAnimationTimer, triggerAttackAnimation));
-        attackCoroutine = attackCoroutineRef;
+        attackCoroutineRef = StartCoroutine(MeleeAttackRoutine(command, attackAnimationTime,
+            resetAttackTimer, setAnimationTimer, triggerAttackAnimation, attackCoroutineRef, onAttackFinished));
     }
 
     private IEnumerator MeleeAttackRoutine(Command command, float attackAnimationTime,
         System.Action resetAttackTimer,
         System.Action setAnimationTimer,
-        System.Action triggerAttackAnimation)
+        System.Action triggerAttackAnimation,
+        Coroutine attackCoroutineRef,
+        System.Action onAttackFinished)
     {
         Transform targetTransform = command.target.transform;
         float attackBuffer = 0.1f;
@@ -54,15 +48,15 @@ public class MeleeAttackExecutor : AttackExecutor
 
                 yield return new WaitForSeconds(attackAnimationTime * 0.4f);
 
-                if (command.target == null)
-                    break;
-
-                float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
-                if (currentDistance <= attackRange + attackBuffer)
+                if (command.target != null)
                 {
-                    IDamageable target = command.target.GetComponent<IDamageable>();
-                    int damage = character.GetDamage();
-                    target.TakeDamage(damage);
+                    float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
+                    if (currentDistance <= attackRange + attackBuffer)
+                    {
+                        IDamageable target = command.target.GetComponent<IDamageable>();
+                        int damage = character.GetDamage();
+                        target.TakeDamage(damage);
+                    }
                 }
 
                 command.isComplete = true;
@@ -80,7 +74,8 @@ public class MeleeAttackExecutor : AttackExecutor
         }
 
         characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
-        attackCoroutine = null;
+        attackCoroutineRef = null;
+        onAttackFinished?.Invoke();
     }
 
     public override void ResetState()

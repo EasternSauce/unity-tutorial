@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using CharacterCommand;
 using UnityEngine;
@@ -22,6 +23,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private Coroutine attackCoroutine;
     private WeaponType currentAttackWeapon = WeaponType.None;
     private GameObject currentTarget;
+    private Command queuedCommand;
 
     private List<string> attackTriggers = new List<string>
     {
@@ -68,14 +70,26 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     public void ProcessCommand(Command command)
     {
-        if (command == null || command.commandType != CommandType.Attack)
-            return;
+        if (command == null || command.commandType != CommandType.Attack) return;
 
         InventoryItem weapon = playerInventory?.CurrentWeapon;
         WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
 
         currentAttackWeapon = weaponType;
 
+        if (CheckAttack() && attackCoroutine == null)
+        {
+            queuedCommand = null;
+            StartAttack(command, weaponType);
+        }
+        else
+        {
+            queuedCommand = command;
+        }
+    }
+
+    private void StartAttack(Command command, WeaponType weaponType)
+    {
         if (currentTarget != null && currentTarget != command.target)
             CancelAttack();
 
@@ -83,35 +97,16 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         if (weaponType == WeaponType.Bow)
         {
-            if (bowAttackExecutor != null)
-            {
-                bowAttackExecutor.HandleBowAttack(
-                    command,
-                    attackAnimationTime,
-                    ResetAttackTimer,
-                    SetAnimationTimer,
-                    TriggerAttackAnimation,
-                    ref attackCoroutine
-                );
-            }
+            bowAttackExecutor?.HandleBowAttack(command, attackAnimationTime,
+                ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine, OnAttackFinished);
         }
         else
         {
-            if (meleeAttackExecutor != null)
-            {
-                meleeAttackExecutor.HandleMeleeAttack(
-                    command,
-                    attackAnimationTime,
-                    () => CheckAttack(),
-                    ResetAttackTimer,
-                    SetAnimationTimer,
-                    TriggerAttackAnimation,
-                    ref attackCoroutine
-                );
-            }
+            meleeAttackExecutor?.HandleMeleeAttack(command, attackAnimationTime,
+                () => CheckAttack(),
+                ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine, OnAttackFinished);
         }
     }
-
 
     private string GetAttackTrigger()
     {
@@ -138,13 +133,10 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     {
         string trigger = GetAttackTrigger();
         if (string.IsNullOrEmpty(trigger)) return;
-
         animator.Play("Idle", 0, 0f);
         animator.Update(0f);
-
         animator.SetTrigger(trigger);
     }
-
 
     private bool AnimatorHasParameter(string paramName)
     {
@@ -195,6 +187,18 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         isAttackLocked = false;
         currentAttackWeapon = WeaponType.None;
         currentTarget = null;
+        queuedCommand = null;
+    }
+
+    private void OnAttackFinished()
+    {
+        attackCoroutine = null;
+        if (queuedCommand != null)
+        {
+            Command commandToAttack = queuedCommand;
+            queuedCommand = null;
+            StartAttack(commandToAttack, currentAttackWeapon);
+        }
     }
 
     public void ResetState()
