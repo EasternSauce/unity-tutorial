@@ -2,33 +2,30 @@ using System.Collections;
 using CharacterCommand;
 using UnityEngine;
 
+[RequireComponent(typeof(Character))]
+[RequireComponent(typeof(CanMoveState))]
 public class AttackHandler : MonoBehaviour, ICommandHandle
 {
-    Character character;
+    private Character character;
+    private Animator animator;
+    private CanMoveState canMoveState;
+    private PlayerInventory playerInventory;
+    private BowAttackExecutor bowAttackExecutor;
+    private MeleeAttackExecutor meleeAttackExecutor;
 
-    [SerializeField] float defaultTimeToAttack = 1f;
+    [SerializeField] private float defaultTimeToAttack = 1f;
+    [SerializeField] private float attackAnimationTime = 1f;
+    [SerializeField] private float attackLockStart = 0.3f;
+    [SerializeField] private float attackLockEnd = 0.6f;
 
-    [Header("Animation Settings")]
-    [SerializeField] float attackAnimationTime = 1f;
-    float attackTimer;
-    float animationTimer;
-
-    [SerializeField] float attackLockStart = 0.3f;
-    [SerializeField] float attackLockEnd = 0.6f;
-    bool isAttackLocked = false;
-
-    Animator animator;
-    CharacterMovement characterMovement;
-    CanMoveState canMoveState;
-    Coroutine attackCoroutine;
-    PlayerInventory playerInventory;
-    BowAttackExecutor bowAttackExecutor;
-    MeleeAttackExecutor meleeAttackExecutor;
+    private float attackTimer;
+    private float animationTimer;
+    private bool isAttackLocked;
+    private Coroutine attackCoroutine;
 
     private void Awake()
     {
         animator = GetComponentInChildren<Animator>();
-        characterMovement = GetComponent<CharacterMovement>();
         character = GetComponent<Character>();
         canMoveState = GetComponent<CanMoveState>();
         playerInventory = GetComponent<PlayerInventory>();
@@ -40,11 +37,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     {
         AttackTimerTick();
         AnimationTimerTick();
-        UpdateCanMoveState();
-    }
-
-    private void UpdateCanMoveState()
-    {
         canMoveState.isAttacking = isAttackLocked;
     }
 
@@ -71,7 +63,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             attackTimer -= Time.deltaTime;
     }
 
-    float GetAttackTime()
+    private float GetAttackTime()
     {
         float attackTime = defaultTimeToAttack;
         attackTime /= character.GetStatsValue(Statistic.AttackSpeed).float_value;

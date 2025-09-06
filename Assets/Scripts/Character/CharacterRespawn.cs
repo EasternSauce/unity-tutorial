@@ -2,11 +2,12 @@ using CharacterCommand;
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(CharacterDefeatHandler))]
 public class CharacterRespawn : MonoBehaviour
 {
-    Vector3? respawnPoint;
-    CharacterDefeatHandler characterDefeat;
-    [SerializeField] Animator animator;
+    private Vector3? respawnPoint;
+    private CharacterDefeatHandler characterDefeat;
+    [SerializeField] private Animator animator;
 
     private void Awake()
     {

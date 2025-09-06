@@ -3,22 +3,23 @@ using CharacterCommand;
 using UnityEngine;
 
 [RequireComponent(typeof(CommandHandler))]
+[RequireComponent(typeof(Character))]
 public class AIEnemy : MonoBehaviour
 {
     [SerializeField] AIAgentGroup aiGroup;
 
-    CommandHandler commandHandler;
-    Character character;
+    private CommandHandler commandHandler;
+    private Character character;
 
-    [SerializeField] float attackRange = 5f;
+    [SerializeField] private float attackRange = 5f;
+
+    private float timer = 0.2f;
 
     private void Awake()
     {
         commandHandler = GetComponent<CommandHandler>();
         character = GetComponent<Character>();
     }
-
-    float timer = 0.2f;
 
     private void Start()
     {
@@ -54,12 +55,12 @@ public class AIEnemy : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
 
-        if (targetToAttack.GetComponent<Character>() != null && !targetToAttack.GetComponent<Character>().IsDead)
+        var targetCharacter = targetToAttack.GetComponent<Character>();
+        if (targetCharacter != null && !targetCharacter.IsDead)
         {
             if (timer < 0f && distanceToTarget <= attackRange)
             {
                 timer = 0.2f;
-
                 commandHandler.SetCommand(new Command(CommandType.Attack, targetToAttack));
             }
         }
