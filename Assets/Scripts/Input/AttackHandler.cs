@@ -83,13 +83,19 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         if (isBow)
         {
-            bowAttackExecutor.HandleBowAttack(command, attackAnimationTime,
-                ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+            if (bowAttackExecutor != null)
+            {
+                bowAttackExecutor.HandleBowAttack(command, attackAnimationTime,
+                    ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+            }
         }
         else
         {
-            meleeAttackExecutor.HandleMeleeAttack(command, attackAnimationTime,
-                CheckAttack, ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+            if (meleeAttackExecutor != null)
+            {
+                meleeAttackExecutor.HandleMeleeAttack(command, attackAnimationTime,
+                    CheckAttack, ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+            }
         }
     }
 
