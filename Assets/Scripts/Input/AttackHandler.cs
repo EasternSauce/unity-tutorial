@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using CharacterCommand;
 using UnityEngine;
@@ -16,14 +15,13 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     [SerializeField] private float defaultTimeToAttack = 1f;
     [SerializeField] private float attackAnimationTime = 1f;
-    [SerializeField] private float attackLockStart = 0.3f;
-    [SerializeField] private float attackLockEnd = 0.6f;
 
     private float attackTimer;
     private float animationTimer;
     private bool isAttackLocked;
     private Coroutine attackCoroutine;
     private WeaponType currentAttackWeapon = WeaponType.None;
+    private GameObject currentTarget;
 
     private List<string> attackTriggers = new List<string>
     {
@@ -46,32 +44,19 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     private void Update()
     {
-        AttackTimerTick();
-        AnimationTimerTick();
-        canMoveState.isAttacking = isAttackLocked;
-    }
-
-    private void AnimationTimerTick()
-    {
+        if (attackTimer > 0f) attackTimer -= Time.deltaTime;
         if (animationTimer > 0f)
         {
             animationTimer -= Time.deltaTime;
             float progress = 1f - (animationTimer / attackAnimationTime);
-            if (!isAttackLocked && progress >= attackLockStart && progress <= attackLockEnd)
-                isAttackLocked = true;
-            else if (isAttackLocked && progress > attackLockEnd)
-                isAttackLocked = false;
+            if (!isAttackLocked && progress >= 0.3f && progress <= 0.6f) isAttackLocked = true;
+            else if (isAttackLocked && progress > 0.6f) isAttackLocked = false;
         }
         else
         {
             isAttackLocked = false;
         }
-    }
-
-    private void AttackTimerTick()
-    {
-        if (attackTimer > 0f)
-            attackTimer -= Time.deltaTime;
+        canMoveState.isAttacking = isAttackLocked;
     }
 
     private float GetAttackTime()
@@ -83,27 +68,18 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     public void ProcessCommand(Command command)
     {
-        if (command == null || (command.target == null && command.commandType != CommandType.Attack))
-            return;
-
-        if (!CheckAttack())
-            return;
+        if (command == null || command.commandType != CommandType.Attack) return;
 
         InventoryItem weapon = playerInventory?.CurrentWeapon;
         WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
-        bool isBow = weaponType == WeaponType.Bow;
 
-        if (attackCoroutine != null)
-        {
-            StopCoroutine(attackCoroutine);
-            attackCoroutine = null;
-            bowAttackExecutor?.ResetState();
-            meleeAttackExecutor?.ResetState();
-        }
+        if (currentTarget != null && currentTarget != command.target)
+            CancelAttack();
 
         currentAttackWeapon = weaponType;
+        currentTarget = command.target;
 
-        if (isBow)
+        if (weaponType == WeaponType.Bow)
         {
             if (bowAttackExecutor != null)
             {
@@ -116,7 +92,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             if (meleeAttackExecutor != null)
             {
                 meleeAttackExecutor.HandleMeleeAttack(command, attackAnimationTime,
-                    () => CheckAttack() && currentAttackWeapon == weaponType, ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
+                    () => CheckAttack() && currentAttackWeapon == weaponType,
+                    ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine);
             }
         }
     }
@@ -124,19 +101,19 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private string GetAttackTrigger()
     {
         InventoryItem weapon = playerInventory?.CurrentWeapon;
-        WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
+        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
 
         foreach (string trigger in attackTriggers)
         {
-            if (trigger == "FistAttack" && (weaponType == WeaponType.None || weapon == null) && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+            if (trigger == "FistAttack" && (type == WeaponType.None || weapon == null) && AnimatorHasParameter(trigger))
                 return trigger;
-            if (trigger == "OneHandedMeleeAttack" && weaponType == WeaponType.OneHandedAxe && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+            if (trigger == "OneHandedMeleeAttack" && type == WeaponType.OneHandedAxe && AnimatorHasParameter(trigger))
                 return trigger;
-            if (trigger == "TwoHandedMeleeAttack" && weaponType == WeaponType.TwoHandedAxe && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+            if (trigger == "TwoHandedMeleeAttack" && type == WeaponType.TwoHandedAxe && AnimatorHasParameter(trigger))
                 return trigger;
-            if (trigger == "BowAttack" && weaponType == WeaponType.Bow && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+            if (trigger == "BowAttack" && type == WeaponType.Bow && AnimatorHasParameter(trigger))
                 return trigger;
-            if (trigger == "Attack" && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+            if (trigger == "Attack" && AnimatorHasParameter(trigger))
                 return trigger;
         }
         return null;
@@ -144,16 +121,16 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     private void TriggerAttackAnimation()
     {
-        string attackTrigger = GetAttackTrigger();
-        if (!string.IsNullOrEmpty(attackTrigger))
-            animator.SetTrigger(attackTrigger);
+        string trigger = GetAttackTrigger();
+        if (!string.IsNullOrEmpty(trigger))
+            animator.SetTrigger(trigger);
     }
 
-    private bool AnimatorHasParameter(string paramName, AnimatorControllerParameterType type)
+    private bool AnimatorHasParameter(string paramName)
     {
         foreach (var param in animator.parameters)
         {
-            if (param.type == type && param.name == paramName)
+            if (param.type == UnityEngine.AnimatorControllerParameterType.Trigger && param.name == paramName)
                 return true;
         }
         return false;
@@ -190,13 +167,14 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
         foreach (string trigger in attackTriggers)
         {
-            if (AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+            if (AnimatorHasParameter(trigger))
                 animator.ResetTrigger(trigger);
         }
 
         animationTimer = 0f;
         isAttackLocked = false;
         currentAttackWeapon = WeaponType.None;
+        currentTarget = null;
     }
 
     public void ResetState()

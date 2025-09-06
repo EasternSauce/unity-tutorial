@@ -15,7 +15,6 @@ public class MeleeAttackExecutor : AttackExecutor
         ref Coroutine attackCoroutineRef)
     {
         if (!checkAttack()) return;
-
         if (command.target == null)
         {
             StopMovement();
@@ -26,82 +25,62 @@ public class MeleeAttackExecutor : AttackExecutor
             return;
         }
 
-        float distance = Vector3.Distance(transform.position, command.target.transform.position);
-        float attackBuffer = 0.1f;
+        if (attackCoroutineRef != null)
+            StopCoroutine(attackCoroutineRef);
+
+        attackCoroutineRef = StartCoroutine(MeleeAttackRoutine(command, attackAnimationTime, resetAttackTimer, setAnimationTimer, triggerAttackAnimation));
+        attackCoroutine = attackCoroutineRef;
+    }
+
+    private IEnumerator MeleeAttackRoutine(Command command, float attackAnimationTime,
+        System.Action resetAttackTimer,
+        System.Action setAnimationTimer,
+        System.Action triggerAttackAnimation)
+    {
         Transform targetTransform = command.target.transform;
-
-        RotateTowardsTarget(targetTransform);
-
-        if (distance <= attackRange + attackBuffer)
-        {
-            StopMovement();
-
-            if (!checkAttack()) return;
-
-            RotateTowardsTarget(targetTransform, true);
-
-            resetAttackTimer();
-            setAnimationTimer();
-            triggerAttackAnimation();
-
-            if (attackCoroutineRef != null)
-                StopCoroutine(attackCoroutineRef);
-
-            attackCoroutineRef = StartCoroutine(DelayedDamage(command, attackAnimationTime));
-            attackCoroutine = attackCoroutineRef;
-        }
-        else
-        {
-            Vector3 direction = (targetTransform.position - transform.position).normalized;
-            Vector3 destination = targetTransform.position - direction * attackRange;
-
-            characterMovement.Agent.stoppingDistance = 0f;
-            characterMovement.Agent.isStopped = false;
-            characterMovement.SetDestination(destination);
-
-            if (attackCoroutineRef != null)
-            {
-                StopCoroutine(attackCoroutineRef);
-                attackCoroutineRef = null;
-            }
-        }
-    }
-
-    private IEnumerator DelayedDamage(Command command, float attackAnimationTime, float delay = -1f)
-    {
-        float hitTime = attackAnimationTime * 0.4f;
-        if (delay >= 0f) hitTime = delay;
-
-        yield return new WaitForSeconds(hitTime);
-
-        if (attackCoroutine == null || command == null || command.isComplete || command.target == null)
-            yield break;
-
-        float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
         float attackBuffer = 0.1f;
 
-        if (currentDistance > attackRange + attackBuffer)
+        while (command.target != null)
         {
-            command.isComplete = true;
-            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
-            yield break;
+            float distance = Vector3.Distance(transform.position, targetTransform.position);
+            if (distance <= attackRange + attackBuffer)
+            {
+                StopMovement();
+                RotateTowardsTarget(targetTransform, true);
+
+                resetAttackTimer();
+                setAnimationTimer();
+                triggerAttackAnimation();
+
+                yield return new WaitForSeconds(attackAnimationTime * 0.4f);
+
+                if (command.target == null)
+                    break;
+
+                float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
+                if (currentDistance <= attackRange + attackBuffer)
+                {
+                    IDamageable target = command.target.GetComponent<IDamageable>();
+                    int damage = character.GetDamage();
+                    target.TakeDamage(damage);
+                }
+
+                command.isComplete = true;
+                break;
+            }
+            else
+            {
+                Vector3 direction = (targetTransform.position - transform.position).normalized;
+                Vector3 destination = targetTransform.position - direction * attackRange;
+                characterMovement.Agent.stoppingDistance = 0f;
+                characterMovement.Agent.isStopped = false;
+                characterMovement.SetDestination(destination);
+            }
+            yield return null;
         }
 
-        DealDamage(command);
-        command.isComplete = true;
         characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
-
-        AttackHandler attackHandler = GetComponent<AttackHandler>();
-        attackHandler?.ResetAttackTimer();
-
         attackCoroutine = null;
-    }
-
-    private void DealDamage(Command command)
-    {
-        IDamageable target = command.target.GetComponent<IDamageable>();
-        int damage = character.GetDamage();
-        target.TakeDamage(damage);
     }
 
     public override void ResetState()
