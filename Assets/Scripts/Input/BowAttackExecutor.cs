@@ -18,8 +18,6 @@ public class BowAttackExecutor : AttackExecutor
         command.isComplete = true;
 
         StopMovement();
-
-        resetAttackTimer();
         setAnimationTimer();
         triggerAttackAnimation();
 
@@ -36,8 +34,13 @@ public class BowAttackExecutor : AttackExecutor
     private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
     {
         yield return new WaitForSeconds(delay);
+
         SpawnArrowAtPosition(targetPos);
+
+        AttackHandler attackHandler = GetComponent<AttackHandler>();
+        attackHandler?.ResetAttackTimer();
     }
+
 
     private void SpawnArrowAtPosition(Vector3 mouseWorldPos)
     {

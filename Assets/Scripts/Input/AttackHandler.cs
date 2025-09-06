@@ -170,7 +170,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         return attackTimer <= 0f;
     }
 
-    private void ResetAttackTimer()
+    public void ResetAttackTimer()
     {
         attackTimer = GetAttackTime();
         animationTimer = attackAnimationTime;

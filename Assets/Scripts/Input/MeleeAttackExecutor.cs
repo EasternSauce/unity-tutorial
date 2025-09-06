@@ -95,6 +95,10 @@ public class MeleeAttackExecutor : AttackExecutor
         DealDamage(command);
         command.isComplete = true;
         characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+
+        AttackHandler attackHandler = GetComponent<AttackHandler>();
+        attackHandler?.ResetAttackTimer();
+
         attackCoroutine = null;
     }
 
