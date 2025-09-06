@@ -13,20 +13,21 @@ public class InventoryController : MonoBehaviour
     private EquipmentItemSlot selectedItemSlot;
     private GameObject selectedItemParentGameObject;
 
-    public EquipmentItemSlot SelectedItemSlot
-    {
-        get => selectedItemSlot;
-        set => selectedItemSlot = value;
-    }
-
+    public EquipmentItemSlot SelectedItemSlot { get => selectedItemSlot; set => selectedItemSlot = value; }
     public ItemGrid SelectedItemGrid
     {
         get => selectedItemGrid;
         set
         {
             selectedItemGrid = value;
-            itemHighlightController?.SetCurrentGrid(value);
-            gridHandler?.SetCurrentGrid(value);
+            if (gridHandler != null) gridHandler.SetCurrentGrid(value);
+            if (itemHighlightController != null)
+            {
+                if (gridHandler != null && gridHandler.IsMouseOverGrid(Input.mousePosition))
+                    itemHighlightController.SetCurrentGrid(value);
+                else
+                    itemHighlightController.SetSelectedItem(null);
+            }
         }
     }
 
@@ -35,9 +36,7 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
-        if (uiPanelManager == null)
-            uiPanelManager = FindFirstObjectByType<UiPanelManager>();
-
+        if (uiPanelManager == null) uiPanelManager = FindFirstObjectByType<UiPanelManager>();
         CreateSelectedItemParentIfMissing();
     }
 
@@ -49,8 +48,7 @@ public class InventoryController : MonoBehaviour
             if (selectedItemParentGameObject == null)
             {
                 selectedItemParentGameObject = new GameObject("SelectedItemContainer");
-                if (targetCanvas != null)
-                    selectedItemParentGameObject.transform.SetParent(targetCanvas, false);
+                if (targetCanvas != null) selectedItemParentGameObject.transform.SetParent(targetCanvas, false);
             }
         }
     }
@@ -67,29 +65,24 @@ public class InventoryController : MonoBehaviour
     public void HandlePrimaryClick(Vector2 mousePosition)
     {
         if (!uiPanelManager || !uiPanelManager.IsInventoryOpen) return;
-
         if (selectedItemGrid != null)
         {
-            gridHandler.HandleClick(selectedItemGrid, mousePosition, selectedItemController, itemHighlightController);
+            if (gridHandler.IsMouseOverGrid(mousePosition))
+                gridHandler.HandleClick(selectedItemGrid, mousePosition, selectedItemController, itemHighlightController);
             return;
         }
-
         if (selectedItemSlot != null)
         {
             selectedItemSlot.HandleClick(selectedItemController, itemHighlightController);
             return;
         }
-
         if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped && !UIUtility.IsPointerOverUI(mousePosition))
-        {
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
-        }
     }
 
     public void ThrowItemOnGround()
     {
         if (!uiPanelManager || !uiPanelManager.IsInventoryOpen) return;
-
         if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped)
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
     }
@@ -120,6 +113,14 @@ public class InventoryController : MonoBehaviour
                 ParentSelectedItem(selectedItemController.SelectedItem);
             else
                 selectedItemController.ClearSelectedItem();
+        }
+
+        if (selectedItemGrid != null && itemHighlightController != null)
+        {
+            if (gridHandler.IsMouseOverGrid(Input.mousePosition))
+                itemHighlightController.SetCurrentGrid(selectedItemGrid);
+            else
+                itemHighlightController.SetSelectedItem(null);
         }
     }
 }
