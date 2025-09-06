@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using CharacterCommand;
 using UnityEngine;
 
@@ -23,6 +24,15 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private bool isAttackLocked;
     private Coroutine attackCoroutine;
     private WeaponType currentAttackWeapon = WeaponType.None;
+
+    private List<string> attackTriggers = new List<string>
+    {
+        "OneHandedMeleeAttack",
+        "TwoHandedMeleeAttack",
+        "BowAttack",
+        "FistAttack",
+        "Attack"
+    };
 
     private void Awake()
     {
@@ -113,33 +123,22 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
 
     private string GetAttackTrigger()
     {
-        if (playerInventory != null)
-        {
-            InventoryItem weapon = playerInventory.CurrentWeapon;
-            if (weapon == null || weapon.itemData.weaponType == WeaponType.None)
-            {
-                if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
-                    return "FistAttack";
-            }
-            else if (weapon.itemData.weaponType == WeaponType.OneHandedAxe)
-            {
-                if (AnimatorHasParameter("OneHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
-                    return "OneHandedMeleeAttack";
-            }
-            else if (weapon.itemData.weaponType == WeaponType.TwoHandedAxe)
-            {
-                if (AnimatorHasParameter("TwoHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
-                    return "TwoHandedMeleeAttack";
-            }
-            else if (weapon.itemData.weaponType == WeaponType.Bow)
-            {
-                if (AnimatorHasParameter("BowAttack", AnimatorControllerParameterType.Trigger))
-                    return "BowAttack";
-            }
-        }
-        if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
-            return "Attack";
+        InventoryItem weapon = playerInventory?.CurrentWeapon;
+        WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
 
+        foreach (string trigger in attackTriggers)
+        {
+            if (trigger == "FistAttack" && (weaponType == WeaponType.None || weapon == null) && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+                return trigger;
+            if (trigger == "OneHandedMeleeAttack" && weaponType == WeaponType.OneHandedAxe && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+                return trigger;
+            if (trigger == "TwoHandedMeleeAttack" && weaponType == WeaponType.TwoHandedAxe && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+                return trigger;
+            if (trigger == "BowAttack" && weaponType == WeaponType.Bow && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+                return trigger;
+            if (trigger == "Attack" && AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+                return trigger;
+        }
         return null;
     }
 
@@ -183,14 +182,11 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         animationTimer = 0f;
         isAttackLocked = false;
 
-        if (AnimatorHasParameter("FistAttack", AnimatorControllerParameterType.Trigger))
-            animator.ResetTrigger("FistAttack");
-        if (AnimatorHasParameter("BowAttack", AnimatorControllerParameterType.Trigger))
-            animator.ResetTrigger("BowAttack");
-        if (AnimatorHasParameter("TwoHandedMeleeAttack", AnimatorControllerParameterType.Trigger))
-            animator.ResetTrigger("TwoHandedMeleeAttack");
-        if (AnimatorHasParameter("Attack", AnimatorControllerParameterType.Trigger))
-            animator.ResetTrigger("Attack");
+        foreach (string trigger in attackTriggers)
+        {
+            if (AnimatorHasParameter(trigger, AnimatorControllerParameterType.Trigger))
+                animator.ResetTrigger(trigger);
+        }
 
         if (attackCoroutine != null)
         {
