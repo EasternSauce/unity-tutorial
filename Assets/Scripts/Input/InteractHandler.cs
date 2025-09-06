@@ -5,12 +5,12 @@ public class InteractHandler : MonoBehaviour, ICommandHandle
 {
     [SerializeField] float interactRange = 0.5f;
 
-    CharacterMovement characterMovement;
+    MoveHandler characterMovement;
     Character character;
 
     private void Awake()
     {
-        characterMovement = GetComponent<CharacterMovement>();
+        characterMovement = GetComponent<MoveHandler>();
         character = GetComponent<Character>();
     }
 

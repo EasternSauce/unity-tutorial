@@ -4,14 +4,14 @@ using UnityEngine;
 public abstract class AttackExecutor : MonoBehaviour
 {
     protected Character character;
-    protected CharacterMovement characterMovement;
+    protected MoveHandler characterMovement;
     protected Animator animator;
     protected Coroutine attackCoroutine;
 
     protected virtual void Awake()
     {
         character = GetComponent<Character>();
-        characterMovement = GetComponent<CharacterMovement>();
+        characterMovement = GetComponent<MoveHandler>();
         animator = GetComponentInChildren<Animator>();
     }
 

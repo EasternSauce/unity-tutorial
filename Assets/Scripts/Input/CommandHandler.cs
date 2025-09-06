@@ -42,7 +42,7 @@ namespace CharacterCommand
 
         private void Awake()
         {
-            moveCommandHandler = GetComponent<CharacterMovement>();
+            moveCommandHandler = GetComponent<MoveHandler>();
             attackCommandHandler = GetComponent<AttackHandler>();
             interactCommandHandler = GetComponent<InteractHandler>();
         }

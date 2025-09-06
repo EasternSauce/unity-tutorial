@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(CanMoveState))]
-public class CharacterMovement : MonoBehaviour, ICommandHandle
+public class MoveHandler : MonoBehaviour, ICommandHandle
 {
     [SerializeField] private float defaultStoppingDistance = 0.1f;
     [SerializeField] private NavMeshAgent agent;
