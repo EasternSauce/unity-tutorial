@@ -31,13 +31,24 @@ public class MeleeAttackExecutor : AttackExecutor
         Coroutine attackCoroutineRef,
         System.Action onAttackFinished)
     {
+        if (command.target == null)
+        {
+            onAttackFinished?.Invoke();
+            yield break;
+        }
+
         Transform targetTransform = command.target.transform;
         float attackBuffer = 0.1f;
+        float range = attackRange;
+
+        InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
+        if (weapon == null || weapon.itemData.weaponType == WeaponType.None)
+            range = 1.5f;
 
         while (command.target != null)
         {
             float distance = Vector3.Distance(transform.position, targetTransform.position);
-            if (distance <= attackRange + attackBuffer)
+            if (distance <= range + attackBuffer)
             {
                 StopMovement();
                 RotateTowardsTarget(targetTransform, true);
@@ -50,10 +61,9 @@ public class MeleeAttackExecutor : AttackExecutor
 
                 if (command.target != null)
                 {
-                    float currentDistance = Vector3.Distance(transform.position, command.target.transform.position);
-                    if (currentDistance <= attackRange + attackBuffer)
+                    IDamageable target = command.target.GetComponent<IDamageable>();
+                    if (target != null)
                     {
-                        IDamageable target = command.target.GetComponent<IDamageable>();
                         int damage = character.GetDamage();
                         target.TakeDamage(damage);
                     }
@@ -65,7 +75,7 @@ public class MeleeAttackExecutor : AttackExecutor
             else
             {
                 Vector3 direction = (targetTransform.position - transform.position).normalized;
-                Vector3 destination = targetTransform.position - direction * attackRange;
+                Vector3 destination = targetTransform.position - direction * range;
                 characterMovement.Agent.stoppingDistance = 0f;
                 characterMovement.Agent.isStopped = false;
                 characterMovement.SetDestination(destination);
