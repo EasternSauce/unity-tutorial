@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BowAttackExecutor : AttackExecutor
 {
+    [Header("Bow Settings")]
     [SerializeField] GameObject arrowPrefab;
     [SerializeField] float arrowSpeed = 15f;
     [SerializeField] float arrowHeightOffset = 1.2f;
@@ -12,12 +13,15 @@ public class BowAttackExecutor : AttackExecutor
     public void HandleBowAttack(Command command, float attackAnimationTime,
         System.Action resetAttackTimer, System.Action setAnimationTimer,
         System.Action triggerAttackAnimation, ref Coroutine attackCoroutineRef,
-        System.Action onAttackFinished) // <-- added this parameter
+        System.Action onAttackFinished)
     {
         if (command.isComplete) return;
+
         command.isComplete = true;
 
         StopMovement();
+
+        resetAttackTimer();
         setAnimationTimer();
         triggerAttackAnimation();
 
@@ -39,12 +43,10 @@ public class BowAttackExecutor : AttackExecutor
 
         SpawnArrowAtPosition(targetPos);
 
-        AttackHandler attackHandler = GetComponent<AttackHandler>();
-        attackHandler?.ResetAttackTimer();
-
         attackCoroutine = null;
         onAttackFinished?.Invoke();
     }
+
     private void SpawnArrowAtPosition(Vector3 mouseWorldPos)
     {
         if (arrowPrefab == null) return;
