@@ -52,10 +52,6 @@ public class AttackInput : MonoBehaviour
         }
     }
 
-    public void OnLMB(InputAction.CallbackContext ctx)
-    {
-    }
-
     public bool AttackTargetCheck()
     {
         return interactInput.attackTarget != null;
