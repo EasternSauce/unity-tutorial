@@ -11,7 +11,8 @@ public class BowAttackExecutor : AttackExecutor
 
     public void HandleBowAttack(Command command, float attackAnimationTime,
         System.Action resetAttackTimer, System.Action setAnimationTimer,
-        System.Action triggerAttackAnimation, ref Coroutine attackCoroutineRef)
+        System.Action triggerAttackAnimation, ref Coroutine attackCoroutineRef,
+        System.Action onAttackFinished) // <-- added this parameter
     {
         if (command.isComplete) return;
         command.isComplete = true;
@@ -26,11 +27,11 @@ public class BowAttackExecutor : AttackExecutor
             StopCoroutine(attackCoroutineRef);
 
         float delay = attackAnimationTime * arrowSpawnProgress;
-        attackCoroutineRef = StartCoroutine(SpawnArrowDelayed(command.worldPoint, delay));
+        attackCoroutineRef = StartCoroutine(SpawnArrowDelayed(command.worldPoint, delay, onAttackFinished));
         attackCoroutine = attackCoroutineRef;
     }
 
-    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
+    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay, System.Action onAttackFinished)
     {
         yield return new WaitForSeconds(delay);
 
@@ -42,8 +43,8 @@ public class BowAttackExecutor : AttackExecutor
         attackHandler?.ResetAttackTimer();
 
         attackCoroutine = null;
+        onAttackFinished?.Invoke();
     }
-
     private void SpawnArrowAtPosition(Vector3 mouseWorldPos)
     {
         if (arrowPrefab == null) return;
