@@ -277,15 +277,15 @@ public class Character : MonoBehaviour, IDamageable
         stats.Sum(statsValue);
     }
 
-    public void SubstractStats(List<StatsValue> statsValues)
+    public void SubtractStats(List<StatsValue> statsValues)
     {
         for (int i = 0; i < statsValues.Count; i++)
         {
-            SubstractStats(statsValues[i]);
+            SubtractStats(statsValues[i]);
         }
     }
 
-    private void SubstractStats(StatsValue statsValue)
+    private void SustractStats(StatsValue statsValue)
     {
         stats.Subtract(statsValue);
     }

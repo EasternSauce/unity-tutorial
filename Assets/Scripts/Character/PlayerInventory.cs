@@ -66,7 +66,7 @@ public class PlayerInventory : MonoBehaviour
 
     public void SubtractStats(List<StatsValue> stats)
     {
-        character.SubstractStats(stats);
+        character.SubtractStats(stats);
     }
 
     public void UpdateCurrentWeapon()
