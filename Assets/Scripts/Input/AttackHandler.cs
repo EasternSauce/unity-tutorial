@@ -23,7 +23,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     private Coroutine attackCoroutine;
     private WeaponType currentAttackWeapon = WeaponType.None;
     private GameObject currentTarget;
-    private Command queuedCommand;
 
     private List<string> attackTriggers = new List<string>
     {
@@ -78,16 +77,8 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         currentAttackWeapon = weaponType;
 
         if (CheckAttack())
-        {
-            queuedCommand = null;
             StartAttack(command, weaponType);
-        }
-        else
-        {
-            queuedCommand = command;
-        }
     }
-
 
     private void StartAttack(Command command, WeaponType weaponType)
     {
@@ -95,8 +86,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             CancelAttack();
 
         currentTarget = command.target;
-
-        ResetAttackTimer(); // start cooldown immediately
+        ResetAttackTimer();
 
         if (weaponType == WeaponType.Bow)
         {
@@ -110,7 +100,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
                 ResetAttackTimer, SetAnimationTimer, TriggerAttackAnimation, ref attackCoroutine, OnAttackFinished);
         }
     }
-
 
     private string GetAttackTrigger()
     {
@@ -191,18 +180,11 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
         isAttackLocked = false;
         currentAttackWeapon = WeaponType.None;
         currentTarget = null;
-        queuedCommand = null;
     }
 
     private void OnAttackFinished()
     {
         attackCoroutine = null;
-        if (queuedCommand != null)
-        {
-            Command commandToAttack = queuedCommand;
-            queuedCommand = null;
-            StartAttack(commandToAttack, currentAttackWeapon);
-        }
     }
 
     public void ResetState()

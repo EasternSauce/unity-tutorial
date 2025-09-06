@@ -15,9 +15,6 @@ public class BowAttackExecutor : AttackExecutor
         System.Action triggerAttackAnimation, ref Coroutine attackCoroutineRef,
         System.Action onArrowSpawned)
     {
-        if (command.isComplete) return;
-        command.isComplete = true;
-
         StopMovement();
         setAnimationTimer();
         triggerAttackAnimation();
