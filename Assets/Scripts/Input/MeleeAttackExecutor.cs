@@ -44,7 +44,7 @@ public class MeleeAttackExecutor : AttackExecutor
 
     public void HandleMeleeAttack(Command command)
     {
-        if (attackTimer > 0f || command.target == null) return;
+        if (command.target == null) return;
 
         if (currentTarget != command.target)
         {
@@ -56,7 +56,6 @@ public class MeleeAttackExecutor : AttackExecutor
         }
 
         currentTarget = command.target;
-        attackTimer = defaultTimeToAttack / character.GetStatsValue(Statistic.AttackSpeed).float_value;
         localCoroutine = StartCoroutine(MeleeAttackRoutine(command));
     }
 
@@ -78,18 +77,23 @@ public class MeleeAttackExecutor : AttackExecutor
                 StopMovement();
                 RotateTowardsTarget(targetTransform, true);
 
-                animationTimer = attackAnimationTime;
-                isAttackLocked = false;
-                TriggerAttackAnimation();
+                if (attackTimer <= 0f)
+                {
+                    animationTimer = attackAnimationTime;
+                    isAttackLocked = false;
+                    TriggerAttackAnimation();
 
-                yield return new WaitForSeconds(attackAnimationTime * 0.4f);
+                    yield return new WaitForSeconds(attackAnimationTime * 0.4f);
 
-                IDamageable target = command.target.GetComponent<IDamageable>();
-                if (target != null)
-                    target.TakeDamage(character.GetDamage());
+                    if (command.target != null)
+                    {
+                        IDamageable target = command.target.GetComponent<IDamageable>();
+                        if (target != null)
+                            target.TakeDamage(character.GetDamage());
+                    }
 
-                command.isComplete = true;
-                break;
+                    attackTimer = defaultTimeToAttack / character.GetStatsValue(Statistic.AttackSpeed).float_value;
+                }
             }
             else
             {
