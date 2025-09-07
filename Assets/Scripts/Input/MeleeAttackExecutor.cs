@@ -9,18 +9,41 @@ public class MeleeAttackExecutor : AttackExecutor
     [SerializeField] float attackAnimationTime = 1f;
 
     private float attackTimer;
+    private float animationTimer;
+    private bool isAttackLocked;
     private Coroutine localCoroutine;
+
+    private CanMoveState canMoveState;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        canMoveState = GetComponent<CanMoveState>();
+    }
 
     private void Update()
     {
-        if (attackTimer > 0f)
-            attackTimer -= Time.deltaTime;
+        if (attackTimer > 0f) attackTimer -= Time.deltaTime;
+
+        if (animationTimer > 0f)
+        {
+            animationTimer -= Time.deltaTime;
+            float progress = 1f - (animationTimer / attackAnimationTime);
+            if (!isAttackLocked && progress >= 0.3f && progress <= 0.6f) isAttackLocked = true;
+            else if (isAttackLocked && progress > 0.6f) isAttackLocked = false;
+        }
+        else
+        {
+            isAttackLocked = false;
+        }
+
+        if (canMoveState != null)
+            canMoveState.isAttacking = isAttackLocked;
     }
 
     public void HandleMeleeAttack(Command command)
     {
-        if (attackTimer > 0f) return;
-        if (command.target == null) return;
+        if (attackTimer > 0f || command.target == null) return;
 
         if (localCoroutine != null) StopCoroutine(localCoroutine);
         localCoroutine = StartCoroutine(MeleeAttackRoutine(command));
@@ -43,6 +66,15 @@ public class MeleeAttackExecutor : AttackExecutor
             {
                 StopMovement();
                 RotateTowardsTarget(targetTransform, true);
+
+                if (canMoveState != null)
+                    canMoveState.isAttacking = true;
+
+                WeaponVisibilityController visibility = character.GetComponent<WeaponVisibilityController>();
+                if (visibility != null)
+                    visibility.ResetLingerTimer();
+
+                SetAnimationTimer();
                 TriggerAttackAnimation();
                 ResetAttackTimer();
 
@@ -66,11 +98,18 @@ public class MeleeAttackExecutor : AttackExecutor
                 characterMovement.Agent.isStopped = false;
                 characterMovement.SetDestination(destination);
             }
+
             yield return null;
         }
 
         characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
         localCoroutine = null;
+    }
+
+    private void SetAnimationTimer()
+    {
+        animationTimer = attackAnimationTime;
+        isAttackLocked = false;
     }
 
     private void ResetAttackTimer()
@@ -105,7 +144,6 @@ public class MeleeAttackExecutor : AttackExecutor
 
     private bool AnimatorHasTrigger(string name)
     {
-        if (animator == null) return false;
         foreach (var p in animator.parameters)
             if (p.type == AnimatorControllerParameterType.Trigger && p.name == name)
                 return true;
@@ -116,6 +154,9 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         base.ResetState();
         attackTimer = 0f;
+        animationTimer = 0f;
+        isAttackLocked = false;
         localCoroutine = null;
+        if (canMoveState != null) canMoveState.isAttacking = false;
     }
 }

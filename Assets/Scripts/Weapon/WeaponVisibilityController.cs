@@ -41,7 +41,7 @@ public class WeaponVisibilityController : MonoBehaviour
         bool isAttacking = canMoveState != null && canMoveState.isAttacking;
 
         if (isAttacking)
-            lingerTimer = lingerTime;
+            ResetLingerTimer();
 
         if (lingerTimer > 0f)
             lingerTimer -= Time.deltaTime;
@@ -68,5 +68,10 @@ public class WeaponVisibilityController : MonoBehaviour
                     axeOnBack.SetActive(true);
                 break;
         }
+    }
+
+    public void ResetLingerTimer()
+    {
+        lingerTimer = lingerTime;
     }
 }
