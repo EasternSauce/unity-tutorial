@@ -56,6 +56,7 @@ public class MeleeAttackExecutor : AttackExecutor
         }
 
         currentTarget = command.target;
+        attackTimer = defaultTimeToAttack / character.GetStatsValue(Statistic.AttackSpeed).float_value;
         localCoroutine = StartCoroutine(MeleeAttackRoutine(command));
     }
 
@@ -77,9 +78,9 @@ public class MeleeAttackExecutor : AttackExecutor
                 StopMovement();
                 RotateTowardsTarget(targetTransform, true);
 
-                SetAnimationTimer();
+                animationTimer = attackAnimationTime;
+                isAttackLocked = false;
                 TriggerAttackAnimation();
-                ResetAttackTimer();
 
                 yield return new WaitForSeconds(attackAnimationTime * 0.4f);
 
@@ -106,20 +107,6 @@ public class MeleeAttackExecutor : AttackExecutor
         localCoroutine = null;
     }
 
-    private void SetAnimationTimer()
-    {
-        animationTimer = attackAnimationTime;
-        isAttackLocked = false;
-    }
-
-    private void ResetAttackTimer()
-    {
-        float atkSpeed = character.GetStatsValue(Statistic.AttackSpeed).float_value;
-        attackTimer = defaultTimeToAttack / atkSpeed;
-        animationTimer = attackAnimationTime;
-        isAttackLocked = false;
-    }
-
     private void TriggerAttackAnimation()
     {
         InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
@@ -138,14 +125,9 @@ public class MeleeAttackExecutor : AttackExecutor
 
         if (!string.IsNullOrEmpty(trigger))
         {
-            ResetAnimatorState();
+            animator.Update(0f);
             animator.SetTrigger(trigger);
         }
-    }
-
-    private void ResetAnimatorState()
-    {
-        animator.Update(0f);
     }
 
     private bool AnimatorHasTrigger(string name)
@@ -170,7 +152,6 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         base.ResetState();
         CancelCurrentAttack();
-        attackTimer = 0f;
         animationTimer = 0f;
         isAttackLocked = false;
         if (canMoveState != null) canMoveState.isAttacking = false;
@@ -179,6 +160,5 @@ public class MeleeAttackExecutor : AttackExecutor
         if (AnimatorHasTrigger("FistAttack")) animator.ResetTrigger("FistAttack");
         if (AnimatorHasTrigger("OneHandedMeleeAttack")) animator.ResetTrigger("OneHandedMeleeAttack");
         if (AnimatorHasTrigger("TwoHandedMeleeAttack")) animator.ResetTrigger("TwoHandedMeleeAttack");
-
     }
 }
