@@ -31,14 +31,15 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
             meleeAttackExecutor?.HandleMeleeAttack(command);
     }
 
-    public void CancelAttack()
+    private void CancelAttack()
     {
         bowAttackExecutor?.ResetState();
         meleeAttackExecutor?.ResetState();
     }
 
-    public void ResetState()
+    public void CancelCommand()
     {
         CancelAttack();
     }
+
 }

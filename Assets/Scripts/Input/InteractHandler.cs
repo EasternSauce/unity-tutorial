@@ -29,4 +29,9 @@ public class InteractHandler : MonoBehaviour, ICommandHandle
             characterMovement.SetDestination(command.target.transform.position);
         }
     }
+
+    public void CancelCommand()
+    {
+
+    }
 }

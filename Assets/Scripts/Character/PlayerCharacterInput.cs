@@ -121,6 +121,6 @@ public class PlayerCharacterInput : MonoBehaviour
     {
         var attackHandler = GetComponent<AttackHandler>();
         if (attackHandler != null)
-            attackHandler.ResetState();
+            attackHandler.CancelCommand();
     }
 }
