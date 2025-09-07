@@ -1,6 +1,6 @@
 using System.Collections;
-using CharacterCommand;
 using UnityEngine;
+using CharacterCommand;
 
 public class BowAttackExecutor : AttackExecutor
 {
@@ -131,7 +131,7 @@ public class BowAttackExecutor : AttackExecutor
     private bool AnimatorHasTrigger(string name)
     {
         foreach (var p in animator.parameters)
-            if (p.type == AnimatorControllerParameterType.Trigger && p.name == name)
+            if (p.type == UnityEngine.AnimatorControllerParameterType.Trigger && p.name == name)
                 return true;
         return false;
     }
@@ -139,10 +139,17 @@ public class BowAttackExecutor : AttackExecutor
     public override void ResetState()
     {
         base.ResetState();
+        if (localCoroutine != null)
+        {
+            StopCoroutine(localCoroutine);
+            localCoroutine = null;
+        }
         attackTimer = 0f;
         animationTimer = 0f;
         isAttackLocked = false;
-        localCoroutine = null;
-        if (canMoveState != null) canMoveState.isAttacking = false;
+        if (canMoveState != null)
+            canMoveState.isAttacking = false;
+
+        if (AnimatorHasTrigger("BowAttack")) animator.ResetTrigger("BowAttack");
     }
 }

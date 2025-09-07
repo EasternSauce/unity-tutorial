@@ -46,12 +46,10 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         if (attackTimer > 0f || command.target == null) return;
 
-        // Cancel previous attack if target changed
         if (currentTarget != command.target)
         {
             CancelCurrentAttack();
         }
-        // Ignore command if coroutine already running for the same target
         else if (localCoroutine != null)
         {
             return;
@@ -147,7 +145,6 @@ public class MeleeAttackExecutor : AttackExecutor
 
     private void ResetAnimatorState()
     {
-        animator.Play("Idle", 0, 0f);
         animator.Update(0f);
     }
 
@@ -172,10 +169,16 @@ public class MeleeAttackExecutor : AttackExecutor
     public override void ResetState()
     {
         base.ResetState();
+        CancelCurrentAttack();
         attackTimer = 0f;
         animationTimer = 0f;
         isAttackLocked = false;
-        CancelCurrentAttack();
         if (canMoveState != null) canMoveState.isAttacking = false;
+
+        if (AnimatorHasTrigger("Attack")) animator.ResetTrigger("Attack");
+        if (AnimatorHasTrigger("FistAttack")) animator.ResetTrigger("FistAttack");
+        if (AnimatorHasTrigger("OneHandedMeleeAttack")) animator.ResetTrigger("OneHandedMeleeAttack");
+        if (AnimatorHasTrigger("TwoHandedMeleeAttack")) animator.ResetTrigger("TwoHandedMeleeAttack");
+
     }
 }
