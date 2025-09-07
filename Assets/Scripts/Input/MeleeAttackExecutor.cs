@@ -1,6 +1,6 @@
 using System.Collections;
-using CharacterCommand;
 using UnityEngine;
+using CharacterCommand;
 
 public class MeleeAttackExecutor : AttackExecutor
 {
@@ -14,6 +14,7 @@ public class MeleeAttackExecutor : AttackExecutor
     private Coroutine localCoroutine;
 
     private CanMoveState canMoveState;
+    private GameObject currentTarget;
 
     protected override void Awake()
     {
@@ -45,7 +46,18 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         if (attackTimer > 0f || command.target == null) return;
 
-        if (localCoroutine != null) StopCoroutine(localCoroutine);
+        // Cancel previous attack if target changed
+        if (currentTarget != command.target)
+        {
+            CancelCurrentAttack();
+        }
+        // Ignore command if coroutine already running for the same target
+        else if (localCoroutine != null)
+        {
+            return;
+        }
+
+        currentTarget = command.target;
         localCoroutine = StartCoroutine(MeleeAttackRoutine(command));
     }
 
@@ -67,13 +79,6 @@ public class MeleeAttackExecutor : AttackExecutor
                 StopMovement();
                 RotateTowardsTarget(targetTransform, true);
 
-                if (canMoveState != null)
-                    canMoveState.isAttacking = true;
-
-                WeaponVisibilityController visibility = character.GetComponent<WeaponVisibilityController>();
-                if (visibility != null)
-                    visibility.ResetLingerTimer();
-
                 SetAnimationTimer();
                 TriggerAttackAnimation();
                 ResetAttackTimer();
@@ -82,10 +87,7 @@ public class MeleeAttackExecutor : AttackExecutor
 
                 IDamageable target = command.target.GetComponent<IDamageable>();
                 if (target != null)
-                {
-                    int damage = character.GetDamage();
-                    target.TakeDamage(damage);
-                }
+                    target.TakeDamage(character.GetDamage());
 
                 command.isComplete = true;
                 break;
@@ -116,6 +118,8 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         float atkSpeed = character.GetStatsValue(Statistic.AttackSpeed).float_value;
         attackTimer = defaultTimeToAttack / atkSpeed;
+        animationTimer = attackAnimationTime;
+        isAttackLocked = false;
     }
 
     private void TriggerAttackAnimation()
@@ -129,25 +133,40 @@ public class MeleeAttackExecutor : AttackExecutor
             trigger = "OneHandedMeleeAttack";
         else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack"))
             trigger = "TwoHandedMeleeAttack";
-
-        if (string.IsNullOrEmpty(trigger))
-        {
-            if (AnimatorHasTrigger("Attack"))
-                trigger = "Attack";
-            else if (AnimatorHasTrigger("FistAttack"))
-                trigger = "FistAttack";
-        }
+        else if (AnimatorHasTrigger("Attack"))
+            trigger = "Attack";
+        else if (AnimatorHasTrigger("FistAttack"))
+            trigger = "FistAttack";
 
         if (!string.IsNullOrEmpty(trigger))
+        {
+            ResetAnimatorState();
             animator.SetTrigger(trigger);
+        }
+    }
+
+    private void ResetAnimatorState()
+    {
+        animator.Play("Idle", 0, 0f);
+        animator.Update(0f);
     }
 
     private bool AnimatorHasTrigger(string name)
     {
         foreach (var p in animator.parameters)
-            if (p.type == AnimatorControllerParameterType.Trigger && p.name == name)
+            if (p.type == UnityEngine.AnimatorControllerParameterType.Trigger && p.name == name)
                 return true;
         return false;
+    }
+
+    public void CancelCurrentAttack()
+    {
+        if (localCoroutine != null)
+        {
+            StopCoroutine(localCoroutine);
+            localCoroutine = null;
+        }
+        currentTarget = null;
     }
 
     public override void ResetState()
@@ -156,7 +175,7 @@ public class MeleeAttackExecutor : AttackExecutor
         attackTimer = 0f;
         animationTimer = 0f;
         isAttackLocked = false;
-        localCoroutine = null;
+        CancelCurrentAttack();
         if (canMoveState != null) canMoveState.isAttacking = false;
     }
 }
