@@ -17,7 +17,6 @@ public class BowAttackExecutor : AttackExecutor
     private float animationTimer;
     private bool isAttackLocked;
     private Coroutine localCoroutine;
-
     private CanMoveState canMoveState;
 
     protected override void Awake()
@@ -49,7 +48,7 @@ public class BowAttackExecutor : AttackExecutor
 
     public void HandleBowAttack(Command command)
     {
-        if (cooldownTimer > 0f) return;
+        if (cooldownTimer > 0f || localCoroutine != null) return;
 
         StopMovement();
         RotateTowardsPoint(command.worldPoint);
@@ -65,20 +64,20 @@ public class BowAttackExecutor : AttackExecutor
         TriggerAttackAnimation();
 
         float delay = attackAnimationTime * arrowSpawnProgress;
-        if (localCoroutine != null) StopCoroutine(localCoroutine);
         localCoroutine = StartCoroutine(SpawnArrowDelayed(command.worldPoint, delay));
-
-        ResetCooldown();
     }
 
     private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
     {
         yield return new WaitForSeconds(delay);
 
-        if (localCoroutine == null) yield break;
-
         SpawnArrowAtPosition(targetPos);
+        ResetCooldown();
+
         localCoroutine = null;
+        isAttackLocked = false;
+        if (canMoveState != null)
+            canMoveState.isAttacking = false;
     }
 
     private void SpawnArrowAtPosition(Vector3 targetPos)
