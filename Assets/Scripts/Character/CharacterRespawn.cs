@@ -55,7 +55,7 @@ public class CharacterRespawn : MonoBehaviour
 
         AttackHandler attackHandler = GetComponent<AttackHandler>();
         if (attackHandler != null)
-            attackHandler.CancelCommand();
+            attackHandler.CancelAttack();
 
         if (animator != null)
         {

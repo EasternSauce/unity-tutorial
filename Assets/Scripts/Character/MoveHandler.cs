@@ -81,9 +81,4 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
         SetDestination(command.worldPoint);
         currentCommand = command;
     }
-
-    public void CancelCommand()
-    {
-
-    }
 }
