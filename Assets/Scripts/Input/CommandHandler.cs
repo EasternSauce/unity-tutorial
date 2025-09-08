@@ -1,127 +1,51 @@
-using System;
 using UnityEngine;
 
-namespace CharacterCommand
+public class CommandHandler : MonoBehaviour
 {
-    public enum CommandType
+    public Command CurrentCommand { get; private set; }
+
+    private CommandProcessor processor;
+
+    private void Awake()
     {
-        None,
-        Move,
-        Attack,
-        Interact
+        processor = new CommandProcessor(
+            GetComponent<MoveHandler>(),
+            GetComponent<AttackHandler>(),
+            GetComponent<InteractHandler>()
+        );
     }
 
-    public class Command
+    public void SetCommand(Command newCommand)
     {
-        public CommandType commandType;
-
-        public Vector3 worldPoint;
-        public GameObject target;
-        public bool isComplete;
-
-        public Command(CommandType commandType, Vector3 worldPoint)
-        {
-            this.commandType = commandType;
-            this.worldPoint = worldPoint;
-        }
-
-        public Command(CommandType commandType, GameObject target)
-        {
-            this.commandType = commandType;
-            this.target = target;
-        }
-
+        CurrentCommand = newCommand;
     }
 
-    public class CommandHandler : MonoBehaviour
+    private void Update()
     {
-        public Command currentCommand;
-        ICommandHandle moveCommandHandler;
-        ICommandHandle attackCommandHandler;
-        ICommandHandle interactCommandHandler;
+        if (CurrentCommand == null) return;
 
-        private void Awake()
+        Character character = GetComponent<Character>();
+        if (character == null || character.IsDead)
         {
-            moveCommandHandler = GetComponent<MoveHandler>();
-            attackCommandHandler = GetComponent<AttackHandler>();
-            interactCommandHandler = GetComponent<InteractHandler>();
+            ClearCurrentCommand();
+            return;
         }
 
-        public void SetCommand(Command newCommand)
+        processor.Process(CurrentCommand);
+
+        if (CurrentCommand.isComplete)
         {
-            currentCommand = newCommand;
-        }
-
-        private void Update()
-        {
-            if (currentCommand == null) return;
-
-            Character character = GetComponent<Character>();
-            if (character == null || character.IsDead)
-            {
-                currentCommand = null;
-                return;
-            }
-
-            ProcessCommand();
-        }
-
-        private void ProcessCommand()
-        {
-            switch (currentCommand.commandType)
-            {
-                case CommandType.Move:
-                    ProcessMoveCommand();
-                    break;
-                case CommandType.Attack:
-                    ProcessAttackCommand();
-                    break;
-                case CommandType.Interact:
-                    ProcessInteractCommand();
-                    break;
-            }
-            if (currentCommand.isComplete)
-            {
-                CompleteCommand();
-            }
-        }
-
-        private void CompleteCommand()
-        {
-            currentCommand = null;
-        }
-
-        private void ProcessInteractCommand()
-        {
-            interactCommandHandler.ProcessCommand(currentCommand);
-        }
-
-        private void ProcessAttackCommand()
-        {
-            attackCommandHandler.ProcessCommand(currentCommand);
-
-        }
-
-        private void ProcessMoveCommand()
-        {
-            moveCommandHandler.ProcessCommand(currentCommand);
-        }
-
-        public CommandType GetCurrentCommandType()
-        {
-            if (currentCommand == null)
-            {
-                return CommandType.None;
-            }
-
-            return currentCommand.commandType;
-        }
-
-        public void ClearCurrentCommand()
-        {
-            currentCommand = null;
+            ClearCurrentCommand();
         }
     }
 
+    public CommandType GetCurrentCommandType()
+    {
+        return CurrentCommand?.commandType ?? CommandType.None;
+    }
+
+    public void ClearCurrentCommand()
+    {
+        CurrentCommand = null;
+    }
 }
-

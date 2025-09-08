@@ -76,7 +76,7 @@ public class Character : MonoBehaviour, IDamageable
             isDead = true;
             lifePool.currentValue = 0;
 
-            var handler = GetComponent<CharacterCommand.CommandHandler>();
+            var handler = GetComponent<CommandHandler>();
             if (handler != null)
             {
                 handler.SetCommand(null);

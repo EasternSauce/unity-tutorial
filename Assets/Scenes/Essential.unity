@@ -11234,6 +11234,8 @@ MonoBehaviour:
   arrowSpeed: 15
   arrowHeightOffset: 1.2
   arrowSpawnProgress: 0.5
+  defaultTimeToAttack: 1
+  attackAnimationTime: 1
 --- !u!114 &6365066707932090202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11247,6 +11249,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 2.5
+  defaultTimeToAttack: 1
+  attackAnimationTime: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
