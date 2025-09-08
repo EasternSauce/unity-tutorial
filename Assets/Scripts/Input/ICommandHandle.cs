@@ -1,7 +1,5 @@
-namespace CharacterCommand
+
+public interface ICommandHandle
 {
-    public interface ICommandHandle
-    {
-        void ProcessCommand(Command command);
-    }
+    void ProcessCommand(Command command);
 }

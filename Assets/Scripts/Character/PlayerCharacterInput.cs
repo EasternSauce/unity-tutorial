@@ -1,4 +1,3 @@
-using CharacterCommand;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;

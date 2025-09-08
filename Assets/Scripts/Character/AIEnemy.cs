@@ -1,5 +1,3 @@
-using System;
-using CharacterCommand;
 using UnityEngine;
 
 [RequireComponent(typeof(CommandHandler))]

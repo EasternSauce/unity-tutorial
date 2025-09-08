@@ -1,4 +1,3 @@
-using CharacterCommand;
 
 public class CommandProcessor
 {

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using CharacterCommand;
 
 public class AttackInput : MonoBehaviour
 {

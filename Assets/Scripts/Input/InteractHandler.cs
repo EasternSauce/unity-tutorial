@@ -1,4 +1,3 @@
-using CharacterCommand;
 using UnityEngine;
 
 public class InteractHandler : MonoBehaviour, ICommandHandle
