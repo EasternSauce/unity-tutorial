@@ -1,16 +1,14 @@
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(CommandHandler))]
 [RequireComponent(typeof(Character))]
 public class AIEnemy : MonoBehaviour
 {
     [SerializeField] AIAgentGroup aiGroup;
-
     private CommandHandler commandHandler;
     private Character character;
-
     [SerializeField] private float attackRange = 5f;
-
     private float timer = 0.2f;
 
     private void Awake()
@@ -27,32 +25,22 @@ public class AIEnemy : MonoBehaviour
     private void OnDestroy()
     {
         if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode || UnityEditor.EditorApplication.isPlaying == false)
-        {
             return;
-        }
-
         if (aiGroup != null)
-        {
             aiGroup.Remove(this);
-        }
     }
 
     internal void UpdateAgent(GameObject targetToAttack)
     {
         timer -= Time.deltaTime;
-
         if (character == null || character.IsDead)
         {
             if (commandHandler != null)
-            {
                 commandHandler.SetCommand(null);
-            }
-
             return;
         }
 
         float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
-
         var targetCharacter = targetToAttack.GetComponent<Character>();
         if (targetCharacter != null && !targetCharacter.IsDead)
         {
