@@ -17,17 +17,9 @@ public abstract class AttackExecutor : MonoBehaviour
 
     protected void StopMovement()
     {
-        if (character != null && character.IsDead)
-            return;
-
-        if (characterMovement == null || characterMovement.Agent == null)
-            return;
-
-        if (!characterMovement.Agent.isActiveAndEnabled || !characterMovement.Agent.isOnNavMesh)
-            return;
-
         characterMovement.Stop();
-        characterMovement.Agent.isStopped = true;
+        if (characterMovement.Agent != null)
+            characterMovement.Agent.isStopped = true;
     }
 
     protected void RotateTowardsPoint(Vector3 point)

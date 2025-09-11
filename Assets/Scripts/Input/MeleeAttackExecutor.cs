@@ -47,15 +47,8 @@ public class MeleeAttackExecutor : AttackExecutor
     private IEnumerator MeleeAttackRoutine(Command command)
     {
         Transform targetTransform = command.target.transform;
-
         while (command.target != null)
         {
-            if (character.IsDead)
-            {
-                CancelCurrentAttack();
-                yield break;
-            }
-
             IDamageable target = command.target.GetComponent<IDamageable>();
             if (target == null || (target is Character c && c.IsDead))
             {
@@ -92,7 +85,6 @@ public class MeleeAttackExecutor : AttackExecutor
             }
             yield return null;
         }
-
         characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
         localCoroutine = null;
     }
