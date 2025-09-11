@@ -15,6 +15,18 @@ public class MeleeAttackExecutor : AttackExecutor
     private CanMoveState canMoveState;
     private GameObject currentTarget;
 
+    private enum AttackPhase
+    {
+        None,
+        Windup,
+        Damage,
+        Recovery
+    }
+
+    private AttackPhase currentPhase = AttackPhase.None;
+
+    private bool hasDealtDamage = false;
+
     protected override void Awake()
     {
         base.Awake();
@@ -60,10 +72,9 @@ public class MeleeAttackExecutor : AttackExecutor
 
     private IEnumerator MeleeAttackRoutine(Command command)
     {
-        Transform targetTransform = command.target.transform;
-
-        while (command.target != null)
+        while (currentTarget != null)
         {
+            Transform targetTransform = currentTarget.transform;
             float distance = Vector3.Distance(transform.position, targetTransform.position);
             float range = attackRange;
 
@@ -78,20 +89,23 @@ public class MeleeAttackExecutor : AttackExecutor
 
                 if (attackTimer <= 0f)
                 {
+                    hasDealtDamage = false;
                     animationTimer = attackAnimationTime;
                     isAttackLocked = false;
                     TriggerAttackAnimation();
 
                     yield return new WaitForSeconds(attackAnimationTime * 0.4f);
 
-                    if (command.target != null)
+                    // Use currentTarget here to decide whether to apply damage
+                    if (!hasDealtDamage && currentTarget != null)
                     {
-                        IDamageable target = command.target.GetComponent<IDamageable>();
+                        IDamageable target = currentTarget.GetComponent<IDamageable>();
                         if (target != null)
                             target.TakeDamage(character.GetDamage());
-                    }
 
-                    attackTimer = defaultTimeToAttack / character.GetStatsValue(Statistic.AttackSpeed).float_value;
+                        hasDealtDamage = true;
+                        ApplyCooldown();
+                    }
                 }
             }
             else
@@ -163,5 +177,10 @@ public class MeleeAttackExecutor : AttackExecutor
         if (AnimatorHasTrigger("FistAttack")) animator.ResetTrigger("FistAttack");
         if (AnimatorHasTrigger("OneHandedMeleeAttack")) animator.ResetTrigger("OneHandedMeleeAttack");
         if (AnimatorHasTrigger("TwoHandedMeleeAttack")) animator.ResetTrigger("TwoHandedMeleeAttack");
+    }
+
+    private void ApplyCooldown()
+    {
+        attackTimer = defaultTimeToAttack / character.GetStatsValue(Statistic.AttackSpeed).float_value;
     }
 }
