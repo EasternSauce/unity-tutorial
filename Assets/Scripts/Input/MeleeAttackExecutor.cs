@@ -61,7 +61,11 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         while (currentTarget != null)
         {
-            // ✅ Step 1: stop attacking if target is dead
+            if (character.IsDead)
+            {
+                yield break;
+            }
+
             IDamageable damageable = currentTarget.GetComponent<IDamageable>();
             if (damageable == null || (damageable is Character c && c.IsDead))
             {
@@ -95,18 +99,29 @@ public class MeleeAttackExecutor : AttackExecutor
             {
                 Vector3 dir = (targetTransform.position - transform.position).normalized;
                 Vector3 destination = targetTransform.position - dir * range;
-                characterMovement.Agent.stoppingDistance = 0f;
-                characterMovement.Agent.isStopped = false;
                 characterMovement.SetDestination(destination);
+
+                if (characterMovement?.Agent != null &&
+                    characterMovement.Agent.isActiveAndEnabled &&
+                    characterMovement.Agent.isOnNavMesh)
+                {
+                    characterMovement.Agent.stoppingDistance = 0f;
+                    characterMovement.Agent.isStopped = false;
+                }
             }
 
             yield return null;
         }
 
-        characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+        if (characterMovement?.Agent != null &&
+            characterMovement.Agent.isActiveAndEnabled &&
+            characterMovement.Agent.isOnNavMesh)
+        {
+            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+        }
+
         localCoroutine = null;
     }
-
 
     private void StartAttackPhase()
     {
