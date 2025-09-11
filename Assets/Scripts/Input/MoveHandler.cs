@@ -34,7 +34,8 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
 
     private void UpdateMoveSpeed()
     {
-        agent.speed = default_MoveSpeed * moveSpeed.float_value;
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+            agent.speed = default_MoveSpeed * moveSpeed.float_value;
     }
 
     private void Update()
@@ -45,12 +46,15 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
             UpdateMoveSpeed();
         }
 
-        if (currentCommand != null && agent.isOnNavMesh)
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
-            if (agent.remainingDistance <= agent.stoppingDistance && !agent.pathPending)
+            if (currentCommand != null)
             {
-                currentCommand.isComplete = true;
-                currentCommand = null;
+                if (agent.remainingDistance <= agent.stoppingDistance && !agent.pathPending)
+                {
+                    currentCommand.isComplete = true;
+                    currentCommand = null;
+                }
             }
         }
     }
