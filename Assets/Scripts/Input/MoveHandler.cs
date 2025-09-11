@@ -10,11 +10,10 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
     public NavMeshAgent Agent => agent;
     public float DefaultStoppingDistance => defaultStoppingDistance;
 
-    Character character;
-    [SerializeField] float default_MoveSpeed = 3.5f;
-    float current_MoveSpeed;
-    StatsValue moveSpeed;
-    CanMoveState canMoveState;
+    private Character character;
+    [SerializeField] private float default_MoveSpeed = 3.5f;
+    private StatsValue moveSpeed;
+    private CanMoveState canMoveState;
 
     private Command currentCommand;
     public Command CurrentCommand => currentCommand;
@@ -29,22 +28,15 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
     private void Start()
     {
         moveSpeed = character.GetStatsValue(Statistic.MoveSpeed);
-        UpdateMoveSpeed();
-    }
-
-    private void UpdateMoveSpeed()
-    {
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
-            agent.speed = default_MoveSpeed * moveSpeed.float_value;
+        ApplyMoveSpeed();
     }
 
     private void Update()
     {
-        if (current_MoveSpeed != moveSpeed.float_value)
-        {
-            current_MoveSpeed = moveSpeed.float_value;
-            UpdateMoveSpeed();
-        }
+        if (moveSpeed == null) return;
+
+        // keep speed in sync every frame (no guard!)
+        ApplyMoveSpeed();
 
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
@@ -57,6 +49,17 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
                 }
             }
         }
+    }
+
+    private void ApplyMoveSpeed()
+    {
+        if (agent == null) return;
+
+        float newSpeed = default_MoveSpeed * moveSpeed.float_value;
+
+        // only apply if valid
+        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            agent.speed = newSpeed;
     }
 
     public void SetDestination(Vector3 destinationPosition)

@@ -63,12 +63,6 @@ public class MeleeAttackExecutor : AttackExecutor
         {
             if (character.IsDead)
             {
-                yield break;
-            }
-
-            IDamageable damageable = currentTarget.GetComponent<IDamageable>();
-            if (damageable == null || (damageable is Character c && c.IsDead))
-            {
                 CancelCurrentAttack();
                 yield break;
             }
@@ -90,7 +84,7 @@ public class MeleeAttackExecutor : AttackExecutor
                 {
                     StartAttackPhase();
                     yield return new WaitForSeconds(attackAnimationTime * 0.4f);
-                    ExecuteDamageOnTarget();
+                    TryDealDamage();
                     yield return new WaitForSeconds(attackAnimationTime * 0.6f);
                     EndAttackPhase();
                 }
@@ -121,6 +115,20 @@ public class MeleeAttackExecutor : AttackExecutor
         }
 
         localCoroutine = null;
+    }
+
+    private void TryDealDamage()
+    {
+        if (hasDealtDamage || currentTarget == null)
+            return;
+
+        IDamageable target = currentTarget.GetComponent<IDamageable>();
+        if (target != null && (!(target is Character c) || !c.IsDead))
+            target.TakeDamage(character.GetDamage());
+
+        hasDealtDamage = true;
+        ApplyCooldown();
+        currentPhase = AttackPhase.Damage;
     }
 
     private void StartAttackPhase()
