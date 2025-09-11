@@ -8,8 +8,6 @@ public class MeleeAttackExecutor : AttackExecutor
     [SerializeField] float attackAnimationTime = 1f;
 
     private float attackTimer;
-    private float animationTimer;
-    private bool isAttackLocked;
     private Coroutine localCoroutine;
 
     private CanMoveState canMoveState;
@@ -24,6 +22,7 @@ public class MeleeAttackExecutor : AttackExecutor
     }
 
     private AttackPhase currentPhase = AttackPhase.None;
+    private float phaseTimer;
     private bool hasDealtDamage = false;
 
     protected override void Awake()
@@ -34,25 +33,11 @@ public class MeleeAttackExecutor : AttackExecutor
 
     private void Update()
     {
-        // Cooldown countdown
-        if (attackTimer > 0f)
-            attackTimer -= Time.deltaTime;
-
-        // Update attack phase
-        switch (currentPhase)
-        {
-            case AttackPhase.None:
-                isAttackLocked = false;
-                break;
-            case AttackPhase.Windup:
-            case AttackPhase.Damage:
-            case AttackPhase.Recovery:
-                isAttackLocked = true;
-                break;
-        }
+        if (attackTimer > 0f) attackTimer -= Time.deltaTime;
+        if (phaseTimer > 0f) phaseTimer -= Time.deltaTime;
 
         if (canMoveState != null)
-            canMoveState.isAttacking = isAttackLocked;
+            canMoveState.isAttacking = currentPhase != AttackPhase.None;
     }
 
     public void HandleMeleeAttack(Command command)
@@ -69,10 +54,10 @@ public class MeleeAttackExecutor : AttackExecutor
         }
 
         currentTarget = command.target;
-        localCoroutine = StartCoroutine(MeleeAttackRoutine());
+        localCoroutine = StartCoroutine(MeleeAttackRoutine(command));
     }
 
-    private IEnumerator MeleeAttackRoutine()
+    private IEnumerator MeleeAttackRoutine(Command command)
     {
         while (currentTarget != null)
         {
@@ -89,12 +74,13 @@ public class MeleeAttackExecutor : AttackExecutor
                 StopMovement();
                 RotateTowardsTarget(targetTransform, true);
 
-                if (attackTimer <= 0f)
+                if (attackTimer <= 0f && currentPhase == AttackPhase.None)
                 {
                     StartAttackPhase();
                     yield return new WaitForSeconds(attackAnimationTime * 0.4f);
                     ExecuteDamageOnTarget();
-                    currentPhase = AttackPhase.Recovery;
+                    yield return new WaitForSeconds(attackAnimationTime * 0.6f);
+                    EndAttackPhase();
                 }
             }
             else
@@ -117,7 +103,7 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         hasDealtDamage = false;
         currentPhase = AttackPhase.Windup;
-        animationTimer = attackAnimationTime;
+        phaseTimer = attackAnimationTime;
         TriggerAttackAnimation();
     }
 
@@ -133,6 +119,11 @@ public class MeleeAttackExecutor : AttackExecutor
         hasDealtDamage = true;
         ApplyCooldown();
         currentPhase = AttackPhase.Damage;
+    }
+
+    private void EndAttackPhase()
+    {
+        currentPhase = AttackPhase.None;
     }
 
     private void TriggerAttackAnimation()
@@ -173,20 +164,16 @@ public class MeleeAttackExecutor : AttackExecutor
             StopCoroutine(localCoroutine);
             localCoroutine = null;
         }
-
         currentTarget = null;
-        hasDealtDamage = false;
         currentPhase = AttackPhase.None;
-        animationTimer = 0f;
-        isAttackLocked = false;
-
-        if (canMoveState != null) canMoveState.isAttacking = false;
     }
 
     public override void ResetState()
     {
         base.ResetState();
         CancelCurrentAttack();
+        hasDealtDamage = false;
+        if (canMoveState != null) canMoveState.isAttacking = false;
 
         if (AnimatorHasTrigger("Attack")) animator.ResetTrigger("Attack");
         if (AnimatorHasTrigger("FistAttack")) animator.ResetTrigger("FistAttack");
