@@ -61,6 +61,14 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         while (currentTarget != null)
         {
+            // ✅ Step 1: stop attacking if target is dead
+            IDamageable damageable = currentTarget.GetComponent<IDamageable>();
+            if (damageable == null || (damageable is Character c && c.IsDead))
+            {
+                CancelCurrentAttack();
+                yield break;
+            }
+
             Transform targetTransform = currentTarget.transform;
             float distance = Vector3.Distance(transform.position, targetTransform.position);
             float range = attackRange;
@@ -98,6 +106,7 @@ public class MeleeAttackExecutor : AttackExecutor
         characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
         localCoroutine = null;
     }
+
 
     private void StartAttackPhase()
     {
