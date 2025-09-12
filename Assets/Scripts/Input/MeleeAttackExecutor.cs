@@ -44,6 +44,9 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         if (command.target == null) return;
 
+        var c = command.target.GetComponent<Character>();
+        if (c != null && c.IsDead) return;
+
         if (currentTarget != command.target)
         {
             CancelCurrentAttack();
@@ -61,12 +64,6 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         while (currentTarget != null)
         {
-            if (character.IsDead)
-            {
-                CancelCurrentAttack();
-                yield break;
-            }
-
             Transform targetTransform = currentTarget.transform;
             float distance = Vector3.Distance(transform.position, targetTransform.position);
             float range = attackRange;
@@ -83,9 +80,13 @@ public class MeleeAttackExecutor : AttackExecutor
                 if (attackTimer <= 0f && currentPhase == AttackPhase.None)
                 {
                     StartAttackPhase();
+
                     yield return new WaitForSeconds(attackAnimationTime * 0.4f);
-                    TryDealDamage();
+
+                    ExecuteDamageOnTarget();
+
                     yield return new WaitForSeconds(attackAnimationTime * 0.6f);
+
                     EndAttackPhase();
                 }
             }
@@ -93,42 +94,16 @@ public class MeleeAttackExecutor : AttackExecutor
             {
                 Vector3 dir = (targetTransform.position - transform.position).normalized;
                 Vector3 destination = targetTransform.position - dir * range;
+                characterMovement.Agent.stoppingDistance = 0f;
+                characterMovement.Agent.isStopped = false;
                 characterMovement.SetDestination(destination);
-
-                if (characterMovement?.Agent != null &&
-                    characterMovement.Agent.isActiveAndEnabled &&
-                    characterMovement.Agent.isOnNavMesh)
-                {
-                    characterMovement.Agent.stoppingDistance = 0f;
-                    characterMovement.Agent.isStopped = false;
-                }
             }
 
             yield return null;
         }
 
-        if (characterMovement?.Agent != null &&
-            characterMovement.Agent.isActiveAndEnabled &&
-            characterMovement.Agent.isOnNavMesh)
-        {
-            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
-        }
-
+        characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
         localCoroutine = null;
-    }
-
-    private void TryDealDamage()
-    {
-        if (hasDealtDamage || currentTarget == null)
-            return;
-
-        IDamageable target = currentTarget.GetComponent<IDamageable>();
-        if (target != null && (!(target is Character c) || !c.IsDead))
-            target.TakeDamage(character.GetDamage());
-
-        hasDealtDamage = true;
-        ApplyCooldown();
-        currentPhase = AttackPhase.Damage;
     }
 
     private void StartAttackPhase()
@@ -146,7 +121,12 @@ public class MeleeAttackExecutor : AttackExecutor
 
         IDamageable target = currentTarget.GetComponent<IDamageable>();
         if (target != null)
-            target.TakeDamage(character.GetDamage());
+        {
+            if (!(target is Character c) || !c.IsDead)
+            {
+                target.TakeDamage(character.GetDamage());
+            }
+        }
 
         hasDealtDamage = true;
         ApplyCooldown();

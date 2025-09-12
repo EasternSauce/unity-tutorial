@@ -41,30 +41,28 @@ public class AIEnemy : MonoBehaviour
     {
         timer -= Time.deltaTime;
 
-        if (character == null || character.IsDead)
+        if (character == null || character.IsDead || targetToAttack == null)
         {
-            if (commandHandler != null)
-            {
-                commandHandler.SetCommand(null);
-            }
+            commandHandler?.SetCommand(null);
+            return;
+        }
 
+        Character targetCharacter = targetToAttack.GetComponent<Character>();
+        if (targetCharacter != null && targetCharacter.IsDead)
+        {
+            commandHandler?.SetCommand(null);
             return;
         }
 
         float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
 
-        var targetCharacter = targetToAttack.GetComponent<Character>();
-        if (targetCharacter != null && !targetCharacter.IsDead)
+        if (timer < 0f && distanceToTarget <= attackRange)
         {
-            if (timer < 0f && distanceToTarget <= attackRange)
-            {
-                timer = 0.2f;
-                commandHandler.SetCommand(new Command(CommandType.Attack, targetToAttack));
-            }
-        }
-        else
-        {
-            commandHandler.SetCommand(null);
+            timer = 0.2f;
+            commandHandler.SetCommand(new Command(CommandType.Attack, targetToAttack));
         }
     }
+
+
+
 }
