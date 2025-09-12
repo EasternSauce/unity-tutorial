@@ -9,7 +9,7 @@ public class WeaponVisibilityController : MonoBehaviour
     [SerializeField] GameObject bowOnBack;
 
     [Header("Settings")]
-    [SerializeField] float lingerTime = 6f;
+    [SerializeField] float lingerTime = 2f;
 
     PlayerInventory inventory;
     CanMoveState canMoveState;

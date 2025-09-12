@@ -35,7 +35,6 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
     {
         if (moveSpeed == null) return;
 
-        // keep speed in sync every frame (no guard!)
         ApplyMoveSpeed();
 
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
@@ -57,7 +56,6 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
 
         float newSpeed = default_MoveSpeed * moveSpeed.float_value;
 
-        // only apply if valid
         if (agent.isActiveAndEnabled && agent.isOnNavMesh)
             agent.speed = newSpeed;
     }
