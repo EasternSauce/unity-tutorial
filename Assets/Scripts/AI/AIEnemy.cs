@@ -4,42 +4,37 @@ using UnityEngine;
 [RequireComponent(typeof(Character))]
 public class AIEnemy : MonoBehaviour
 {
-    [SerializeField] AIAgentGroup aiGroup;
-
     private CommandHandler commandHandler;
     private Character character;
 
     [SerializeField] private float attackRange = 5f;
+    [SerializeField] private float attackCooldown = 0.2f;
 
-    private float timer = 0.2f;
+    private float timer;
+
+    [SerializeField] private GameObject targetToAttack;
 
     private void Awake()
     {
         commandHandler = GetComponent<CommandHandler>();
         character = GetComponent<Character>();
+        timer = attackCooldown;
     }
 
-    private void Start()
+    private void Update()
     {
-        aiGroup.Add(this);
+        UpdateAgent();
     }
 
-    private void OnDestroy()
-    {
-        if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode || UnityEditor.EditorApplication.isPlaying == false)
-        {
-            return;
-        }
-
-        if (aiGroup != null)
-        {
-            aiGroup.Remove(this);
-        }
-    }
-
-    internal void UpdateAgent(GameObject targetToAttack)
+    private void UpdateAgent()
     {
         timer -= Time.deltaTime;
+
+        // Automatically find a target if none is assigned or if the current target is dead
+        if (targetToAttack == null || (targetToAttack.GetComponent<Character>()?.IsDead ?? true))
+        {
+            FindClosestTarget();
+        }
 
         if (character == null || character.IsDead || targetToAttack == null)
         {
@@ -47,22 +42,35 @@ public class AIEnemy : MonoBehaviour
             return;
         }
 
-        Character targetCharacter = targetToAttack.GetComponent<Character>();
-        if (targetCharacter != null && targetCharacter.IsDead)
-        {
-            commandHandler?.SetCommand(null);
-            return;
-        }
-
         float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
 
-        if (timer < 0f && distanceToTarget <= attackRange)
+        if (timer <= 0f && distanceToTarget <= attackRange)
         {
-            timer = 0.2f;
+            timer = attackCooldown;
             commandHandler.SetCommand(new Command(CommandType.Attack, targetToAttack));
         }
     }
 
+    private void FindClosestTarget()
+    {
+        Character[] allCharacters = Object.FindObjectsByType<Character>(FindObjectsSortMode.None);
 
+        float closestDistance = float.MaxValue;
+        GameObject closest = null;
+
+        foreach (var c in allCharacters)
+        {
+            if (c == character || c.IsDead) continue;
+
+            float dist = Vector3.Distance(transform.position, c.transform.position);
+            if (dist < closestDistance)
+            {
+                closestDistance = dist;
+                closest = c.gameObject;
+            }
+        }
+
+        targetToAttack = closest;
+    }
 
 }
