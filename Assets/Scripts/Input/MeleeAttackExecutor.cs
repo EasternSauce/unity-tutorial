@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class MeleeAttackExecutor : AttackExecutor
 {
@@ -43,6 +44,7 @@ public class MeleeAttackExecutor : AttackExecutor
     public void HandleMeleeAttack(Command command)
     {
         if (command.target == null) return;
+        if (character == null || character.IsDead) return;
 
         var c = command.target.GetComponent<Character>();
         if (c != null && c.IsDead) return;
@@ -62,7 +64,7 @@ public class MeleeAttackExecutor : AttackExecutor
 
     private IEnumerator MeleeAttackRoutine(Command command)
     {
-        while (currentTarget != null)
+        while (currentTarget != null && character != null && !character.IsDead)
         {
             Transform targetTransform = currentTarget.transform;
             float distance = Vector3.Distance(transform.position, targetTransform.position);
@@ -94,15 +96,20 @@ public class MeleeAttackExecutor : AttackExecutor
             {
                 Vector3 dir = (targetTransform.position - transform.position).normalized;
                 Vector3 destination = targetTransform.position - dir * range;
-                characterMovement.Agent.stoppingDistance = 0f;
-                characterMovement.Agent.isStopped = false;
-                characterMovement.SetDestination(destination);
+                if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
+                {
+                    characterMovement.Agent.stoppingDistance = 0f;
+                    characterMovement.Agent.isStopped = false;
+                    characterMovement.SetDestination(destination);
+                }
             }
 
             yield return null;
         }
 
-        characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+        if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
+            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+
         localCoroutine = null;
     }
 
@@ -116,7 +123,7 @@ public class MeleeAttackExecutor : AttackExecutor
 
     private void ExecuteDamageOnTarget()
     {
-        if (hasDealtDamage || currentTarget == null)
+        if (hasDealtDamage || currentTarget == null || character == null || character.IsDead)
             return;
 
         IDamageable target = currentTarget.GetComponent<IDamageable>();

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 public abstract class AttackExecutor : MonoBehaviour
 {
@@ -18,7 +19,7 @@ public abstract class AttackExecutor : MonoBehaviour
     protected void StopMovement()
     {
         characterMovement.Stop();
-        if (characterMovement.Agent != null)
+        if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
             characterMovement.Agent.isStopped = true;
     }
 
@@ -38,7 +39,7 @@ public abstract class AttackExecutor : MonoBehaviour
         if (lookVector == Vector3.zero) return;
 
         Quaternion targetRotation = Quaternion.LookRotation(lookVector);
-        bool isMoving = characterMovement.Agent.velocity.magnitude > 0.1f;
+        bool isMoving = characterMovement.Agent != null && characterMovement.Agent.velocity.magnitude > 0.1f;
 
         if (forceInstant || isMoving)
             transform.rotation = targetRotation;
