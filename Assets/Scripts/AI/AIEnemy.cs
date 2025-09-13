@@ -1,75 +1,112 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
-[RequireComponent(typeof(CommandHandler))]
-[RequireComponent(typeof(Character))]
 public class AIEnemy : MonoBehaviour
 {
-    private CommandHandler commandHandler;
+    [SerializeField] private float aggroDistance = 5f;
+    [SerializeField] private float aggroLoseDistance = 7f;
+    [SerializeField] private float aggroLoseTime = 3f;
+
+    private GameObject currentTarget;
+    private float timeOutsideAggro;
+    private bool isAggroed;
+
+    private MoveHandler moveHandler;
+    private AttackHandler attackHandler;
     private Character character;
-
-    [SerializeField] private float attackRange = 5f;
-    [SerializeField] private float attackCooldown = 0.2f;
-    private float timer;
-
-    [SerializeField] private GameObject targetToAttack;
 
     private void Awake()
     {
-        commandHandler = GetComponent<CommandHandler>();
+        moveHandler = GetComponent<MoveHandler>();
+        attackHandler = GetComponent<AttackHandler>();
         character = GetComponent<Character>();
-        timer = attackCooldown;
     }
 
     private void Update()
     {
-        UpdateAgent();
-    }
-
-    private void UpdateAgent()
-    {
-        timer -= Time.deltaTime;
-
-        if (targetToAttack != null && targetToAttack.GetComponent<Character>()?.IsDead == true)
+        if (character == null || character.IsDead)
         {
-            targetToAttack = null;
-            commandHandler?.CancelCurrentCommand();
-        }
-
-        if (targetToAttack == null)
-            FindClosestTarget();
-
-        if (character == null || character.IsDead || targetToAttack == null)
+            DropAggro();
             return;
+        }
 
-        float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
-
-        if (timer <= 0f && distanceToTarget <= attackRange)
+        if (currentTarget != null && !currentTarget.GetComponent<Character>().IsDead)
         {
-            timer = attackCooldown;
-            commandHandler.ExecuteCommand(new Command(CommandType.Attack, targetToAttack));
+            float distance = Vector3.Distance(transform.position, currentTarget.transform.position);
+
+            if (distance > aggroLoseDistance)
+            {
+                timeOutsideAggro += Time.deltaTime;
+                if (timeOutsideAggro >= aggroLoseTime)
+                    DropAggro();
+            }
+            else
+            {
+                timeOutsideAggro = 0f;
+            }
+
+            if (isAggroed)
+            {
+                attackHandler?.ProcessCommand(new Command(CommandType.Attack, currentTarget));
+            }
+        }
+        else
+        {
+            SearchForTargets();
         }
     }
 
-    private void FindClosestTarget()
+    private void SearchForTargets()
     {
-        Character[] allCharacters = Object.FindObjectsByType<Character>(FindObjectsSortMode.None);
-        float closestDistance = float.MaxValue;
-        GameObject closest = null;
+        Character player = FindClosestPlayer();
 
-        foreach (var c in allCharacters)
+        if (player != null)
         {
-            if (c == character) continue;
-            if (c.IsDead) continue;
-            if (c.GetComponent<AIEnemy>() != null) continue;
-
-            float dist = Vector3.Distance(transform.position, c.transform.position);
-            if (dist < closestDistance)
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+            if (distance <= aggroDistance)
             {
-                closestDistance = dist;
-                closest = c.gameObject;
+                GainAggro(player.gameObject);
+            }
+        }
+    }
+
+    private Character FindClosestPlayer()
+    {
+        List<Character> players = CharacterUtils.GetPlayerCharacters();
+
+        Character closest = null;
+        float minDist = float.MaxValue;
+
+        foreach (var p in players)
+        {
+            if (p.IsDead) continue;
+            if (!p.IsPlayer) continue;
+
+            float dist = Vector3.Distance(transform.position, p.transform.position);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = p;
             }
         }
 
-        targetToAttack = closest;
+        return closest;
+    }
+
+    public void GainAggro(GameObject target)
+    {
+        currentTarget = target;
+        isAggroed = true;
+        timeOutsideAggro = 0f;
+    }
+
+    private void DropAggro()
+    {
+        currentTarget = null;
+        isAggroed = false;
+        timeOutsideAggro = 0f;
+        moveHandler?.Stop();
+        attackHandler?.CancelAttack();
     }
 }
