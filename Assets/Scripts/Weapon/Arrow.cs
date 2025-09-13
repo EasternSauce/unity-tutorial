@@ -12,9 +12,7 @@ public class Arrow : MonoBehaviour
     {
         this.shooter = shooter;
         velocity = direction.normalized * speed;
-
         transform.rotation = Quaternion.LookRotation(velocity) * Quaternion.Euler(rotationOffset);
-
         Destroy(gameObject, lifetime);
     }
 
@@ -31,11 +29,12 @@ public class Arrow : MonoBehaviour
         if (other.TryGetComponent<IDamageable>(out var damageable))
         {
             damageable.TakeDamage(shooter.GetDamage());
-            Destroy(gameObject);
+
+            AIEnemy aiEnemy = other.GetComponent<AIEnemy>();
+            if (aiEnemy != null)
+                aiEnemy.OnAttacked(shooter.gameObject);
         }
-        else
-        {
-            Destroy(gameObject);
-        }
+
+        Destroy(gameObject);
     }
 }

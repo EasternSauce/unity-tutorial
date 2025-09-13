@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class AIEnemy : MonoBehaviour
 {
@@ -60,7 +59,6 @@ public class AIEnemy : MonoBehaviour
     private void SearchForTargets()
     {
         Character player = FindClosestPlayer();
-
         if (player != null)
         {
             float distance = Vector3.Distance(transform.position, player.transform.position);
@@ -74,15 +72,12 @@ public class AIEnemy : MonoBehaviour
     private Character FindClosestPlayer()
     {
         List<Character> players = CharacterUtils.GetPlayerCharacters();
-
         Character closest = null;
         float minDist = float.MaxValue;
-
         foreach (var p in players)
         {
             if (p.IsDead) continue;
             if (!p.IsPlayer) continue;
-
             float dist = Vector3.Distance(transform.position, p.transform.position);
             if (dist < minDist)
             {
@@ -90,7 +85,6 @@ public class AIEnemy : MonoBehaviour
                 closest = p;
             }
         }
-
         return closest;
     }
 
@@ -108,5 +102,12 @@ public class AIEnemy : MonoBehaviour
         timeOutsideAggro = 0f;
         moveHandler?.Stop();
         attackHandler?.CancelAttack();
+    }
+
+    public void OnAttacked(GameObject attacker)
+    {
+        if (attacker == null) return;
+        if (currentTarget == attacker) return;
+        GainAggro(attacker);
     }
 }
