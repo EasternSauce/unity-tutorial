@@ -79,7 +79,7 @@ public class Character : MonoBehaviour, IDamageable
             var handler = GetComponent<CommandHandler>();
             if (handler != null)
             {
-                handler.SetCommand(null);
+                handler.ExecuteCommand(null);
             }
 
             GetComponent<CharacterDefeatHandler>().Defeated();

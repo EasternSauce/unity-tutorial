@@ -19,6 +19,8 @@ public class PlayerCharacterInput : MonoBehaviour
     private float commandLockDuration = 0.3f;
     private float commandLockTimer = 0f;
 
+    private CommandType currentCommandType = CommandType.None;
+
     private void Awake()
     {
         commandHandler = GetComponent<CommandHandler>();
@@ -43,7 +45,7 @@ public class PlayerCharacterInput : MonoBehaviour
 
     private void LMB_Hold_CommandProcess()
     {
-        if (commandHandler.GetCurrentCommandType() == CommandType.Interact)
+        if (currentCommandType == CommandType.Interact)
             return;
 
         if (isLMBPressed && !isOverUIElement)
@@ -108,12 +110,16 @@ public class PlayerCharacterInput : MonoBehaviour
     private void MoveCommand(Vector3 point)
     {
         CancelOngoingAttack();
-        commandHandler.SetCommand(new Command(CommandType.Move, point));
+        currentCommandType = CommandType.Move;
+        commandHandler.ExecuteCommand(new Command(CommandType.Move, point));
+        currentCommandType = CommandType.None;
     }
 
     private void InteractCommand(GameObject target)
     {
-        commandHandler.SetCommand(new Command(CommandType.Interact, target));
+        currentCommandType = CommandType.Interact;
+        commandHandler.ExecuteCommand(new Command(CommandType.Interact, target));
+        currentCommandType = CommandType.None;
     }
 
     private void CancelOngoingAttack()

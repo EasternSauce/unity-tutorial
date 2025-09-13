@@ -22,7 +22,7 @@ public class CharacterDefeatHandler : MonoBehaviour
         var commandHandler = GetComponent<CommandHandler>();
         if (commandHandler != null)
         {
-            commandHandler.ClearCurrentCommand();
+            commandHandler.CancelCurrentCommand();
         }
     }
 }

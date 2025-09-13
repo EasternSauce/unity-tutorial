@@ -9,7 +9,6 @@ public class AIEnemy : MonoBehaviour
 
     [SerializeField] private float attackRange = 5f;
     [SerializeField] private float attackCooldown = 0.2f;
-
     private float timer;
 
     [SerializeField] private GameObject targetToAttack;
@@ -30,31 +29,30 @@ public class AIEnemy : MonoBehaviour
     {
         timer -= Time.deltaTime;
 
-        // Automatically find a target if none is assigned or if the current target is dead
-        if (targetToAttack == null || (targetToAttack.GetComponent<Character>()?.IsDead ?? true))
+        if (targetToAttack != null && targetToAttack.GetComponent<Character>()?.IsDead == true)
         {
-            FindClosestTarget();
+            targetToAttack = null;
+            commandHandler?.CancelCurrentCommand();
         }
 
+        if (targetToAttack == null)
+            FindClosestTarget();
+
         if (character == null || character.IsDead || targetToAttack == null)
-        {
-            commandHandler?.SetCommand(null);
             return;
-        }
 
         float distanceToTarget = Vector3.Distance(transform.position, targetToAttack.transform.position);
 
         if (timer <= 0f && distanceToTarget <= attackRange)
         {
             timer = attackCooldown;
-            commandHandler.SetCommand(new Command(CommandType.Attack, targetToAttack));
+            commandHandler.ExecuteCommand(new Command(CommandType.Attack, targetToAttack));
         }
     }
 
     private void FindClosestTarget()
     {
         Character[] allCharacters = Object.FindObjectsByType<Character>(FindObjectsSortMode.None);
-
         float closestDistance = float.MaxValue;
         GameObject closest = null;
 
@@ -74,5 +72,4 @@ public class AIEnemy : MonoBehaviour
 
         targetToAttack = closest;
     }
-
 }

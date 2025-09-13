@@ -2,50 +2,35 @@ using UnityEngine;
 
 public class CommandHandler : MonoBehaviour
 {
-    public Command CurrentCommand { get; private set; }
-
-    private CommandProcessor processor;
+    private Character character;
 
     private void Awake()
     {
-        processor = new CommandProcessor(
-            GetComponent<MoveHandler>(),
-            GetComponent<AttackHandler>(),
-            GetComponent<InteractHandler>()
-        );
+        character = GetComponent<Character>();
     }
 
-    public void SetCommand(Command newCommand)
+    public void ExecuteCommand(Command command)
     {
-        CurrentCommand = newCommand;
-    }
+        if (command == null) return;
+        if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true) return;
 
-    private void Update()
-    {
-        if (CurrentCommand == null) return;
-
-        Character character = GetComponent<Character>();
-        if (character == null || character.IsDead)
+        switch (command.commandType)
         {
-            ClearCurrentCommand();
-            return;
-        }
-
-        processor.Process(CurrentCommand);
-
-        if (CurrentCommand.isComplete)
-        {
-            ClearCurrentCommand();
+            case CommandType.Move:
+                GetComponent<MoveHandler>()?.ProcessCommand(command);
+                break;
+            case CommandType.Attack:
+                GetComponent<AttackHandler>()?.ProcessCommand(command);
+                break;
+            case CommandType.Interact:
+                GetComponent<InteractHandler>()?.ProcessCommand(command);
+                break;
         }
     }
 
-    public CommandType GetCurrentCommandType()
+    public void CancelCurrentCommand()
     {
-        return CurrentCommand?.commandType ?? CommandType.None;
-    }
-
-    public void ClearCurrentCommand()
-    {
-        CurrentCommand = null;
+        GetComponent<MoveHandler>()?.Stop();
+        GetComponent<AttackHandler>()?.CancelAttack();
     }
 }

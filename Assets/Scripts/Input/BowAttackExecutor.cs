@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class BowAttackExecutor : AttackExecutor
 {
-    [Header("Bow Settings")]
     [SerializeField] GameObject arrowPrefab;
     [SerializeField] float arrowSpeed = 15f;
     [SerializeField] float arrowHeightOffset = 1.2f;
@@ -69,14 +68,11 @@ public class BowAttackExecutor : AttackExecutor
     private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
     {
         yield return new WaitForSeconds(delay);
-
         SpawnArrowAtPosition(targetPos);
         ResetCooldown();
-
         localCoroutine = null;
         isAttackLocked = false;
-        if (canMoveState != null)
-            canMoveState.isAttacking = false;
+        if (canMoveState != null) canMoveState.isAttacking = false;
     }
 
     private void SpawnArrowAtPosition(Vector3 targetPos)
@@ -111,7 +107,6 @@ public class BowAttackExecutor : AttackExecutor
         WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
 
         string trigger = null;
-
         if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack"))
             trigger = "BowAttack";
 
@@ -148,7 +143,6 @@ public class BowAttackExecutor : AttackExecutor
         isAttackLocked = false;
         if (canMoveState != null)
             canMoveState.isAttacking = false;
-
         if (AnimatorHasTrigger("BowAttack")) animator.ResetTrigger("BowAttack");
     }
 }

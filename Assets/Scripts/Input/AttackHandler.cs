@@ -18,6 +18,11 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     public void ProcessCommand(Command command)
     {
         if (command == null || command.commandType != CommandType.Attack) return;
+        if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true)
+        {
+            Debug.Log($"{name}: Target {command.target.name} is dead, ignoring attack command.");
+            return;
+        }
 
         InventoryItem weapon = playerInventory?.CurrentWeapon;
         WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
@@ -31,7 +36,6 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     public void CancelAttack()
     {
         bowAttackExecutor?.ResetState();
-        meleeAttackExecutor?.ResetState();
+        meleeAttackExecutor?.CancelCurrentAttack();
     }
-
 }

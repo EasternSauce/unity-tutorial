@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class MeleeAttackExecutor : AttackExecutor
 {
@@ -14,14 +13,7 @@ public class MeleeAttackExecutor : AttackExecutor
     private CanMoveState canMoveState;
     private GameObject currentTarget;
 
-    private enum AttackPhase
-    {
-        None,
-        Windup,
-        Damage,
-        Recovery
-    }
-
+    private enum AttackPhase { None, Windup, Damage, Recovery }
     private AttackPhase currentPhase = AttackPhase.None;
     private float phaseTimer;
     private bool hasDealtDamage = false;
@@ -36,7 +28,6 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         if (attackTimer > 0f) attackTimer -= Time.deltaTime;
         if (phaseTimer > 0f) phaseTimer -= Time.deltaTime;
-
         if (canMoveState != null)
             canMoveState.isAttacking = currentPhase != AttackPhase.None;
     }
@@ -45,18 +36,13 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         if (command.target == null) return;
         if (character == null || character.IsDead) return;
-
         var c = command.target.GetComponent<Character>();
         if (c != null && c.IsDead) return;
 
         if (currentTarget != command.target)
-        {
             CancelCurrentAttack();
-        }
         else if (localCoroutine != null)
-        {
             return;
-        }
 
         currentTarget = command.target;
         localCoroutine = StartCoroutine(MeleeAttackRoutine(command));
@@ -82,13 +68,9 @@ public class MeleeAttackExecutor : AttackExecutor
                 if (attackTimer <= 0f && currentPhase == AttackPhase.None)
                 {
                     StartAttackPhase();
-
                     yield return new WaitForSeconds(attackAnimationTime * 0.4f);
-
                     ExecuteDamageOnTarget();
-
                     yield return new WaitForSeconds(attackAnimationTime * 0.6f);
-
                     EndAttackPhase();
                 }
             }
@@ -130,9 +112,7 @@ public class MeleeAttackExecutor : AttackExecutor
         if (target != null)
         {
             if (!(target is Character c) || !c.IsDead)
-            {
                 target.TakeDamage(character.GetDamage());
-            }
         }
 
         hasDealtDamage = true;
@@ -151,7 +131,6 @@ public class MeleeAttackExecutor : AttackExecutor
         WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
 
         string trigger = null;
-
         if (type == WeaponType.OneHandedAxe && AnimatorHasTrigger("OneHandedMeleeAttack"))
             trigger = "OneHandedMeleeAttack";
         else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack"))
@@ -193,7 +172,6 @@ public class MeleeAttackExecutor : AttackExecutor
         CancelCurrentAttack();
         hasDealtDamage = false;
         if (canMoveState != null) canMoveState.isAttacking = false;
-
         if (AnimatorHasTrigger("Attack")) animator.ResetTrigger("Attack");
         if (AnimatorHasTrigger("FistAttack")) animator.ResetTrigger("FistAttack");
         if (AnimatorHasTrigger("OneHandedMeleeAttack")) animator.ResetTrigger("OneHandedMeleeAttack");
