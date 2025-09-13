@@ -60,7 +60,9 @@ public class AIEnemy : MonoBehaviour
 
         foreach (var c in allCharacters)
         {
-            if (c == character || c.IsDead) continue;
+            if (c == character) continue;
+            if (c.IsDead) continue;
+            if (c.GetComponent<AIEnemy>() != null) continue;
 
             float dist = Vector3.Distance(transform.position, c.transform.position);
             if (dist < closestDistance)
