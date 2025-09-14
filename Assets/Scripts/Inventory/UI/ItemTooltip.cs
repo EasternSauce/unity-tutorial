@@ -78,14 +78,15 @@ public class ItemTooltip : MonoBehaviour
         followMouse = followMouseCursor;
         currentTarget = target;
 
-        if (!followMouse)
+        if (followMouse)
         {
-            rectTransform.pivot = initialPivot;
-            rectTransform.anchoredPosition = initialAnchoredPosition;
+            rectTransform.pivot = new Vector2(0f, 1f);
+            FollowMouse();
         }
         else
         {
-            FollowMouse();
+            rectTransform.pivot = initialPivot;
+            rectTransform.anchoredPosition = initialAnchoredPosition;
         }
     }
 
