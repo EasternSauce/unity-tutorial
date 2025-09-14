@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -37,14 +36,19 @@ public abstract class AttackExecutor : MonoBehaviour
         Vector3 lookVector = target.position - transform.position;
         lookVector.y = 0f;
         if (lookVector == Vector3.zero) return;
-
         Quaternion targetRotation = Quaternion.LookRotation(lookVector);
         bool isMoving = characterMovement.Agent != null && characterMovement.Agent.velocity.magnitude > 0.1f;
+        if (forceInstant || isMoving) transform.rotation = targetRotation;
+        else transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);
+    }
 
-        if (forceInstant || isMoving)
-            transform.rotation = targetRotation;
-        else
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);
+    protected bool AnimatorHasTrigger(string name)
+    {
+        if (animator == null) return false;
+        foreach (var p in animator.parameters)
+            if (p.type == AnimatorControllerParameterType.Trigger && p.name == name)
+                return true;
+        return false;
     }
 
     public virtual void ResetState()

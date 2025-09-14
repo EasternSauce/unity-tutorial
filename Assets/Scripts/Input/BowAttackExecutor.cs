@@ -3,14 +3,13 @@ using UnityEngine;
 
 public class BowAttackExecutor : AttackExecutor
 {
-    [SerializeField] GameObject arrowPrefab;
-    [SerializeField] float arrowSpeed = 15f;
-    [SerializeField] float arrowHeightOffset = 1.2f;
-    [SerializeField] float arrowSpawnProgress = 0.5f;
-    [SerializeField] float defaultTimeToAttack = 1f;
-    [SerializeField] float attackAnimationTime = 1f;
+    [SerializeField] private GameObject arrowPrefab;
+    [SerializeField] private float arrowSpeed = 15f;
+    [SerializeField] private float arrowHeightOffset = 1.2f;
+    [SerializeField] private float arrowSpawnProgress = 0.5f;
+    [SerializeField] private float defaultTimeToAttack = 1f;
+    [SerializeField] private float attackAnimationTime = 1f;
 
-    private float attackTimer;
     private float cooldownTimer;
     private float animationTimer;
     private bool isAttackLocked;
@@ -35,7 +34,6 @@ public class BowAttackExecutor : AttackExecutor
         if (!CanAttack()) return;
 
         Vector3 targetPos = GetMouseWorldPosition();
-
         StopMovementAndRotate(targetPos);
         PrepareWeapon();
         PlayAttackAnimation();
@@ -57,8 +55,17 @@ public class BowAttackExecutor : AttackExecutor
 
     private void UpdateTimers()
     {
-        if (attackTimer > 0f) attackTimer -= Time.deltaTime;
+        UpdateCooldownTimer();
+        UpdateAnimationTimer();
+    }
+
+    private void UpdateCooldownTimer()
+    {
         if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
+    }
+
+    private void UpdateAnimationTimer()
+    {
         if (animationTimer > 0f) animationTimer -= Time.deltaTime;
     }
 
@@ -99,7 +106,8 @@ public class BowAttackExecutor : AttackExecutor
 
     private void PrepareWeapon()
     {
-        if (canMoveState != null) canMoveState.isAttacking = true;
+        if (canMoveState != null)
+            canMoveState.isAttacking = true;
 
         WeaponVisibilityController visibility = character.GetComponent<WeaponVisibilityController>();
         visibility?.ResetLingerTimer();
@@ -109,6 +117,12 @@ public class BowAttackExecutor : AttackExecutor
     {
         SetAnimationTimer();
         TriggerAttackAnimation();
+    }
+
+    private void SetAnimationTimer()
+    {
+        animationTimer = attackAnimationTime;
+        isAttackLocked = false;
     }
 
     private void StartArrowSpawnCoroutine(Vector3 targetPos)
@@ -121,7 +135,7 @@ public class BowAttackExecutor : AttackExecutor
     {
         yield return new WaitForSeconds(delay);
         SpawnArrowAtPosition(targetPos);
-        ResetCooldown();
+        ApplyCooldown();
         localCoroutine = null;
         isAttackLocked = false;
         if (canMoveState != null) canMoveState.isAttacking = false;
@@ -133,8 +147,8 @@ public class BowAttackExecutor : AttackExecutor
 
         Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
         GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
-        Arrow arrowScript = arrowObject.GetComponent<Arrow>();
 
+        Arrow arrowScript = arrowObject.GetComponent<Arrow>();
         if (arrowScript == null)
         {
             Destroy(arrowObject);
@@ -143,46 +157,7 @@ public class BowAttackExecutor : AttackExecutor
 
         Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
         Vector3 dir = (flatTarget - spawnPos).normalized;
-
         arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
-    }
-
-    private void SetAnimationTimer()
-    {
-        animationTimer = attackAnimationTime;
-        isAttackLocked = false;
-    }
-
-    private void ResetCooldown()
-    {
-        float atkSpeed = character.GetStatsValue(Statistic.AttackSpeed).float_value;
-        cooldownTimer = defaultTimeToAttack / atkSpeed;
-    }
-
-    private void TriggerAttackAnimation()
-    {
-        InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
-        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
-        string trigger = null;
-
-        if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack"))
-            trigger = "BowAttack";
-
-        if (string.IsNullOrEmpty(trigger))
-        {
-            if (AnimatorHasTrigger("Attack")) trigger = "Attack";
-            else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
-        }
-
-        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
-    }
-
-    private bool AnimatorHasTrigger(string name)
-    {
-        foreach (var p in animator.parameters)
-            if (p.type == UnityEngine.AnimatorControllerParameterType.Trigger && p.name == name)
-                return true;
-        return false;
     }
 
     private void StopArrowCoroutine()
@@ -196,15 +171,32 @@ public class BowAttackExecutor : AttackExecutor
 
     private void ResetTimersAndLock()
     {
-        attackTimer = 0f;
         animationTimer = 0f;
         isAttackLocked = false;
-
         if (canMoveState != null) canMoveState.isAttacking = false;
     }
 
     private void ResetAnimatorTrigger(string triggerName)
     {
-        if (AnimatorHasTrigger(triggerName)) animator.ResetTrigger(triggerName);
+        if (AnimatorHasTrigger(triggerName))
+            animator.ResetTrigger(triggerName);
+    }
+
+    private void TriggerAttackAnimation()
+    {
+        InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
+        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
+
+        string trigger = null;
+        if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
+        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
+        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
+
+        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
+    }
+
+    private void ApplyCooldown()
+    {
+        cooldownTimer = defaultTimeToAttack / character.GetStatsValue(Statistic.AttackSpeed).float_value;
     }
 }

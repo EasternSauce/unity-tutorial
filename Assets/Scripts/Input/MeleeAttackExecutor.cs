@@ -8,15 +8,14 @@ public class MeleeAttackExecutor : AttackExecutor
     [SerializeField] float attackAnimationTime = 1f;
 
     private float attackTimer;
-    private Coroutine localCoroutine;
-
     private CanMoveState canMoveState;
     private GameObject currentTarget;
 
     private enum AttackPhase { None, Windup, Damage, Recovery }
     private AttackPhase currentPhase = AttackPhase.None;
+
     private float phaseTimer;
-    private bool hasDealtDamage = false;
+    private bool hasDealtDamage;
 
     protected override void Awake()
     {
@@ -28,8 +27,7 @@ public class MeleeAttackExecutor : AttackExecutor
     {
         if (attackTimer > 0f) attackTimer -= Time.deltaTime;
         if (phaseTimer > 0f) phaseTimer -= Time.deltaTime;
-        if (canMoveState != null)
-            canMoveState.isAttacking = currentPhase != AttackPhase.None;
+        if (canMoveState != null) canMoveState.isAttacking = currentPhase != AttackPhase.None;
     }
 
     public void HandleMeleeAttack(Command command)
@@ -39,13 +37,11 @@ public class MeleeAttackExecutor : AttackExecutor
         var c = command.target.GetComponent<Character>();
         if (c != null && c.IsDead) return;
 
-        if (currentTarget != command.target)
-            CancelCurrentAttack();
-        else if (localCoroutine != null)
-            return;
+        if (currentTarget != command.target) CancelCurrentAttack();
+        else if (attackCoroutine != null) return;
 
         currentTarget = command.target;
-        localCoroutine = StartCoroutine(MeleeAttackRoutine(command));
+        attackCoroutine = StartCoroutine(MeleeAttackRoutine(command));
     }
 
     private IEnumerator MeleeAttackRoutine(Command command)
@@ -57,8 +53,7 @@ public class MeleeAttackExecutor : AttackExecutor
             float range = attackRange;
 
             InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
-            if (weapon == null || weapon.itemData.weaponType == WeaponType.None)
-                range = 1.5f;
+            if (weapon == null || weapon.itemData.weaponType == WeaponType.None) range = 1.5f;
 
             if (distance <= range + 0.1f)
             {
@@ -78,6 +73,7 @@ public class MeleeAttackExecutor : AttackExecutor
             {
                 Vector3 dir = (targetTransform.position - transform.position).normalized;
                 Vector3 destination = targetTransform.position - dir * range;
+
                 if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
                 {
                     characterMovement.Agent.stoppingDistance = 0f;
@@ -85,14 +81,13 @@ public class MeleeAttackExecutor : AttackExecutor
                     characterMovement.SetDestination(destination);
                 }
             }
-
             yield return null;
         }
 
         if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
             characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
 
-        localCoroutine = null;
+        attackCoroutine = null;
     }
 
     private void StartAttackPhase()
@@ -105,14 +100,12 @@ public class MeleeAttackExecutor : AttackExecutor
 
     private void ExecuteDamageOnTarget()
     {
-        if (hasDealtDamage || currentTarget == null || character == null || character.IsDead)
-            return;
+        if (hasDealtDamage || currentTarget == null || character == null || character.IsDead) return;
 
         IDamageable target = currentTarget.GetComponent<IDamageable>();
         if (target != null)
         {
-            if (!(target is Character c) || !c.IsDead)
-                target.TakeDamage(character.GetDamage());
+            if (!(target is Character c) || !c.IsDead) target.TakeDamage(character.GetDamage());
         }
 
         hasDealtDamage = true;
@@ -131,14 +124,10 @@ public class MeleeAttackExecutor : AttackExecutor
         WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
 
         string trigger = null;
-        if (type == WeaponType.OneHandedAxe && AnimatorHasTrigger("OneHandedMeleeAttack"))
-            trigger = "OneHandedMeleeAttack";
-        else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack"))
-            trigger = "TwoHandedMeleeAttack";
-        else if (AnimatorHasTrigger("Attack"))
-            trigger = "Attack";
-        else if (AnimatorHasTrigger("FistAttack"))
-            trigger = "FistAttack";
+        if (type == WeaponType.OneHandedAxe && AnimatorHasTrigger("OneHandedMeleeAttack")) trigger = "OneHandedMeleeAttack";
+        else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack")) trigger = "TwoHandedMeleeAttack";
+        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
+        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
 
         if (!string.IsNullOrEmpty(trigger))
         {
@@ -147,20 +136,12 @@ public class MeleeAttackExecutor : AttackExecutor
         }
     }
 
-    private bool AnimatorHasTrigger(string name)
-    {
-        foreach (var p in animator.parameters)
-            if (p.type == AnimatorControllerParameterType.Trigger && p.name == name)
-                return true;
-        return false;
-    }
-
     public void CancelCurrentAttack()
     {
-        if (localCoroutine != null)
+        if (attackCoroutine != null)
         {
-            StopCoroutine(localCoroutine);
-            localCoroutine = null;
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
         }
         currentTarget = null;
         currentPhase = AttackPhase.None;
