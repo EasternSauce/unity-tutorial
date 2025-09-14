@@ -33,6 +33,7 @@ public class InteractInput : MonoBehaviour
         if (Physics.SphereCast(ray, hoverRadius, out hit, float.MaxValue, interactMask))
         {
             GameObject hitObject = hit.transform.gameObject;
+
             if (currentHoverOverObject != hitObject)
             {
                 HoverUtils.SetOutline(currentHoverOverObject, false);
@@ -40,6 +41,7 @@ public class InteractInput : MonoBehaviour
             }
 
             HoverUtils.SetOutline(currentHoverOverObject, true);
+
             hoveringOverObject = hitObject.GetComponent<InteractableObject>();
             attackTarget = hitObject.GetComponent<IDamageable>();
             hoveringCharacter = hitObject.GetComponent<Character>();
@@ -50,7 +52,13 @@ public class InteractInput : MonoBehaviour
             var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
             if (pickupItem != null && pickupItem.ItemData != null && itemTooltip != null)
             {
-                itemTooltip.Show(ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData), pickupItem.ItemData.icon, false, pickupItem.gameObject);
+                // Ground item tooltip: stay at original position
+                itemTooltip.Show(
+                    ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData),
+                    pickupItem.ItemData.icon,
+                    false,
+                    pickupItem.gameObject
+                );
             }
 
             UpdateHPBar();
@@ -58,6 +66,10 @@ public class InteractInput : MonoBehaviour
         else
         {
             HoverUtils.SetOutline(currentHoverOverObject, false);
+
+            if (itemTooltip != null)
+                itemTooltip.Hide(); // explicitly hide tooltip when nothing is hovered
+
             currentHoverOverObject = null;
             hoveringOverObject = null;
             attackTarget = null;

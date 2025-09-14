@@ -36,22 +36,6 @@ public class ItemTooltip : MonoBehaviour
         if (followMouse)
         {
             FollowMouse();
-
-            if (currentTarget == null || !IsPointerOverCurrentTarget())
-            {
-                Hide();
-            }
-        }
-        else if (currentTarget != null)
-        {
-            if (!currentTarget.activeInHierarchy)
-            {
-                Hide();
-            }
-        }
-        else
-        {
-            Hide();
         }
     }
 
@@ -64,31 +48,6 @@ public class ItemTooltip : MonoBehaviour
             out Vector2 localPos
         );
         rectTransform.localPosition = localPos + offset;
-    }
-
-    private bool IsPointerOverCurrentTarget()
-    {
-        if (currentTarget == null) return false;
-
-        var pickupItem = currentTarget.GetComponent<PickUpInteractableObject>();
-        if (pickupItem != null)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            int interactMask = ~LayerMask.GetMask("Player", "Terrain");
-            return Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, interactMask) && hit.transform.gameObject == currentTarget;
-        }
-
-        var inventoryItem = currentTarget.GetComponent<InventoryItem>();
-        if (inventoryItem != null)
-        {
-            return RectTransformUtility.RectangleContainsScreenPoint(
-                currentTarget.GetComponent<RectTransform>(),
-                Input.mousePosition,
-                parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? parentCanvas.worldCamera : null
-            );
-        }
-
-        return false;
     }
 
     public void Show(string text, Sprite icon, bool followMouseCursor = true, GameObject target = null)
