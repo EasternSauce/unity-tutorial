@@ -4,21 +4,33 @@ using UnityEngine.UI;
 
 public class ItemTooltip : MonoBehaviour
 {
+    [Header("UI References")]
     [SerializeField] private TMP_Text tooltipText;
     [SerializeField] private Image tooltipIcon;
+
+    [Header("Settings")]
     [SerializeField] private Vector2 offset = new Vector2(16f, -16f);
 
     private RectTransform rectTransform;
     private Canvas parentCanvas;
-    private bool followMouse = true;
+    private bool followMouse;
+
+    private Vector2 initialAnchoredPosition;
+    private Vector2 initialPivot;
 
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
-        rectTransform.pivot = new Vector2(0, 1);
+
         if (tooltipText == null) tooltipText = GetComponentInChildren<TMP_Text>(true);
         if (tooltipIcon == null) tooltipIcon = GetComponentInChildren<Image>(true);
+
         parentCanvas = GetComponentInParent<Canvas>();
+
+        // Store initial position/pivot for ground items
+        initialAnchoredPosition = rectTransform.anchoredPosition;
+        initialPivot = rectTransform.pivot;
+
         gameObject.SetActive(false);
     }
 
@@ -26,26 +38,22 @@ public class ItemTooltip : MonoBehaviour
     {
         if (followMouse && gameObject.activeSelf)
         {
-            Vector2 pos = Input.mousePosition;
-            if (parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
-            {
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    parentCanvas.transform as RectTransform, pos, parentCanvas.worldCamera, out Vector2 localPoint);
-                rectTransform.localPosition = localPoint + offset;
-            }
-            else
-            {
-                rectTransform.position = pos + offset;
-            }
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentCanvas.transform as RectTransform,
+                Input.mousePosition,
+                parentCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : parentCanvas.worldCamera,
+                out Vector2 localPos
+            );
+            rectTransform.localPosition = localPos + offset;
         }
     }
 
-    public void Show(string text, Sprite icon, bool staticPosition = false)
+    public void Show(string text, Sprite icon, bool isWorldItem = false)
     {
-        followMouse = !staticPosition;
-
         if (string.IsNullOrEmpty(text)) return;
+
         gameObject.SetActive(true);
+
         tooltipText.text = text;
         tooltipText.enableAutoSizing = false;
 
@@ -55,9 +63,23 @@ public class ItemTooltip : MonoBehaviour
             tooltipIcon.sprite = icon;
         }
 
-        if (staticPosition)
+        followMouse = !isWorldItem;
+
+        if (isWorldItem)
         {
-            rectTransform.localPosition = rectTransform.localPosition; // stays in original position
+            // restore original pivot and anchored position to fix the half-shift
+            rectTransform.pivot = initialPivot;
+            rectTransform.anchoredPosition = initialAnchoredPosition;
+        }
+        else
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentCanvas.transform as RectTransform,
+                Input.mousePosition,
+                parentCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : parentCanvas.worldCamera,
+                out Vector2 localPos
+            );
+            rectTransform.localPosition = localPos + offset;
         }
     }
 
