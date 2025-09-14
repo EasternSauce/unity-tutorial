@@ -7,12 +7,14 @@ public abstract class AttackExecutor : MonoBehaviour
     protected MoveHandler characterMovement;
     protected Animator animator;
     protected Coroutine attackCoroutine;
+    protected CanMoveState canMoveState;
 
     protected virtual void Awake()
     {
         character = GetComponent<Character>();
         characterMovement = GetComponent<MoveHandler>();
         animator = GetComponentInChildren<Animator>();
+        canMoveState = GetComponent<CanMoveState>();
     }
 
     protected void StopMovement()
@@ -51,12 +53,34 @@ public abstract class AttackExecutor : MonoBehaviour
         return false;
     }
 
+    protected void StopAndClearCoroutine(ref Coroutine coroutine)
+    {
+        if (coroutine != null)
+        {
+            StopCoroutine(coroutine);
+            coroutine = null;
+        }
+    }
+
+    protected void SetAttackingState(bool state)
+    {
+        if (canMoveState != null) canMoveState.isAttacking = state;
+    }
+
+    protected float ApplyCooldown(float baseCooldown)
+    {
+        return baseCooldown / character.GetStatsValue(Statistic.AttackSpeed).float_value;
+    }
+
+    protected void ResetAnimatorTriggers(params string[] triggers)
+    {
+        foreach (var t in triggers)
+            if (AnimatorHasTrigger(t))
+                animator.ResetTrigger(t);
+    }
+
     public virtual void ResetState()
     {
-        if (attackCoroutine != null)
-        {
-            StopCoroutine(attackCoroutine);
-            attackCoroutine = null;
-        }
+        StopAndClearCoroutine(ref attackCoroutine);
     }
 }

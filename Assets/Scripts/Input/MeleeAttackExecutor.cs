@@ -3,39 +3,29 @@ using UnityEngine;
 
 public class MeleeAttackExecutor : AttackExecutor
 {
-    [SerializeField] float attackRange = 2.5f;
-    [SerializeField] float defaultTimeToAttack = 1f;
-    [SerializeField] float attackAnimationTime = 1f;
+    [SerializeField] private float attackRange = 2.5f;
+    [SerializeField] private float defaultTimeToAttack = 1f;
+    [SerializeField] private float attackAnimationTime = 1f;
 
     private float attackTimer;
-    private CanMoveState canMoveState;
     private GameObject currentTarget;
-
-    private enum AttackPhase { None, Windup, Damage, Recovery }
     private AttackPhase currentPhase = AttackPhase.None;
-
     private float phaseTimer;
     private bool hasDealtDamage;
 
-    protected override void Awake()
-    {
-        base.Awake();
-        canMoveState = GetComponent<CanMoveState>();
-    }
+    private enum AttackPhase { None, Windup, Damage, Recovery }
 
     private void Update()
     {
         if (attackTimer > 0f) attackTimer -= Time.deltaTime;
         if (phaseTimer > 0f) phaseTimer -= Time.deltaTime;
-        if (canMoveState != null) canMoveState.isAttacking = currentPhase != AttackPhase.None;
+        SetAttackingState(currentPhase != AttackPhase.None);
     }
 
     public void HandleMeleeAttack(Command command)
     {
-        if (command.target == null) return;
-        if (character == null || character.IsDead) return;
-        var c = command.target.GetComponent<Character>();
-        if (c != null && c.IsDead) return;
+        if (command.target == null || character == null || character.IsDead) return;
+        if (command.target.GetComponent<Character>()?.IsDead == true) return;
 
         if (currentTarget != command.target) CancelCurrentAttack();
         else if (attackCoroutine != null) return;
@@ -87,7 +77,7 @@ public class MeleeAttackExecutor : AttackExecutor
         if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
             characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
 
-        attackCoroutine = null;
+        StopAndClearCoroutine(ref attackCoroutine);
     }
 
     private void StartAttackPhase()
@@ -103,13 +93,10 @@ public class MeleeAttackExecutor : AttackExecutor
         if (hasDealtDamage || currentTarget == null || character == null || character.IsDead) return;
 
         IDamageable target = currentTarget.GetComponent<IDamageable>();
-        if (target != null)
-        {
-            if (!(target is Character c) || !c.IsDead) target.TakeDamage(character.GetDamage());
-        }
+        if (target != null && (!(target is Character c) || !c.IsDead)) target.TakeDamage(character.GetDamage());
 
         hasDealtDamage = true;
-        ApplyCooldown();
+        attackTimer = ApplyCooldown(defaultTimeToAttack);
         currentPhase = AttackPhase.Damage;
     }
 
@@ -138,11 +125,7 @@ public class MeleeAttackExecutor : AttackExecutor
 
     public void CancelCurrentAttack()
     {
-        if (attackCoroutine != null)
-        {
-            StopCoroutine(attackCoroutine);
-            attackCoroutine = null;
-        }
+        StopAndClearCoroutine(ref attackCoroutine);
         currentTarget = null;
         currentPhase = AttackPhase.None;
     }
@@ -152,15 +135,7 @@ public class MeleeAttackExecutor : AttackExecutor
         base.ResetState();
         CancelCurrentAttack();
         hasDealtDamage = false;
-        if (canMoveState != null) canMoveState.isAttacking = false;
-        if (AnimatorHasTrigger("Attack")) animator.ResetTrigger("Attack");
-        if (AnimatorHasTrigger("FistAttack")) animator.ResetTrigger("FistAttack");
-        if (AnimatorHasTrigger("OneHandedMeleeAttack")) animator.ResetTrigger("OneHandedMeleeAttack");
-        if (AnimatorHasTrigger("TwoHandedMeleeAttack")) animator.ResetTrigger("TwoHandedMeleeAttack");
-    }
-
-    private void ApplyCooldown()
-    {
-        attackTimer = defaultTimeToAttack / character.GetStatsValue(Statistic.AttackSpeed).float_value;
+        SetAttackingState(false);
+        ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
     }
 }

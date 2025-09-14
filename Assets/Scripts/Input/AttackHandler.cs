@@ -19,11 +19,7 @@ public class AttackHandler : MonoBehaviour, ICommandHandle
     {
         if (command == null || command.commandType != CommandType.Attack) return;
 
-        if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true)
-        {
-            Debug.Log($"{name}: Target {command.target.name} is dead, ignoring attack command.");
-            return;
-        }
+        if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true) return;
 
         InventoryItem weapon = playerInventory?.CurrentWeapon;
         WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
