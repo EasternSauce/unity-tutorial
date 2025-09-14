@@ -109,7 +109,7 @@ public class InventoryItemHighlightController : MonoBehaviour
             inventoryHighlight.SetPosition(currentGrid, item);
             inventoryHighlight.transform.SetAsFirstSibling();
             string text = ItemTooltipBuilder.BuildTooltip(item.itemData);
-            tooltip?.Show(text, item.itemData.icon, Input.mousePosition);
+            tooltip?.Show(text, item.itemData.icon);
         }
         else
         {

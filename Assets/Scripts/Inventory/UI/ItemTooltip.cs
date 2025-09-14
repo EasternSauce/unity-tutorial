@@ -7,19 +7,17 @@ public class ItemTooltip : MonoBehaviour
     [SerializeField] private TMP_Text tooltipText;
     [SerializeField] private Image tooltipIcon;
     [SerializeField] private Vector2 offset = new Vector2(16f, -16f);
-    [SerializeField] private bool followMouse = true;
 
     private RectTransform rectTransform;
     private Canvas parentCanvas;
+    private bool followMouse = true;
 
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
         rectTransform.pivot = new Vector2(0, 1);
-
         if (tooltipText == null) tooltipText = GetComponentInChildren<TMP_Text>(true);
         if (tooltipIcon == null) tooltipIcon = GetComponentInChildren<Image>(true);
-
         parentCanvas = GetComponentInParent<Canvas>();
         gameObject.SetActive(false);
     }
@@ -28,14 +26,25 @@ public class ItemTooltip : MonoBehaviour
     {
         if (followMouse && gameObject.activeSelf)
         {
-            SetPosition(Input.mousePosition);
+            Vector2 pos = Input.mousePosition;
+            if (parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            {
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    parentCanvas.transform as RectTransform, pos, parentCanvas.worldCamera, out Vector2 localPoint);
+                rectTransform.localPosition = localPoint + offset;
+            }
+            else
+            {
+                rectTransform.position = pos + offset;
+            }
         }
     }
 
-    public void Show(string text, Sprite icon, Vector2? screenPosition = null)
+    public void Show(string text, Sprite icon, bool staticPosition = false)
     {
-        if (string.IsNullOrEmpty(text)) return;
+        followMouse = !staticPosition;
 
+        if (string.IsNullOrEmpty(text)) return;
         gameObject.SetActive(true);
         tooltipText.text = text;
         tooltipText.enableAutoSizing = false;
@@ -46,34 +55,14 @@ public class ItemTooltip : MonoBehaviour
             tooltipIcon.sprite = icon;
         }
 
-        Vector2 pos = screenPosition ?? (Vector2)Input.mousePosition;
-        SetPosition(pos);
-    }
-
-    private void SetPosition(Vector2 screenPosition)
-    {
-        if (parentCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        if (staticPosition)
         {
-            rectTransform.position = screenPosition + offset;
-        }
-        else
-        {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                parentCanvas.transform as RectTransform,
-                screenPosition,
-                parentCanvas.worldCamera,
-                out Vector2 localPoint);
-            rectTransform.localPosition = localPoint + offset;
+            rectTransform.localPosition = rectTransform.localPosition; // stays in original position
         }
     }
 
     public void Hide()
     {
         gameObject.SetActive(false);
-    }
-
-    public void SetFollowMouse(bool value)
-    {
-        followMouse = value;
     }
 }

@@ -3,17 +3,17 @@ using UnityEngine.InputSystem;
 
 public class InteractInput : MonoBehaviour
 {
-    [SerializeField] TMPro.TextMeshProUGUI textOnScreen;
-    [SerializeField] UIPoolBar hpBar;
+    [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
+    [SerializeField] private UIPoolBar hpBar;
     [SerializeField] private ItemTooltip itemTooltip;
 
-    GameObject currentHoverOverObject;
+    private GameObject currentHoverOverObject;
 
     [HideInInspector] public InteractableObject hoveringOverObject;
     [HideInInspector] public IDamageable attackTarget;
-    Character hoveringCharacter;
+    private Character hoveringCharacter;
 
-    Vector2 mousePosition;
+    private Vector2 mousePosition;
 
     void Update()
     {
@@ -40,7 +40,7 @@ public class InteractInput : MonoBehaviour
             if (currentHoverOverObject != hitObject)
             {
                 HoverUtils.SetOutline(currentHoverOverObject, false);
-                HoverUtils.HideTooltip(itemTooltip);
+                if (itemTooltip != null) itemTooltip.Hide();
                 currentHoverOverObject = hitObject;
             }
 
@@ -50,14 +50,15 @@ public class InteractInput : MonoBehaviour
             attackTarget = hitObject.GetComponent<IDamageable>();
             hoveringCharacter = hitObject.GetComponent<Character>();
 
-            textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
-            var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
+            if (textOnScreen != null)
+                textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
 
-            if (pickupItem != null && pickupItem.ItemData != null)
+            var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
+            if (pickupItem != null && pickupItem.ItemData != null && itemTooltip != null)
             {
-                itemTooltip.Show(ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData), pickupItem.ItemData.icon);
+                itemTooltip.Show(ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData), pickupItem.ItemData.icon, true); // true = static
             }
-            else
+            else if (itemTooltip != null)
             {
                 itemTooltip.Hide();
             }
@@ -68,14 +69,14 @@ public class InteractInput : MonoBehaviour
         else
         {
             HoverUtils.SetOutline(currentHoverOverObject, false);
-            HoverUtils.HideTooltip(itemTooltip);
+            if (itemTooltip != null) itemTooltip.Hide();
 
             currentHoverOverObject = null;
             hoveringOverObject = null;
             attackTarget = null;
             hoveringCharacter = null;
-            textOnScreen.text = "";
-            hpBar.Clear();
+            if (textOnScreen != null) textOnScreen.text = "";
+            if (hpBar != null) hpBar.Clear();
         }
     }
 
@@ -97,11 +98,11 @@ public class InteractInput : MonoBehaviour
 
     private void UpdateHPBar()
     {
-        if (attackTarget != null)
+        if (attackTarget != null && hpBar != null)
         {
             hpBar.Show(attackTarget.GetLifePool());
         }
-        else
+        else if (hpBar != null)
         {
             hpBar.Clear();
         }
