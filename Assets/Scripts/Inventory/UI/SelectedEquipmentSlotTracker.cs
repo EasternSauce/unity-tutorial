@@ -10,12 +10,12 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
 
     void Awake()
     {
-        inventoryController = FindObjectOfType<InventoryController>();
+        inventoryController = FindFirstObjectByType<InventoryController>();
         slot = GetComponent<EquipmentItemSlot>();
 
         if (tooltip == null)
         {
-            tooltip = FindObjectOfType<ItemTooltip>();
+            tooltip = FindFirstObjectByType<ItemTooltip>();
             if (tooltip == null)
                 Debug.LogWarning("No ItemTooltip found in the scene!");
         }
