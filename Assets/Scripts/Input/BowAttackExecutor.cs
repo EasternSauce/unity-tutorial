@@ -30,7 +30,6 @@ public class BowAttackExecutor : AttackExecutor
         UpdateMovementState();
     }
 
-    // ------------------------- PUBLIC -------------------------
     public void HandleBowAttack(Command command)
     {
         if (!CanAttack()) return;
@@ -51,7 +50,6 @@ public class BowAttackExecutor : AttackExecutor
         ResetAnimatorTrigger("BowAttack");
     }
 
-    // ------------------------- PRIVATE -------------------------
     private bool CanAttack()
     {
         return cooldownTimer <= 0f && localCoroutine == null;
