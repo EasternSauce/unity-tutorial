@@ -13,12 +13,7 @@ public class PickUpInteractableObject : MonoBehaviour
     public void PickUp(Character character)
     {
         PlayerInventory inventory = character.GetComponent<PlayerInventory>();
-
-        if (inventory == null)
-        {
-            Debug.LogWarning("To interact with this object, this character needs an Inventory");
-            return;
-        }
+        if (inventory == null) return;
 
         if (coinCount >= 0)
         {
@@ -37,4 +32,6 @@ public class PickUpInteractableObject : MonoBehaviour
     {
         itemData = itemToSpawn;
     }
+
+    public ItemData ItemData => itemData;
 }

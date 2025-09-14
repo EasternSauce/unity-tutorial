@@ -5,6 +5,7 @@ public class InteractInput : MonoBehaviour
 {
     [SerializeField] TMPro.TextMeshProUGUI textOnScreen;
     [SerializeField] UIPoolBar hpBar;
+    [SerializeField] private ItemTooltip itemTooltip;
 
     GameObject currentHoverOverObject;
 
@@ -38,23 +39,37 @@ public class InteractInput : MonoBehaviour
 
             if (currentHoverOverObject != hitObject)
             {
-                SetOutlineEnabled(currentHoverOverObject, false);
-
+                HoverUtils.SetOutline(currentHoverOverObject, false);
+                HoverUtils.HideTooltip(itemTooltip);
                 currentHoverOverObject = hitObject;
-                SetOutlineEnabled(currentHoverOverObject, true);
-
-                hoveringOverObject = hitObject.GetComponent<InteractableObject>();
-                attackTarget = hitObject.GetComponent<IDamageable>();
-                hoveringCharacter = hitObject.GetComponent<Character>();
-
-                textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
-
-                UpdateHPBar();
             }
+
+            HoverUtils.SetOutline(currentHoverOverObject, true);
+
+            hoveringOverObject = hitObject.GetComponent<InteractableObject>();
+            attackTarget = hitObject.GetComponent<IDamageable>();
+            hoveringCharacter = hitObject.GetComponent<Character>();
+
+            textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
+            var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
+
+            if (pickupItem != null && pickupItem.ItemData != null)
+            {
+                itemTooltip.Show(ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData), pickupItem.ItemData.icon);
+            }
+            else
+            {
+                itemTooltip.Hide();
+            }
+
+
+            UpdateHPBar();
         }
         else
         {
-            SetOutlineEnabled(currentHoverOverObject, false);
+            HoverUtils.SetOutline(currentHoverOverObject, false);
+            HoverUtils.HideTooltip(itemTooltip);
+
             currentHoverOverObject = null;
             hoveringOverObject = null;
             attackTarget = null;
@@ -95,15 +110,5 @@ public class InteractInput : MonoBehaviour
     public bool InteractCheck()
     {
         return hoveringOverObject != null;
-    }
-
-    private void SetOutlineEnabled(GameObject obj, bool enabled)
-    {
-        if (obj == null) return;
-        var outline = obj.GetComponent<Outline>();
-        if (outline != null)
-        {
-            outline.enabled = enabled;
-        }
     }
 }

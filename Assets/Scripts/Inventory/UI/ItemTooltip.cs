@@ -4,15 +4,13 @@ using UnityEngine.UI;
 
 public class ItemTooltip : MonoBehaviour
 {
-    [Header("UI References")]
     [SerializeField] private TMP_Text tooltipText;
     [SerializeField] private Image tooltipIcon;
-
-    [Header("Settings")]
     [SerializeField] private Vector2 offset = new Vector2(16f, -16f);
     [SerializeField] private bool followMouse = true;
 
     private RectTransform rectTransform;
+    private Canvas parentCanvas;
 
     private void Awake()
     {
@@ -22,6 +20,7 @@ public class ItemTooltip : MonoBehaviour
         if (tooltipText == null) tooltipText = GetComponentInChildren<TMP_Text>(true);
         if (tooltipIcon == null) tooltipIcon = GetComponentInChildren<Image>(true);
 
+        parentCanvas = GetComponentInParent<Canvas>();
         gameObject.SetActive(false);
     }
 
@@ -29,7 +28,7 @@ public class ItemTooltip : MonoBehaviour
     {
         if (followMouse && gameObject.activeSelf)
         {
-            rectTransform.position = (Vector2)Input.mousePosition + offset;
+            SetPosition(Input.mousePosition);
         }
     }
 
@@ -38,7 +37,6 @@ public class ItemTooltip : MonoBehaviour
         if (string.IsNullOrEmpty(text)) return;
 
         gameObject.SetActive(true);
-
         tooltipText.text = text;
         tooltipText.enableAutoSizing = false;
 
@@ -49,7 +47,24 @@ public class ItemTooltip : MonoBehaviour
         }
 
         Vector2 pos = screenPosition ?? (Vector2)Input.mousePosition;
-        rectTransform.position = pos + offset;
+        SetPosition(pos);
+    }
+
+    private void SetPosition(Vector2 screenPosition)
+    {
+        if (parentCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            rectTransform.position = screenPosition + offset;
+        }
+        else
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentCanvas.transform as RectTransform,
+                screenPosition,
+                parentCanvas.worldCamera,
+                out Vector2 localPoint);
+            rectTransform.localPosition = localPoint + offset;
+        }
     }
 
     public void Hide()
