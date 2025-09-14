@@ -8,11 +8,9 @@ public class InteractInput : MonoBehaviour
     [SerializeField] private ItemTooltip itemTooltip;
 
     private GameObject currentHoverOverObject;
-
     [HideInInspector] public InteractableObject hoveringOverObject;
     [HideInInspector] public IDamageable attackTarget;
     private Character hoveringCharacter;
-
     private Vector2 mousePosition;
 
     void Update()
@@ -29,23 +27,19 @@ public class InteractInput : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         RaycastHit hit;
-
         float hoverRadius = 0.05f;
         int interactMask = ~LayerMask.GetMask("Player", "Terrain");
 
         if (Physics.SphereCast(ray, hoverRadius, out hit, float.MaxValue, interactMask))
         {
             GameObject hitObject = hit.transform.gameObject;
-
             if (currentHoverOverObject != hitObject)
             {
                 HoverUtils.SetOutline(currentHoverOverObject, false);
-                if (itemTooltip != null) itemTooltip.Hide();
                 currentHoverOverObject = hitObject;
             }
 
             HoverUtils.SetOutline(currentHoverOverObject, true);
-
             hoveringOverObject = hitObject.GetComponent<InteractableObject>();
             attackTarget = hitObject.GetComponent<IDamageable>();
             hoveringCharacter = hitObject.GetComponent<Character>();
@@ -56,21 +50,14 @@ public class InteractInput : MonoBehaviour
             var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
             if (pickupItem != null && pickupItem.ItemData != null && itemTooltip != null)
             {
-                itemTooltip.Show(ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData), pickupItem.ItemData.icon, true); // true = static
+                itemTooltip.Show(ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData), pickupItem.ItemData.icon, false, pickupItem.gameObject);
             }
-            else if (itemTooltip != null)
-            {
-                itemTooltip.Hide();
-            }
-
 
             UpdateHPBar();
         }
         else
         {
             HoverUtils.SetOutline(currentHoverOverObject, false);
-            if (itemTooltip != null) itemTooltip.Hide();
-
             currentHoverOverObject = null;
             hoveringOverObject = null;
             attackTarget = null;

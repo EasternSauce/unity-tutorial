@@ -14,11 +14,6 @@ public static class HoverUtils
         if (tooltipUI == null || item == null || item.ItemData == null) return;
         string tooltipText = ItemTooltipBuilder.BuildTooltip(item.ItemData);
         Sprite icon = item.ItemData.icon;
-        tooltipUI.Show(tooltipText, icon);
-    }
-
-    public static void HideTooltip(ItemTooltip tooltipUI)
-    {
-        tooltipUI?.Hide();
+        tooltipUI.Show(tooltipText, icon, true, item.gameObject);
     }
 }

@@ -4,58 +4,46 @@ using UnityEngine.UI;
 
 public class ItemTooltip : MonoBehaviour
 {
-    [Header("UI References")]
     [SerializeField] private TMP_Text tooltipText;
     [SerializeField] private Image tooltipIcon;
-
-    [Header("Settings")]
     [SerializeField] private Vector2 offset = new Vector2(16f, -16f);
 
     private RectTransform rectTransform;
     private Canvas parentCanvas;
     private bool followMouse;
-
     private Vector2 initialAnchoredPosition;
     private Vector2 initialPivot;
-
     private GameObject currentTarget;
 
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
-
         if (tooltipText == null) tooltipText = GetComponentInChildren<TMP_Text>(true);
         if (tooltipIcon == null) tooltipIcon = GetComponentInChildren<Image>(true);
-
         parentCanvas = GetComponentInParent<Canvas>();
-
         initialAnchoredPosition = rectTransform.anchoredPosition;
         initialPivot = rectTransform.pivot;
-
-        // Make tooltip ignore raycasts so it doesn't block clicks
         CanvasGroup cg = GetComponent<CanvasGroup>();
         if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
         cg.blocksRaycasts = false;
-
         gameObject.SetActive(false);
     }
-
 
     private void Update()
     {
         if (!gameObject.activeSelf) return;
-
         if (followMouse)
         {
             FollowMouse();
+            if (currentTarget != null && !currentTarget.activeInHierarchy) Hide();
         }
         else if (currentTarget != null)
         {
-            // If the target is destroyed or invalid, hide tooltip automatically
-            if (!currentTarget.activeInHierarchy)
-            {
-                Hide();
-            }
+            if (!currentTarget.activeInHierarchy) Hide();
+        }
+        else
+        {
+            Hide();
         }
     }
 
@@ -81,7 +69,6 @@ public class ItemTooltip : MonoBehaviour
         gameObject.SetActive(true);
         tooltipText.text = text;
         tooltipText.enableAutoSizing = false;
-
         if (tooltipIcon != null)
         {
             tooltipIcon.enabled = icon != null;
@@ -93,7 +80,6 @@ public class ItemTooltip : MonoBehaviour
 
         if (!followMouse)
         {
-            // Reset pivot and anchored position for static tooltip
             rectTransform.pivot = initialPivot;
             rectTransform.anchoredPosition = initialAnchoredPosition;
         }
@@ -112,7 +98,6 @@ public class ItemTooltip : MonoBehaviour
         }
 
         tooltipText.text = text;
-
         if (tooltipIcon != null && icon != null)
         {
             tooltipIcon.enabled = true;

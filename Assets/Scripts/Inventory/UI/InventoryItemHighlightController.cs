@@ -15,7 +15,6 @@ public class InventoryItemHighlightController : MonoBehaviour
     {
         if (gridHandler == null)
             gridHandler = FindFirstObjectByType<InventoryGridHandler>();
-
         if (tooltip == null)
             Debug.LogWarning($"Tooltip not assigned on {name}", this);
     }
@@ -26,16 +25,8 @@ public class InventoryItemHighlightController : MonoBehaviour
         if (inventoryHighlight != null)
             inventoryHighlight.SetParent(grid);
         parentCanvas = grid != null ? grid.GetComponentInParent<Canvas>() : null;
-        if (currentGrid == null || inventoryHighlight == null)
-        {
-            ClearHighlight();
-            return;
-        }
-        if (!currentGrid.gameObject.activeInHierarchy || !IsPointerInsideGrid())
-        {
-            ClearHighlight();
-            return;
-        }
+        if (currentGrid == null || inventoryHighlight == null) return;
+        if (!currentGrid.gameObject.activeInHierarchy || !IsPointerInsideGrid()) return;
         Vector2Int pos = gridHandler.GetClampedTileGridPosition(Input.mousePosition, selectedItem);
         lastPosition = pos;
         UpdateHighlight(pos);
@@ -51,7 +42,6 @@ public class InventoryItemHighlightController : MonoBehaviour
         if (inventoryHighlight != null)
             inventoryHighlight.Show(false);
         lastPosition = new Vector2Int(int.MinValue, int.MinValue);
-        tooltip?.Hide();
     }
 
     private void Update()
@@ -95,12 +85,7 @@ public class InventoryItemHighlightController : MonoBehaviour
 
     private void HighlightExistingItem(Vector2Int position)
     {
-        if (!currentGrid.PositionCheck(position.x, position.y))
-        {
-            ClearHighlight();
-            return;
-        }
-
+        if (!currentGrid.PositionCheck(position.x, position.y)) return;
         InventoryItem item = currentGrid.GetItem(position.x, position.y);
         if (item != null)
         {
@@ -109,23 +94,17 @@ public class InventoryItemHighlightController : MonoBehaviour
             inventoryHighlight.SetPosition(currentGrid, item);
             inventoryHighlight.transform.SetAsFirstSibling();
             string text = ItemTooltipBuilder.BuildTooltip(item.itemData);
-            tooltip?.Show(text, item.itemData.icon);
+            tooltip?.Show(text, item.itemData.icon, true, item.gameObject);
         }
         else
         {
             inventoryHighlight.Show(false);
-            tooltip?.Hide();
         }
     }
 
     private void HighlightSelectedItem(Vector2Int position)
     {
-        if (selectedItem == null)
-        {
-            ClearHighlight();
-            return;
-        }
-
+        if (selectedItem == null) return;
         bool canPlace = currentGrid.BoundaryCheck(position.x, position.y, selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight);
         inventoryHighlight.Show(canPlace);
         if (canPlace)
@@ -134,10 +113,5 @@ public class InventoryItemHighlightController : MonoBehaviour
             inventoryHighlight.SetPosition(currentGrid, selectedItem, position.x, position.y);
             inventoryHighlight.transform.SetAsFirstSibling();
         }
-        else
-        {
-            inventoryHighlight.Show(false);
-        }
-        tooltip?.Hide();
     }
 }
