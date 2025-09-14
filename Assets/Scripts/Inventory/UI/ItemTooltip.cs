@@ -23,20 +23,18 @@ public class ItemTooltip : MonoBehaviour
         parentCanvas = GetComponentInParent<Canvas>();
         initialAnchoredPosition = rectTransform.anchoredPosition;
         initialPivot = rectTransform.pivot;
-        CanvasGroup cg = GetComponent<CanvasGroup>();
+
+        var cg = GetComponent<CanvasGroup>();
         if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
         cg.blocksRaycasts = false;
+
         gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        if (!gameObject.activeSelf) return;
-
-        if (followMouse)
-        {
+        if (gameObject.activeSelf && followMouse)
             FollowMouse();
-        }
     }
 
     private void FollowMouse()
@@ -61,6 +59,7 @@ public class ItemTooltip : MonoBehaviour
         gameObject.SetActive(true);
         tooltipText.text = text;
         tooltipText.enableAutoSizing = false;
+
         if (tooltipIcon != null)
         {
             tooltipIcon.enabled = icon != null;

@@ -13,10 +13,7 @@ public class InteractInput : MonoBehaviour
     private Character hoveringCharacter;
     private Vector2 mousePosition;
 
-    void Update()
-    {
-        CheckInteractObject();
-    }
+    void Update() => CheckInteractObject();
 
     public void MousePositionInput(InputAction.CallbackContext callbackContext)
     {
@@ -36,11 +33,11 @@ public class InteractInput : MonoBehaviour
 
             if (currentHoverOverObject != hitObject)
             {
-                HoverUtils.SetOutline(currentHoverOverObject, false);
+                SetOutline(currentHoverOverObject, false);
                 currentHoverOverObject = hitObject;
             }
 
-            HoverUtils.SetOutline(currentHoverOverObject, true);
+            SetOutline(currentHoverOverObject, true);
 
             hoveringOverObject = hitObject.GetComponent<InteractableObject>();
             attackTarget = hitObject.GetComponent<IDamageable>();
@@ -52,7 +49,6 @@ public class InteractInput : MonoBehaviour
             var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
             if (pickupItem != null && pickupItem.ItemData != null && itemTooltip != null)
             {
-                // Ground item tooltip: stay at original position
                 itemTooltip.Show(
                     ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData),
                     pickupItem.ItemData.icon,
@@ -65,10 +61,10 @@ public class InteractInput : MonoBehaviour
         }
         else
         {
-            HoverUtils.SetOutline(currentHoverOverObject, false);
+            SetOutline(currentHoverOverObject, false);
 
             if (itemTooltip != null)
-                itemTooltip.Hide(); // explicitly hide tooltip when nothing is hovered
+                itemTooltip.Hide();
 
             currentHoverOverObject = null;
             hoveringOverObject = null;
@@ -79,13 +75,22 @@ public class InteractInput : MonoBehaviour
         }
     }
 
+    private void UpdateHPBar()
+    {
+        if (attackTarget != null && hpBar != null)
+            hpBar.Show(attackTarget.GetLifePool());
+        else if (hpBar != null)
+            hpBar.Clear();
+    }
+
+    public bool InteractCheck() => hoveringOverObject != null;
+
     public bool TryGetTerrainPoint(out Vector3 point)
     {
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
-        RaycastHit hit;
         int terrainMask = LayerMask.GetMask("Terrain");
 
-        if (Physics.Raycast(ray, out hit, float.MaxValue, terrainMask))
+        if (Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, terrainMask))
         {
             point = hit.point;
             return true;
@@ -95,20 +100,11 @@ public class InteractInput : MonoBehaviour
         return false;
     }
 
-    private void UpdateHPBar()
+    private void SetOutline(GameObject obj, bool enabled)
     {
-        if (attackTarget != null && hpBar != null)
-        {
-            hpBar.Show(attackTarget.GetLifePool());
-        }
-        else if (hpBar != null)
-        {
-            hpBar.Clear();
-        }
+        if (obj == null) return;
+        var outline = obj.GetComponent<Outline>();
+        if (outline != null) outline.enabled = enabled;
     }
 
-    public bool InteractCheck()
-    {
-        return hoveringOverObject != null;
-    }
 }
