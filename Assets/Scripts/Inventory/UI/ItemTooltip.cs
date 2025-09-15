@@ -85,4 +85,12 @@ public class ItemTooltip : MonoBehaviour
         CurrentTarget = null;
         gameObject.SetActive(false);
     }
+
+    public void ShowForItem(InventoryItem item, GameObject target, bool followMouseCursor = true)
+    {
+        if (item == null || item.itemData == null) return;
+
+        string tooltipText = ItemTooltipBuilder.BuildTooltip(item.itemData);
+        Show(tooltipText, item.itemData.icon, followMouseCursor, target);
+    }
 }
