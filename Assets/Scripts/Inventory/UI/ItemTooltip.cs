@@ -29,6 +29,9 @@ public class ItemTooltip : MonoBehaviour
         if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
         cg.blocksRaycasts = false;
 
+        if (tooltipText != null) tooltipText.raycastTarget = false;
+        if (tooltipIcon != null) tooltipIcon.raycastTarget = false;
+
         gameObject.SetActive(false);
     }
 

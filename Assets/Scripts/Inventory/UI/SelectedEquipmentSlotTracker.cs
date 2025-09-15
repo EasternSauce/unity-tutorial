@@ -29,7 +29,7 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
         if (item != null && item.itemData != null)
         {
             string tooltipText = ItemTooltipBuilder.BuildTooltip(item.itemData);
-            tooltip?.Show(tooltipText, item.itemData.icon, true, item.gameObject);
+            tooltip?.Show(tooltipText, item.itemData.icon, true, slot.gameObject);
         }
     }
 
@@ -37,6 +37,9 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
     {
         inventoryController.SelectedItemSlot = null;
         if (tooltip != null && tooltip.CurrentTarget == slot.gameObject)
+        {
             tooltip.Hide();
+        }
     }
+
 }

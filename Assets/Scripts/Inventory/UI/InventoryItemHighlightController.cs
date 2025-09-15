@@ -81,7 +81,11 @@ public class InventoryItemHighlightController : MonoBehaviour
 
     private void HighlightExistingItem(Vector2Int position)
     {
-        if (!currentGrid.PositionCheck(position.x, position.y)) return;
+        if (!currentGrid.PositionCheck(position.x, position.y))
+        {
+            tooltip?.Hide();
+            return;
+        }
 
         InventoryItem item = currentGrid.GetItem(position.x, position.y);
         if (item != null)
@@ -91,11 +95,14 @@ public class InventoryItemHighlightController : MonoBehaviour
             inventoryHighlight.SetPosition(currentGrid, item);
             inventoryHighlight.transform.SetAsFirstSibling();
 
-            tooltip?.Show(ItemTooltipBuilder.BuildTooltip(item.itemData), item.itemData.icon, true, item.gameObject);
+            if (tooltip.CurrentTarget != item.gameObject) // strict show
+                tooltip?.Show(ItemTooltipBuilder.BuildTooltip(item.itemData), item.itemData.icon, true, item.gameObject);
         }
         else
         {
             inventoryHighlight.Show(false);
+            if (tooltip.CurrentTarget != null)
+                tooltip.Hide();
         }
     }
 
