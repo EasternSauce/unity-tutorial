@@ -50,7 +50,6 @@ public class InteractInput : MonoBehaviour
                     itemTooltip.ShowForItem(pickupItem, pickupItem.gameObject, false);
                 }
 
-
                 UpdateHPBar();
             }
         }
@@ -60,8 +59,7 @@ public class InteractInput : MonoBehaviour
             {
                 SetOutline(currentHoverOverObject, false);
 
-                if (itemTooltip != null && itemTooltip.CurrentTarget == currentHoverOverObject)
-                    itemTooltip.Hide();
+                itemTooltip?.HideIfTarget(currentHoverOverObject);
 
                 currentHoverOverObject = null;
                 hoveringOverObject = null;

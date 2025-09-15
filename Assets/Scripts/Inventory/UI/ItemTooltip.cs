@@ -103,4 +103,10 @@ public class ItemTooltip : MonoBehaviour
         Show(tooltipText, data.icon, followMouse, target);
     }
 
+    public void HideIfTarget(GameObject target)
+    {
+        if (CurrentTarget == target)
+            Hide();
+    }
+
 }
