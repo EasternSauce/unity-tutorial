@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class InventoryItemHighlightController : MonoBehaviour
 {
+    [SerializeField] private InventoryController inventoryController; // add this
+
     [SerializeField] private InventoryHighlighter inventoryHighlight;
     [SerializeField] private ItemGrid currentGrid;
     [SerializeField] private InventoryGridHandler gridHandler;
@@ -13,6 +15,9 @@ public class InventoryItemHighlightController : MonoBehaviour
 
     private void Awake()
     {
+        if (inventoryController == null)
+            inventoryController = FindFirstObjectByType<InventoryController>(); // fallback
+
         if (gridHandler == null)
             gridHandler = FindFirstObjectByType<InventoryGridHandler>();
         if (tooltip == null)
@@ -50,9 +55,14 @@ public class InventoryItemHighlightController : MonoBehaviour
             ClearHighlight();
             return;
         }
+
         if (!currentGrid.gameObject.activeInHierarchy || !IsPointerInsideGrid())
         {
             ClearHighlight();
+
+            if (inventoryController.SelectedItemSlot == null)
+                tooltip?.Hide();
+
             return;
         }
 
