@@ -84,9 +84,35 @@ public class InventoryItemHighlightController : MonoBehaviour
     private void UpdateHighlight(Vector2Int positionOnGrid)
     {
         if (selectedItem == null)
+        {
             HighlightExistingItem(positionOnGrid);
+            UpdateTooltipForItem(positionOnGrid);
+        }
         else
+        {
             HighlightSelectedItem(positionOnGrid);
+        }
+    }
+
+    private void UpdateTooltipForItem(Vector2Int position)
+    {
+        if (!currentGrid.PositionCheck(position.x, position.y))
+        {
+            tooltip?.Hide();
+            return;
+        }
+
+        InventoryItem item = currentGrid.GetItem(position.x, position.y);
+        if (item != null)
+        {
+            if (tooltip.CurrentTarget != item.gameObject)
+                tooltip?.Show(ItemTooltipBuilder.BuildTooltip(item.itemData), item.itemData.icon, true, item.gameObject);
+        }
+        else
+        {
+            if (tooltip.CurrentTarget != null)
+                tooltip.Hide();
+        }
     }
 
     private void HighlightExistingItem(Vector2Int position)
