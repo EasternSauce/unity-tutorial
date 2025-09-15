@@ -13,7 +13,8 @@ public class ItemTooltip : MonoBehaviour
     private bool followMouse;
     private Vector2 initialAnchoredPosition;
     private Vector2 initialPivot;
-    private GameObject currentTarget;
+
+    public GameObject CurrentTarget { get; private set; }
 
     private void Awake()
     {
@@ -48,13 +49,9 @@ public class ItemTooltip : MonoBehaviour
         rectTransform.localPosition = localPos + offset;
     }
 
-    public void Show(string text, Sprite icon, bool followMouseCursor = true, GameObject target = null)
+    public void Show(string text, Sprite icon, bool followMouseCursor, GameObject target)
     {
-        if (string.IsNullOrEmpty(text))
-        {
-            Hide();
-            return;
-        }
+        CurrentTarget = target;
 
         gameObject.SetActive(true);
         tooltipText.text = text;
@@ -67,7 +64,6 @@ public class ItemTooltip : MonoBehaviour
         }
 
         followMouse = followMouseCursor;
-        currentTarget = target;
 
         if (followMouse)
         {
@@ -81,25 +77,9 @@ public class ItemTooltip : MonoBehaviour
         }
     }
 
-    public void UpdateTooltip(string text, Sprite icon = null)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            Hide();
-            return;
-        }
-
-        tooltipText.text = text;
-        if (tooltipIcon != null && icon != null)
-        {
-            tooltipIcon.enabled = true;
-            tooltipIcon.sprite = icon;
-        }
-    }
-
     public void Hide()
     {
+        CurrentTarget = null;
         gameObject.SetActive(false);
-        currentTarget = null;
     }
 }

@@ -36,6 +36,7 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
     public void OnPointerExit(PointerEventData eventData)
     {
         inventoryController.SelectedItemSlot = null;
-        tooltip?.Hide();
+        if (tooltip != null && tooltip.CurrentTarget == slot.gameObject)
+            tooltip.Hide();
     }
 }

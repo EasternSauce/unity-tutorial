@@ -31,47 +31,46 @@ public class InteractInput : MonoBehaviour
         {
             GameObject hitObject = hit.transform.gameObject;
 
-            if (currentHoverOverObject != hitObject)
+            if (currentHoverOverObject != hitObject) // strict enter/change check
             {
                 SetOutline(currentHoverOverObject, false);
                 currentHoverOverObject = hitObject;
+                SetOutline(currentHoverOverObject, true);
+
+                hoveringOverObject = hitObject.GetComponent<InteractableObject>();
+                attackTarget = hitObject.GetComponent<IDamageable>();
+                hoveringCharacter = hitObject.GetComponent<Character>();
+
+                if (textOnScreen != null)
+                    textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
+
+                var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
+                if (pickupItem != null && pickupItem.ItemData != null && itemTooltip != null)
+                {
+                    string tooltipText = ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData);
+                    itemTooltip.Show(tooltipText, pickupItem.ItemData.icon, false, pickupItem.gameObject);
+                }
+
+                UpdateHPBar();
             }
-
-            SetOutline(currentHoverOverObject, true);
-
-            hoveringOverObject = hitObject.GetComponent<InteractableObject>();
-            attackTarget = hitObject.GetComponent<IDamageable>();
-            hoveringCharacter = hitObject.GetComponent<Character>();
-
-            if (textOnScreen != null)
-                textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
-
-            var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
-            if (pickupItem != null && pickupItem.ItemData != null && itemTooltip != null)
-            {
-                itemTooltip.Show(
-                    ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData),
-                    pickupItem.ItemData.icon,
-                    false,
-                    pickupItem.gameObject
-                );
-            }
-
-            UpdateHPBar();
+            // else → still hovering same object → do nothing
         }
         else
         {
-            SetOutline(currentHoverOverObject, false);
+            if (currentHoverOverObject != null) // strict exit check
+            {
+                SetOutline(currentHoverOverObject, false);
 
-            if (itemTooltip != null)
-                itemTooltip.Hide();
+                if (itemTooltip != null && itemTooltip.CurrentTarget == currentHoverOverObject)
+                    itemTooltip.Hide();
 
-            currentHoverOverObject = null;
-            hoveringOverObject = null;
-            attackTarget = null;
-            hoveringCharacter = null;
-            if (textOnScreen != null) textOnScreen.text = "";
-            if (hpBar != null) hpBar.Clear();
+                currentHoverOverObject = null;
+                hoveringOverObject = null;
+                attackTarget = null;
+                hoveringCharacter = null;
+                if (textOnScreen != null) textOnScreen.text = "";
+                if (hpBar != null) hpBar.Clear();
+            }
         }
     }
 
@@ -106,5 +105,4 @@ public class InteractInput : MonoBehaviour
         var outline = obj.GetComponent<Outline>();
         if (outline != null) outline.enabled = enabled;
     }
-
 }
