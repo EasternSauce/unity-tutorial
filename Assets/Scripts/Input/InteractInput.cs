@@ -31,7 +31,7 @@ public class InteractInput : MonoBehaviour
         {
             GameObject hitObject = hit.transform.gameObject;
 
-            if (currentHoverOverObject != hitObject) // strict enter/change check
+            if (currentHoverOverObject != hitObject)
             {
                 SetOutline(currentHoverOverObject, false);
                 currentHoverOverObject = hitObject;
@@ -47,17 +47,16 @@ public class InteractInput : MonoBehaviour
                 var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
                 if (pickupItem != null && pickupItem.ItemData != null && itemTooltip != null)
                 {
-                    string tooltipText = ItemTooltipBuilder.BuildTooltip(pickupItem.ItemData);
-                    itemTooltip.Show(tooltipText, pickupItem.ItemData.icon, false, pickupItem.gameObject);
+                    itemTooltip.ShowForItem(pickupItem, pickupItem.gameObject, false);
                 }
+
 
                 UpdateHPBar();
             }
-            // else → still hovering same object → do nothing
         }
         else
         {
-            if (currentHoverOverObject != null) // strict exit check
+            if (currentHoverOverObject != null)
             {
                 SetOutline(currentHoverOverObject, false);
 

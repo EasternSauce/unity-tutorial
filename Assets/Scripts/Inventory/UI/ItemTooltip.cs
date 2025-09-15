@@ -86,11 +86,21 @@ public class ItemTooltip : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void ShowForItem(InventoryItem item, GameObject target, bool followMouseCursor = true)
+    public void ShowForItem(object itemSource, GameObject target, bool followMouse = true)
     {
-        if (item == null || item.itemData == null) return;
+        if (itemSource == null) return;
 
-        string tooltipText = ItemTooltipBuilder.BuildTooltip(item.itemData);
-        Show(tooltipText, item.itemData.icon, followMouseCursor, target);
+        ItemData data = null;
+
+        if (itemSource is InventoryItem inv && inv.itemData != null)
+            data = inv.itemData;
+        else if (itemSource is PickUpInteractableObject pickup && pickup.ItemData != null)
+            data = pickup.ItemData;
+
+        if (data == null) return;
+
+        string tooltipText = ItemTooltipBuilder.BuildTooltip(data);
+        Show(tooltipText, data.icon, followMouse, target);
     }
+
 }
