@@ -131,8 +131,8 @@ public class InventoryItemHighlightController : MonoBehaviour
             inventoryHighlight.SetPosition(currentGrid, item);
             inventoryHighlight.transform.SetAsFirstSibling();
 
-            if (tooltip.CurrentTarget != item.gameObject) // strict show
-                tooltip?.Show(ItemTooltipBuilder.BuildTooltip(item.itemData), item.itemData.icon, true, item.gameObject);
+            if (tooltip.CurrentTarget != item.gameObject)
+                tooltip?.ShowForItem(item, item.gameObject, true);
         }
         else
         {
