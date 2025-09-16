@@ -53,7 +53,7 @@ public class UiPanelManager : MonoBehaviour
         {
             var highlight = FindFirstObjectByType<InventoryItemHighlightController>();
             if (highlight != null)
-                highlight.ClearHighlight();
+                highlight.ClearHover();
         }
     }
 

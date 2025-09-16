@@ -91,7 +91,10 @@ public class ItemTooltip : MonoBehaviour
             rectTransform.pivot = initialPivot;
             rectTransform.anchoredPosition = initialAnchoredPosition;
         }
+
+        Canvas.ForceUpdateCanvases();
     }
+
 
     public void HideIfTarget(GameObject target)
     {

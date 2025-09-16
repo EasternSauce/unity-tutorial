@@ -272,7 +272,6 @@ GameObject:
   - component: {fileID: 72065791}
   - component: {fileID: 72065792}
   - component: {fileID: 72065793}
-  - component: {fileID: 72065794}
   m_Layer: 5
   m_Name: Panel Inventory
   m_TagString: Untagged
@@ -398,10 +397,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 882e6c940d81ae047b37575c3086800b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inventoryController: {fileID: 0}
   inventoryHighlight: {fileID: 72065789}
   currentGrid: {fileID: 2120118265}
   gridHandler: {fileID: 72065792}
-  tooltip: {fileID: 970190402}
+  tooltipController: {fileID: 0}
 --- !u!114 &72065792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -430,21 +430,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventoryController: {fileID: 72065790}
---- !u!114 &72065794
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 72065784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdc3b43fd279060469c16dd27671908a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  parentTransform: {fileID: 101276631}
-  defeatHandler: {fileID: 6365066707932090187}
-  canvas: {fileID: 1825286068}
 --- !u!1 &82200467
 GameObject:
   m_ObjectHideFlags: 0
@@ -5656,7 +5641,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &970190399
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9123,6 +9108,7 @@ GameObject:
   - component: {fileID: 1825286067}
   - component: {fileID: 1825286066}
   - component: {fileID: 1825286070}
+  - component: {fileID: 1825286071}
   m_Layer: 5
   m_Name: GameplayInfoCanvas
   m_TagString: Untagged
@@ -9244,6 +9230,20 @@ MonoBehaviour:
   parentTransform: {fileID: 1825286069}
   defeatHandler: {fileID: 6365066707932090187}
   canvas: {fileID: 1825286068}
+--- !u!114 &1825286071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1825286065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d49417ea8cd2a44292e89f919061c2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltip: {fileID: 970190402}
+  selectedItemController: {fileID: 1825286070}
 --- !u!1 &1856396148
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,10 +6,11 @@ public class InventoryItemHighlightController : MonoBehaviour
     [SerializeField] private InventoryHighlighter inventoryHighlight;
     [SerializeField] private ItemGrid currentGrid;
     [SerializeField] private InventoryGridHandler gridHandler;
-    [SerializeField] private ItemTooltip tooltip;
+    [SerializeField] private TooltipController tooltipController;
 
     private InventoryItem selectedItem;
     private Vector2Int lastPosition = new Vector2Int(int.MinValue, int.MinValue);
+    private InventoryItem currentHoverItem;
     private Canvas parentCanvas;
 
     private void Awake()
@@ -19,8 +20,12 @@ public class InventoryItemHighlightController : MonoBehaviour
 
         if (gridHandler == null)
             gridHandler = FindFirstObjectByType<InventoryGridHandler>();
-        if (tooltip == null)
-            Debug.LogWarning($"Tooltip not assigned on {name}", this);
+
+        if (tooltipController == null)
+            tooltipController = FindFirstObjectByType<TooltipController>();
+
+        if (inventoryHighlight == null)
+            Debug.LogWarning($"InventoryHighlight not assigned on {name}", this);
     }
 
     public void SetCurrentGrid(ItemGrid grid)
@@ -28,10 +33,10 @@ public class InventoryItemHighlightController : MonoBehaviour
         currentGrid = grid;
         if (inventoryHighlight != null)
             inventoryHighlight.SetParent(grid);
+
         parentCanvas = grid != null ? grid.GetComponentInParent<Canvas>() : null;
 
         if (currentGrid == null || inventoryHighlight == null) return;
-        if (!currentGrid.gameObject.activeInHierarchy || !IsPointerInsideGrid()) return;
 
         Vector2Int pos = gridHandler.GetClampedTileGridPosition(Input.mousePosition, selectedItem);
         lastPosition = pos;
@@ -40,35 +45,26 @@ public class InventoryItemHighlightController : MonoBehaviour
 
     public void SetSelectedItem(InventoryItem item) => selectedItem = item;
 
-    public void ClearHighlight()
-    {
-        if (inventoryHighlight != null)
-            inventoryHighlight.Show(false);
-        lastPosition = new Vector2Int(int.MinValue, int.MinValue);
-    }
-
     private void Update()
     {
         if (currentGrid == null || inventoryHighlight == null || gridHandler == null)
         {
-            ClearHighlight();
+            ClearHover();
             return;
         }
 
         if (!currentGrid.gameObject.activeInHierarchy || !IsPointerInsideGrid())
         {
-            ClearHighlight();
-
-            if (inventoryController.SelectedItemSlot == null)
-                tooltip?.ForceHide();
-
+            ClearHover();
             return;
         }
 
         Vector2Int positionOnGrid = gridHandler.GetClampedTileGridPosition(Input.mousePosition, selectedItem);
-        if (positionOnGrid == lastPosition) return;
-        lastPosition = positionOnGrid;
-        UpdateHighlight(positionOnGrid);
+        if (positionOnGrid != lastPosition)
+        {
+            lastPosition = positionOnGrid;
+            UpdateHighlight(positionOnGrid);
+        }
     }
 
     private bool IsPointerInsideGrid()
@@ -96,26 +92,31 @@ public class InventoryItemHighlightController : MonoBehaviour
     {
         if (!currentGrid.PositionCheck(position.x, position.y))
         {
-            tooltip?.ForceHide();
+            ClearHover();
+            inventoryHighlight.Show(false);
             return;
         }
 
         InventoryItem item = currentGrid.GetItem(position.x, position.y);
-        if (item != null)
+        if (item != currentHoverItem)
         {
-            inventoryHighlight.Show(true);
-            inventoryHighlight.SetSize(item);
-            inventoryHighlight.SetPosition(currentGrid, item);
-            inventoryHighlight.transform.SetAsFirstSibling();
+            if (currentHoverItem != null)
+                tooltipController?.ClearHoverTooltip(currentHoverItem.gameObject);
 
-            if (tooltip.CurrentTarget != item.gameObject)
-                tooltip?.ShowForItem(item, true, item.gameObject);
-        }
-        else
-        {
-            inventoryHighlight.Show(false);
-            if (tooltip.CurrentTarget != null)
-                tooltip.ForceHide();
+            currentHoverItem = item;
+
+            if (currentHoverItem != null)
+            {
+                inventoryHighlight.Show(true);
+                inventoryHighlight.SetSize(currentHoverItem);
+                inventoryHighlight.SetPosition(currentGrid, currentHoverItem);
+                inventoryHighlight.transform.SetAsFirstSibling();
+                tooltipController?.ShowHoverTooltip(currentHoverItem);
+            }
+            else
+            {
+                inventoryHighlight.Show(false);
+            }
         }
     }
 
@@ -132,5 +133,23 @@ public class InventoryItemHighlightController : MonoBehaviour
             inventoryHighlight.SetPosition(currentGrid, selectedItem, position.x, position.y);
             inventoryHighlight.transform.SetAsFirstSibling();
         }
+
+        if (currentHoverItem != null)
+        {
+            tooltipController?.ClearHoverTooltip(currentHoverItem.gameObject);
+            currentHoverItem = null;
+        }
+    }
+
+    public void ClearHover()
+    {
+        if (currentHoverItem != null)
+        {
+            tooltipController?.ClearHoverTooltip(currentHoverItem.gameObject);
+            currentHoverItem = null;
+        }
+
+        inventoryHighlight.Show(false);
+        lastPosition = new Vector2Int(int.MinValue, int.MinValue);
     }
 }

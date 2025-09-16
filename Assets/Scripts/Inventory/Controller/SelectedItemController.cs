@@ -11,12 +11,6 @@ public class SelectedItemController : MonoBehaviour
 
     private RectTransform selectedItemRectTransform;
 
-    private void Awake()
-    {
-        if (defeatHandler == null)
-            defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
-    }
-
     private void Update()
     {
         if (!HasItem || selectedItemRectTransform == null) return;
