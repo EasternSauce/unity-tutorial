@@ -7,44 +7,50 @@ public class TooltipController : MonoBehaviour
 
     private GameObject currentHoverTarget;
 
-    public void ShowHoverTooltip(InventoryItem item, bool followMouse = true)
+    public void ShowTooltipForGroundItem(ItemData data, GameObject target)
+    {
+        if (data == null) return;
+        currentHoverTarget = target;
+        tooltip?.ShowForItemData(data, false, target);
+    }
+
+    public void HideTooltipForGroundItem(GameObject target)
+    {
+        if (currentHoverTarget != target) return;
+        currentHoverTarget = null;
+        tooltip?.ForceHide();
+    }
+
+    public void ShowTooltipForInventoryGridItem(InventoryItem item)
     {
         if (item == null) return;
         currentHoverTarget = item.gameObject;
-        Debug.Log($"[TooltipController] ShowHoverTooltip - Item: {item.name}, followMouse: {followMouse}");
-        tooltip?.ShowForItem(item, followMouse, item.gameObject);
+        tooltip?.ShowForItem(item, true, item.gameObject);
     }
 
-    public void ShowHoverTooltip(ItemData itemData, GameObject target, bool followMouse = true)
-    {
-        if (itemData == null || target == null) return;
-        currentHoverTarget = target;
-        Debug.Log($"[TooltipController] ShowHoverTooltip - ItemData: {itemData.name}, followMouse: {followMouse}");
-        tooltip?.ShowForItemData(itemData, followMouse, target);
-    }
-
-    public void ClearHoverTooltip(GameObject target)
+    public void HideTooltipForInventoryGridItem(GameObject target)
     {
         if (currentHoverTarget != target) return;
-
-        Debug.Log($"[TooltipController] ClearHoverTooltip - Target: {target.name}");
         currentHoverTarget = null;
-
-        if (selectedItemController != null && selectedItemController.HasItem)
-        {
-            Debug.Log($"[TooltipController] Showing selected item tooltip: {selectedItemController.SelectedItem.name}");
-            tooltip?.ShowForItem(selectedItemController.SelectedItem, true, selectedItemController.SelectedItem.gameObject);
-        }
-        else
-        {
-            Debug.Log("[TooltipController] Force hiding tooltip");
-            tooltip?.ForceHide();
-        }
+        tooltip?.ForceHide();
     }
 
-    public void HideTooltipForUI()
+    public void ShowTooltipForEquipmentSlot(InventoryItem item, GameObject slot)
     {
-        Debug.Log("[TooltipController] HideTooltipForUI called, force hiding tooltip");
+        if (item == null || slot == null) return;
+        currentHoverTarget = slot;
+        tooltip?.ShowForItem(item, true, slot);
+    }
+
+    public void HideTooltipForEquipmentSlot(GameObject slot)
+    {
+        if (currentHoverTarget != slot) return;
+        currentHoverTarget = null;
+        tooltip?.ForceHide();
+    }
+
+    public void ForceHideTooltip()
+    {
         currentHoverTarget = null;
         tooltip?.ForceHide();
     }

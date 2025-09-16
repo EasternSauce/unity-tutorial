@@ -14,29 +14,27 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
         slot = GetComponent<EquipmentItemSlot>();
 
         if (tooltipController == null)
+        {
             tooltipController = FindFirstObjectByType<TooltipController>();
-
-        if (tooltipController == null)
-            Debug.LogWarning("No TooltipController found in the scene!");
+            if (tooltipController == null)
+                Debug.LogWarning("No TooltipController found in the scene!");
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         inventoryController.SelectedItemSlot = slot;
-        Debug.Log($"[EquipmentSlotTracker] OnPointerEnter - Slot: {slot.name}");
 
         var item = slot.GetItem();
         if (item != null)
         {
-            Debug.Log($"[EquipmentSlotTracker] Showing tooltip for item: {item.name}");
-            tooltipController?.ShowHoverTooltip(item);
+            tooltipController?.ShowTooltipForEquipmentSlot(item, slot.gameObject);
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         inventoryController.SelectedItemSlot = null;
-        Debug.Log($"[EquipmentSlotTracker] OnPointerExit - Slot: {slot.name}");
-        tooltipController?.HideTooltipForUI();
+        tooltipController?.HideTooltipForEquipmentSlot(slot.gameObject);
     }
 }
