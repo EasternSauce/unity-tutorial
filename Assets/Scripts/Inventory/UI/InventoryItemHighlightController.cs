@@ -15,14 +15,9 @@ public class InventoryItemHighlightController : MonoBehaviour
 
     private void Awake()
     {
-        if (inventoryController == null)
-            inventoryController = FindFirstObjectByType<InventoryController>();
-
-        if (gridHandler == null)
-            gridHandler = FindFirstObjectByType<InventoryGridHandler>();
-
-        if (tooltipController == null)
-            tooltipController = FindFirstObjectByType<TooltipController>();
+        if (inventoryController == null) inventoryController = FindFirstObjectByType<InventoryController>();
+        if (gridHandler == null) gridHandler = FindFirstObjectByType<InventoryGridHandler>();
+        if (tooltipController == null) tooltipController = FindFirstObjectByType<TooltipController>();
 
         if (inventoryHighlight == null)
             Debug.LogWarning($"InventoryHighlight not assigned on {name}", this);
@@ -31,61 +26,62 @@ public class InventoryItemHighlightController : MonoBehaviour
     public void SetCurrentGrid(ItemGrid grid)
     {
         currentGrid = grid;
-        if (inventoryHighlight != null)
-            inventoryHighlight.SetParent(grid);
-
+        if (inventoryHighlight != null) inventoryHighlight.SetParent(grid);
         parentCanvas = grid != null ? grid.GetComponentInParent<Canvas>() : null;
-
-        if (currentGrid == null || inventoryHighlight == null) return;
-
-        Vector2Int pos = gridHandler.GetClampedTileGridPosition(Input.mousePosition, selectedItem);
-        lastPosition = pos;
-        UpdateHighlight(pos);
     }
 
     public void SetSelectedItem(InventoryItem item) => selectedItem = item;
 
     private void Update()
     {
-        if (currentGrid == null || inventoryHighlight == null || gridHandler == null)
+        if (currentGrid == null || inventoryHighlight == null) return;
+
+        if (!IsPointerInsideGrid())
         {
             ClearHover();
             return;
         }
 
-        if (!currentGrid.gameObject.activeInHierarchy || !IsPointerInsideGrid())
-        {
-            ClearHover();
-            return;
-        }
+        Vector2Int hoveredPosition = currentGrid.GetTileGridPosition(Input.mousePosition, selectedItem);
 
-        Vector2Int positionOnGrid = gridHandler.GetClampedTileGridPosition(Input.mousePosition, selectedItem);
-        if (positionOnGrid != lastPosition)
+        hoveredPosition.x = Mathf.Clamp(hoveredPosition.x, 0, currentGrid.Width - 1);
+        hoveredPosition.y = Mathf.Clamp(hoveredPosition.y, 0, currentGrid.Height - 1);
+
+        if (hoveredPosition != lastPosition)
         {
-            lastPosition = positionOnGrid;
-            UpdateHighlight(positionOnGrid);
+            lastPosition = hoveredPosition;
+
+            if (selectedItem != null)
+                HighlightSelectedItem(hoveredPosition);
+            else
+                HighlightExistingItem(hoveredPosition);
         }
+    }
+
+    private void UpdateHighlight(Vector2Int pos)
+    {
+        if (inventoryHighlight == null || currentGrid == null) return;
+
+        Vector3 worldPos = currentGrid.CalculatePositionOfObjectOnGrid(
+            selectedItem != null ? selectedItem : currentHoverItem,
+            pos.x,
+            pos.y
+        );
+
+        inventoryHighlight.transform.position = worldPos;
     }
 
     private bool IsPointerInsideGrid()
     {
+        if (currentGrid == null) return false;
+
         RectTransform rectTransform = currentGrid.GetComponent<RectTransform>();
         Vector2 localMousePos;
-        Camera cam = parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? parentCanvas.worldCamera : null;
+        Camera cam = parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? parentCanvas.worldCamera
+            : null;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, Input.mousePosition, cam, out localMousePos);
         return rectTransform.rect.Contains(localMousePos);
-    }
-
-    private void UpdateHighlight(Vector2Int positionOnGrid)
-    {
-        if (selectedItem == null)
-        {
-            HighlightExistingItem(positionOnGrid);
-        }
-        else
-        {
-            HighlightSelectedItem(positionOnGrid);
-        }
     }
 
     private void HighlightExistingItem(Vector2Int position)
@@ -98,11 +94,10 @@ public class InventoryItemHighlightController : MonoBehaviour
         }
 
         InventoryItem item = currentGrid.GetItem(position.x, position.y);
+
         if (item != currentHoverItem)
         {
-            if (currentHoverItem != null)
-                tooltipController?.HideTooltip();
-
+            if (currentHoverItem != null) tooltipController?.HideTooltip();
             currentHoverItem = item;
 
             if (currentHoverItem != null)
@@ -153,7 +148,6 @@ public class InventoryItemHighlightController : MonoBehaviour
             tooltipController?.HideTooltip();
             currentHoverItem = null;
         }
-
         inventoryHighlight.Show(false);
         lastPosition = new Vector2Int(int.MinValue, int.MinValue);
     }
