@@ -23,10 +23,12 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
     public void OnPointerEnter(PointerEventData eventData)
     {
         inventoryController.SelectedItemSlot = slot;
+        Debug.Log($"[EquipmentSlotTracker] OnPointerEnter - Slot: {slot.name}");
 
         var item = slot.GetItem();
         if (item != null)
         {
+            Debug.Log($"[EquipmentSlotTracker] Showing tooltip for item: {item.name}");
             tooltipController?.ShowHoverTooltip(item);
         }
     }
@@ -34,13 +36,7 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
     public void OnPointerExit(PointerEventData eventData)
     {
         inventoryController.SelectedItemSlot = null;
-
-        var selectedItemController = FindFirstObjectByType<SelectedItemController>();
-        if (selectedItemController == null || !selectedItemController.HasItem)
-        {
-            var item = slot.GetItem();
-            if (item != null)
-                tooltipController?.ClearHoverTooltip(slot.gameObject);
-        }
+        Debug.Log($"[EquipmentSlotTracker] OnPointerExit - Slot: {slot.name}");
+        tooltipController?.HideTooltipForUI();
     }
 }
