@@ -6,19 +6,18 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
     InventoryController inventoryController;
     EquipmentItemSlot slot;
 
-    [SerializeField] private ItemTooltip tooltip;
+    [SerializeField] private TooltipController tooltipController;
 
     void Awake()
     {
         inventoryController = FindFirstObjectByType<InventoryController>();
         slot = GetComponent<EquipmentItemSlot>();
 
-        if (tooltip == null)
-        {
-            tooltip = FindFirstObjectByType<ItemTooltip>();
-            if (tooltip == null)
-                Debug.LogWarning("No ItemTooltip found in the scene!");
-        }
+        if (tooltipController == null)
+            tooltipController = FindFirstObjectByType<TooltipController>();
+
+        if (tooltipController == null)
+            Debug.LogWarning("No TooltipController found in the scene!");
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -28,7 +27,7 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
         var item = slot.GetItem();
         if (item != null)
         {
-            tooltip?.ShowForItem(item, true, slot.gameObject);
+            tooltipController?.ShowHoverTooltip(item);
         }
     }
 
@@ -38,7 +37,10 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
 
         var selectedItemController = FindFirstObjectByType<SelectedItemController>();
         if (selectedItemController == null || !selectedItemController.HasItem)
-            tooltip?.HideIfTarget(slot.gameObject);
+        {
+            var item = slot.GetItem();
+            if (item != null)
+                tooltipController?.ClearHoverTooltip(slot.gameObject);
+        }
     }
-
 }
