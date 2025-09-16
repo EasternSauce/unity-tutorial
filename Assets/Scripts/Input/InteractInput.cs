@@ -54,7 +54,7 @@ public class InteractInput : MonoBehaviour
                 var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
                 if (pickupItem != null && pickupItem.ItemData != null && tooltipController != null)
                 {
-                    tooltipController.ShowTooltipForGroundItem(pickupItem.ItemData, pickupItem.gameObject);
+                    tooltipController.ShowTooltip(pickupItem.ItemData, pickupItem.gameObject);
                 }
 
                 UpdateHPBar();

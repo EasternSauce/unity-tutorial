@@ -111,13 +111,18 @@ public class InventoryItemHighlightController : MonoBehaviour
                 inventoryHighlight.SetSize(currentHoverItem);
                 inventoryHighlight.SetPosition(currentGrid, currentHoverItem);
                 inventoryHighlight.transform.SetAsFirstSibling();
-                tooltipController?.ShowTooltipForInventoryGridItem(currentHoverItem, currentHoverItem.gameObject);
+                ShowTooltipForInventoryGridItem(currentHoverItem);
             }
             else
             {
                 inventoryHighlight.Show(false);
             }
         }
+    }
+
+    private void ShowTooltipForInventoryGridItem(InventoryItem currentHoverItem)
+    {
+        tooltipController?.ShowTooltip(currentHoverItem, currentHoverItem.gameObject);
     }
 
     private void HighlightSelectedItem(Vector2Int position)
