@@ -28,7 +28,7 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
         var item = slot.GetItem();
         if (item != null)
         {
-            tooltip?.ShowForItem(item, slot.gameObject, true);
+            tooltip?.ShowForItem(item, true, slot.gameObject);
         }
     }
 

@@ -132,7 +132,7 @@ public class InventoryItemHighlightController : MonoBehaviour
             inventoryHighlight.transform.SetAsFirstSibling();
 
             if (tooltip.CurrentTarget != item.gameObject)
-                tooltip?.ShowForItem(item, item.gameObject, true);
+                tooltip?.ShowForItem(item, true, item.gameObject);
         }
         else
         {
