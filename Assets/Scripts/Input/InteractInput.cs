@@ -71,7 +71,7 @@ public class InteractInput : MonoBehaviour
         if (currentHoverOverObject != null)
         {
             SetOutline(currentHoverOverObject, false);
-            tooltipController?.HideTooltipForGroundItem(currentHoverOverObject);
+            tooltipController?.HideTooltipForGroundItem();
             currentHoverOverObject = null;
             hoveringOverObject = null;
             attackTarget = null;

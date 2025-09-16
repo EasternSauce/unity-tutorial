@@ -101,7 +101,7 @@ public class InventoryItemHighlightController : MonoBehaviour
         if (item != currentHoverItem)
         {
             if (currentHoverItem != null)
-                tooltipController?.HideTooltipForInventoryGridItem(currentHoverItem.gameObject);
+                tooltipController?.HideTooltipForInventoryGridItem();
 
             currentHoverItem = item;
 
@@ -136,7 +136,7 @@ public class InventoryItemHighlightController : MonoBehaviour
 
         if (currentHoverItem != null)
         {
-            tooltipController?.HideTooltipForInventoryGridItem(currentHoverItem.gameObject);
+            tooltipController?.HideTooltipForInventoryGridItem();
             currentHoverItem = null;
         }
     }
@@ -145,7 +145,7 @@ public class InventoryItemHighlightController : MonoBehaviour
     {
         if (currentHoverItem != null)
         {
-            tooltipController?.HideTooltipForInventoryGridItem(currentHoverItem.gameObject);
+            tooltipController?.HideTooltipForInventoryGridItem();
             currentHoverItem = null;
         }
 
