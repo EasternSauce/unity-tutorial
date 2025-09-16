@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class InventoryItemHighlightController : MonoBehaviour
 {
-    [SerializeField] private InventoryController inventoryController; // add this
-
+    [SerializeField] private InventoryController inventoryController;
     [SerializeField] private InventoryHighlighter inventoryHighlight;
     [SerializeField] private ItemGrid currentGrid;
     [SerializeField] private InventoryGridHandler gridHandler;
@@ -16,7 +15,7 @@ public class InventoryItemHighlightController : MonoBehaviour
     private void Awake()
     {
         if (inventoryController == null)
-            inventoryController = FindFirstObjectByType<InventoryController>(); // fallback
+            inventoryController = FindFirstObjectByType<InventoryController>();
 
         if (gridHandler == null)
             gridHandler = FindFirstObjectByType<InventoryGridHandler>();
@@ -61,7 +60,7 @@ public class InventoryItemHighlightController : MonoBehaviour
             ClearHighlight();
 
             if (inventoryController.SelectedItemSlot == null)
-                tooltip?.Hide();
+                tooltip?.ForceHide();
 
             return;
         }
@@ -86,7 +85,6 @@ public class InventoryItemHighlightController : MonoBehaviour
         if (selectedItem == null)
         {
             HighlightExistingItem(positionOnGrid);
-            UpdateTooltipForItem(positionOnGrid);
         }
         else
         {
@@ -94,32 +92,11 @@ public class InventoryItemHighlightController : MonoBehaviour
         }
     }
 
-    private void UpdateTooltipForItem(Vector2Int position)
-    {
-        if (!currentGrid.PositionCheck(position.x, position.y))
-        {
-            tooltip?.Hide();
-            return;
-        }
-
-        InventoryItem item = currentGrid.GetItem(position.x, position.y);
-        if (item != null)
-        {
-            if (tooltip.CurrentTarget != item.gameObject)
-                tooltip?.Show(ItemTooltipBuilder.BuildTooltip(item.itemData), item.itemData.icon, true, item.gameObject);
-        }
-        else
-        {
-            if (tooltip.CurrentTarget != null)
-                tooltip.Hide();
-        }
-    }
-
     private void HighlightExistingItem(Vector2Int position)
     {
         if (!currentGrid.PositionCheck(position.x, position.y))
         {
-            tooltip?.Hide();
+            tooltip?.ForceHide();
             return;
         }
 
@@ -138,7 +115,7 @@ public class InventoryItemHighlightController : MonoBehaviour
         {
             inventoryHighlight.Show(false);
             if (tooltip.CurrentTarget != null)
-                tooltip.Hide();
+                tooltip.ForceHide();
         }
     }
 

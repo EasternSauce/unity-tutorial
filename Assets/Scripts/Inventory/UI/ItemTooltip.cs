@@ -52,11 +52,25 @@ public class ItemTooltip : MonoBehaviour
         rectTransform.localPosition = localPos + offset;
     }
 
-    public void Show(string text, Sprite icon, bool followMouseCursor, GameObject target)
+    public void ShowForItem(InventoryItem item, bool followMouseCursor, GameObject target)
+    {
+        if (item == null || item.itemData == null) return;
+        string tooltipTextValue = ItemTooltipBuilder.BuildTooltip(item.itemData);
+        ShowInternal(tooltipTextValue, item.itemData.icon, followMouseCursor, target);
+    }
+
+    public void ShowForItemData(ItemData data, bool followMouseCursor, GameObject target)
+    {
+        if (data == null) return;
+        string tooltipTextValue = ItemTooltipBuilder.BuildTooltip(data);
+        ShowInternal(tooltipTextValue, data.icon, followMouseCursor, target);
+    }
+
+    private void ShowInternal(string text, Sprite icon, bool followMouseCursor, GameObject target)
     {
         CurrentTarget = target;
-
         gameObject.SetActive(true);
+
         tooltipText.text = text;
         tooltipText.enableAutoSizing = false;
 
@@ -67,7 +81,6 @@ public class ItemTooltip : MonoBehaviour
         }
 
         followMouse = followMouseCursor;
-
         if (followMouse)
         {
             rectTransform.pivot = new Vector2(0f, 1f);
@@ -80,32 +93,21 @@ public class ItemTooltip : MonoBehaviour
         }
     }
 
-    public void Hide()
-    {
-        CurrentTarget = null;
-        gameObject.SetActive(false);
-    }
-
-    public void ShowForItem(InventoryItem item, bool followMouseCursor, GameObject targetOverride = null)
-    {
-        if (item == null || item.itemData == null) return;
-
-        string tooltipText = ItemTooltipBuilder.BuildTooltip(item.itemData);
-        Show(tooltipText, item.itemData.icon, followMouseCursor, targetOverride ?? item.gameObject);
-    }
-
-    public void ShowForItemData(ItemData data, bool followMouseCursor, GameObject targetOverride = null)
-    {
-        if (data == null) return;
-
-        string tooltipText = ItemTooltipBuilder.BuildTooltip(data);
-        Show(tooltipText, data.icon, followMouseCursor, targetOverride);
-    }
-
     public void HideIfTarget(GameObject target)
     {
         if (CurrentTarget == target)
-            Hide();
+        {
+            CurrentTarget = null;
+            gameObject.SetActive(false);
+        }
     }
 
+    public void ForceHide()
+    {
+        if (CurrentTarget != null)
+        {
+            CurrentTarget = null;
+            gameObject.SetActive(false);
+        }
+    }
 }
