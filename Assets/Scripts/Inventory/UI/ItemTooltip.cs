@@ -112,7 +112,7 @@ public class ItemTooltip : MonoBehaviour
         }
     }
 
-    public void ForceHide()
+    public void Hide()
     {
         if (CurrentTarget != null)
         {

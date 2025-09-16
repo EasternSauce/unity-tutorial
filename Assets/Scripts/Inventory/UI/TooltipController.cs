@@ -12,20 +12,10 @@ public class TooltipController : MonoBehaviour
         tooltip?.ShowForItemData(data, false, target);
     }
 
-    public void HideTooltipForGroundItem()
-    {
-        tooltip?.ForceHide();
-    }
-
-    public void ShowTooltipForInventoryGridItem(InventoryItem item)
+    public void ShowTooltipForInventoryGridItem(InventoryItem item, GameObject target)
     {
         if (item == null) return;
-        tooltip?.ShowForItem(item, true, item.gameObject);
-    }
-
-    public void HideTooltipForInventoryGridItem()
-    {
-        tooltip?.ForceHide();
+        tooltip?.ShowForItem(item, true, target);
     }
 
     public void ShowTooltipForEquipmentSlot(InventoryItem item, GameObject slot)
@@ -34,8 +24,8 @@ public class TooltipController : MonoBehaviour
         tooltip?.ShowForItem(item, true, slot);
     }
 
-    public void HideTooltipForEquipmentSlot()
+    public void HideTooltip()
     {
-        tooltip?.ForceHide();
+        tooltip?.Hide();
     }
 }

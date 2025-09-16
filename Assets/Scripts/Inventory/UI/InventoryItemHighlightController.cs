@@ -101,7 +101,7 @@ public class InventoryItemHighlightController : MonoBehaviour
         if (item != currentHoverItem)
         {
             if (currentHoverItem != null)
-                tooltipController?.HideTooltipForInventoryGridItem();
+                tooltipController?.HideTooltip();
 
             currentHoverItem = item;
 
@@ -111,7 +111,7 @@ public class InventoryItemHighlightController : MonoBehaviour
                 inventoryHighlight.SetSize(currentHoverItem);
                 inventoryHighlight.SetPosition(currentGrid, currentHoverItem);
                 inventoryHighlight.transform.SetAsFirstSibling();
-                tooltipController?.ShowTooltipForInventoryGridItem(currentHoverItem);
+                tooltipController?.ShowTooltipForInventoryGridItem(currentHoverItem, currentHoverItem.gameObject);
             }
             else
             {
@@ -136,7 +136,7 @@ public class InventoryItemHighlightController : MonoBehaviour
 
         if (currentHoverItem != null)
         {
-            tooltipController?.HideTooltipForInventoryGridItem();
+            tooltipController?.HideTooltip();
             currentHoverItem = null;
         }
     }
@@ -145,7 +145,7 @@ public class InventoryItemHighlightController : MonoBehaviour
     {
         if (currentHoverItem != null)
         {
-            tooltipController?.HideTooltipForInventoryGridItem();
+            tooltipController?.HideTooltip();
             currentHoverItem = null;
         }
 
