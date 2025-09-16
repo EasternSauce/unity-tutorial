@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class InteractInput : MonoBehaviour
 {
@@ -22,6 +23,12 @@ public class InteractInput : MonoBehaviour
 
     private void CheckInteractObject()
     {
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            ClearCurrentHover();
+            return;
+        }
+
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         RaycastHit hit;
         float hoverRadius = 0.05f;
@@ -55,19 +62,22 @@ public class InteractInput : MonoBehaviour
         }
         else
         {
-            if (currentHoverOverObject != null)
-            {
-                SetOutline(currentHoverOverObject, false);
+            ClearCurrentHover();
+        }
+    }
 
-                tooltipController?.ClearHoverTooltip(currentHoverOverObject);
-
-                currentHoverOverObject = null;
-                hoveringOverObject = null;
-                attackTarget = null;
-                hoveringCharacter = null;
-                if (textOnScreen != null) textOnScreen.text = "";
-                if (hpBar != null) hpBar.Clear();
-            }
+    private void ClearCurrentHover()
+    {
+        if (currentHoverOverObject != null)
+        {
+            SetOutline(currentHoverOverObject, false);
+            tooltipController?.ClearHoverTooltip(currentHoverOverObject);
+            currentHoverOverObject = null;
+            hoveringOverObject = null;
+            attackTarget = null;
+            hoveringCharacter = null;
+            if (textOnScreen != null) textOnScreen.text = "";
+            if (hpBar != null) hpBar.Clear();
         }
     }
 
