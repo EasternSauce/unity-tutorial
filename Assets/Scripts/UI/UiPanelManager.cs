@@ -43,29 +43,29 @@ public class UiPanelManager : MonoBehaviour
         canOpenPanels = true;
     }
 
-    public void OpenInventory()
+    public void ToggleInventoryPanel()
     {
         if (!canOpenPanels) return;
+
         bool newState = !inventoryPanel.activeInHierarchy;
         inventoryPanel.SetActive(newState);
 
-        if (newState)
-        {
-            var highlight = FindFirstObjectByType<InventoryItemHighlightController>();
-            if (highlight != null)
-                highlight.ClearHover();
-        }
+        var highlight = FindFirstObjectByType<InventoryItemHighlightController>();
+        if (highlight != null)
+            highlight.ClearHover();
+
+        if (!newState)
+            HideTooltipIfCursorOver(inventoryPanel);
     }
 
-
-    public void OpenStats()
+    public void ToggleStatsPanel()
     {
         if (!canOpenPanels) return;
         statsPanel.SetActive(!statsPanel.activeInHierarchy);
         questPanel.SetActive(false);
     }
 
-    public void OpenQuests()
+    public void ToggleQuestsPanel()
     {
         if (!canOpenPanels) return;
         questPanel.SetActive(!questPanel.activeInHierarchy);
@@ -77,5 +77,21 @@ public class UiPanelManager : MonoBehaviour
         inventoryPanel.SetActive(false);
         statsPanel.SetActive(false);
         questPanel.SetActive(false);
+
+        HideTooltipIfCursorOver(inventoryPanel);
+    }
+
+    private void HideTooltipIfCursorOver(GameObject panel)
+    {
+        if (panel == null) return;
+
+        var tooltip = FindFirstObjectByType<TooltipController>();
+        if (tooltip == null) return;
+
+        RectTransform rect = panel.GetComponent<RectTransform>();
+        if (rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition))
+        {
+            tooltip.HideTooltip();
+        }
     }
 }

@@ -1994,7 +1994,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 731758869}
         m_TargetAssemblyTypeName: UiPanelManager, Assembly-CSharp
-        m_MethodName: OpenInventory
+        m_MethodName: ToggleInventoryPanel
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2010,7 +2010,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 731758869}
         m_TargetAssemblyTypeName: UiPanelManager, Assembly-CSharp
-        m_MethodName: OpenStats
+        m_MethodName: ToggleStatsPanel
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2026,7 +2026,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 731758869}
         m_TargetAssemblyTypeName: UiPanelManager, Assembly-CSharp
-        m_MethodName: OpenQuests
+        m_MethodName: ToggleQuestsPanel
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
