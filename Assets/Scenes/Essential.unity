@@ -11012,6 +11012,10 @@ PrefabInstance:
       propertyPath: textOnScreen
       value: 
       objectReference: {fileID: 768288270}
+    - target: {fileID: 4449674399323909522, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: tooltipController
+      value: 
+      objectReference: {fileID: 1825286071}
     - target: {fileID: 4965133185813602848, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: arrowPrefab
       value: 

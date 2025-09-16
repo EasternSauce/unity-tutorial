@@ -5,7 +5,7 @@ public class InteractInput : MonoBehaviour
 {
     [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
     [SerializeField] private UIPoolBar hpBar;
-    [SerializeField] private ItemTooltip itemTooltip;
+    [SerializeField] private TooltipController tooltipController;
 
     private GameObject currentHoverOverObject;
     [HideInInspector] public InteractableObject hoveringOverObject;
@@ -13,7 +13,7 @@ public class InteractInput : MonoBehaviour
     private Character hoveringCharacter;
     private Vector2 mousePosition;
 
-    void Update() => CheckInteractObject();
+    private void Update() => CheckInteractObject();
 
     public void MousePositionInput(InputAction.CallbackContext callbackContext)
     {
@@ -45,9 +45,9 @@ public class InteractInput : MonoBehaviour
                     textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
 
                 var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
-                if (pickupItem != null && pickupItem.ItemData != null && itemTooltip != null)
+                if (pickupItem != null && pickupItem.ItemData != null && tooltipController != null)
                 {
-                    itemTooltip.ShowForItemData(pickupItem.ItemData, false, pickupItem.gameObject);
+                    tooltipController.ShowHoverTooltip(pickupItem.ItemData, pickupItem.gameObject);
                 }
 
                 UpdateHPBar();
@@ -59,7 +59,7 @@ public class InteractInput : MonoBehaviour
             {
                 SetOutline(currentHoverOverObject, false);
 
-                itemTooltip?.HideIfTarget(currentHoverOverObject);
+                tooltipController?.ClearHoverTooltip(currentHoverOverObject);
 
                 currentHoverOverObject = null;
                 hoveringOverObject = null;

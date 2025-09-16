@@ -15,6 +15,13 @@ public class ItemTooltip : MonoBehaviour
     private Vector2 initialPivot;
 
     public GameObject CurrentTarget { get; private set; }
+    public Vector2 InitialPivot => initialPivot;
+    public Vector2 InitialAnchoredPosition => initialAnchoredPosition;
+
+    public void SetCurrentTarget(GameObject target)
+    {
+        CurrentTarget = target;
+    }
 
     private void Awake()
     {
@@ -22,6 +29,7 @@ public class ItemTooltip : MonoBehaviour
         if (tooltipText == null) tooltipText = GetComponentInChildren<TMP_Text>(true);
         if (tooltipIcon == null) tooltipIcon = GetComponentInChildren<Image>(true);
         parentCanvas = GetComponentInParent<Canvas>();
+
         initialAnchoredPosition = rectTransform.anchoredPosition;
         initialPivot = rectTransform.pivot;
 
@@ -94,7 +102,6 @@ public class ItemTooltip : MonoBehaviour
 
         Canvas.ForceUpdateCanvases();
     }
-
 
     public void HideIfTarget(GameObject target)
     {

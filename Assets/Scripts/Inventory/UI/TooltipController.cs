@@ -15,14 +15,25 @@ public class TooltipController : MonoBehaviour
 
     public void ShowHoverTooltip(ItemData itemData, GameObject target)
     {
+        if (itemData == null || target == null) return;
+
+        if (tooltip != null)
+        {
+            tooltip.SetCurrentTarget(target);
+            tooltip.gameObject.SetActive(true);
+            tooltip.ShowForItemData(itemData, false, target);
+
+            var rt = tooltip.GetComponent<RectTransform>();
+            rt.pivot = tooltip.InitialPivot;
+            rt.anchoredPosition = tooltip.InitialAnchoredPosition;
+        }
+
         currentHoverTarget = target;
-        tooltip?.ShowForItemData(itemData, true, target);
     }
 
     public void ClearHoverTooltip(GameObject target)
     {
-        if (currentHoverTarget != target)
-            return;
+        if (currentHoverTarget != target) return;
 
         currentHoverTarget = null;
 
