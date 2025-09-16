@@ -1,19 +1,21 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class EquipmentItemSlot : MonoBehaviour
+public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [SerializeField] EquipmentSlot equipmentSlot;
+    [SerializeField] private EquipmentSlot equipmentSlot;
+    [SerializeField] private TooltipController tooltipController;
 
-    InventoryItem itemInSlot;
-
-    RectTransform slotRectTransform;
-
-    PlayerInventory inventory;
+    private InventoryItem itemInSlot;
+    private RectTransform slotRectTransform;
+    private PlayerInventory inventory;
 
     private void Awake()
     {
         slotRectTransform = GetComponent<RectTransform>();
+        if (tooltipController == null)
+            tooltipController = FindFirstObjectByType<TooltipController>();
     }
 
     public void Init(PlayerInventory inventory)
@@ -65,6 +67,9 @@ public class EquipmentItemSlot : MonoBehaviour
         {
             inventory.UpdateCurrentWeapon();
         }
+
+        // NEW: immediately show tooltip if cursor is already over this slot
+        ShowTooltipIfCursorInside();
     }
 
     public InventoryItem PickUpItem()
@@ -86,6 +91,13 @@ public class EquipmentItemSlot : MonoBehaviour
         itemInSlot = null;
         RectTransform rt = pickUpItem.GetComponent<RectTransform>();
         rt.SetParent(null);
+
+        // Hide tooltip if cursor is still over this slot
+        if (tooltipController != null &&
+            RectTransformUtility.RectangleContainsScreenPoint(slotRectTransform, Input.mousePosition))
+        {
+            tooltipController.HideTooltip();
+        }
     }
 
     public void HandleClick(SelectedItemController selectedItemController, InventoryItemHighlightController itemHighlightController)
@@ -123,5 +135,26 @@ public class EquipmentItemSlot : MonoBehaviour
     public InventoryItem GetItem()
     {
         return itemInSlot;
+    }
+
+    // === Tooltip logic ===
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        ShowTooltipIfCursorInside();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        tooltipController?.HideTooltip();
+    }
+
+    private void ShowTooltipIfCursorInside()
+    {
+        if (itemInSlot == null || tooltipController == null) return;
+
+        if (RectTransformUtility.RectangleContainsScreenPoint(slotRectTransform, Input.mousePosition))
+        {
+            tooltipController.ShowTooltip(itemInSlot, itemInSlot.gameObject);
+        }
     }
 }
