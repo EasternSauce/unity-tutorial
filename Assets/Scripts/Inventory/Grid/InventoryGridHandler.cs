@@ -100,16 +100,14 @@ public class InventoryGridHandler : MonoBehaviour
         grid.PlaceItem(selectedItem, positionOnGrid.x, positionOnGrid.y);
 
         selectedItemController?.ClearSelectedItem();
-        itemHighlightController?.SetSelectedItem(null);
 
         if (overlapItem != null)
         {
-            selectedItemController?.SetSelectedItem(overlapItem);
-            itemHighlightController?.SetSelectedItem(overlapItem);
+            selectedItemController?.PickUp(overlapItem);
         }
     }
 
-    public void HandleClick(ItemGrid grid, Vector2 mousePosition, SelectedItemController selectedItemController, InventoryItemHighlightController itemHighlightController)
+    public void HandleClick(ItemGrid grid, Vector2 mousePosition)
     {
         if (!IsMouseOverGrid(mousePosition)) return;
 
@@ -126,7 +124,6 @@ public class InventoryGridHandler : MonoBehaviour
             if (item != null)
             {
                 selectedItemController.PickUp(item);
-                itemHighlightController?.SetSelectedItem(item);
             }
         }
     }

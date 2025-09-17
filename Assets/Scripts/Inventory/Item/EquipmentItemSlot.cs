@@ -64,11 +64,8 @@ public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerEx
         }
 
         if (itemToPlace.itemData.equipmentSlot == EquipmentSlot.Weapon)
-        {
             inventory.UpdateCurrentWeapon();
-        }
 
-        // NEW: immediately show tooltip if cursor is already over this slot
         ShowTooltipIfCursorInside();
     }
 
@@ -82,7 +79,6 @@ public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerEx
         }
 
         inventory.UpdateCurrentWeapon();
-
         return pickUpItem;
     }
 
@@ -92,7 +88,6 @@ public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerEx
         RectTransform rt = pickUpItem.GetComponent<RectTransform>();
         rt.SetParent(null);
 
-        // Hide tooltip if cursor is still over this slot
         if (tooltipController != null &&
             RectTransformUtility.RectangleContainsScreenPoint(slotRectTransform, Input.mousePosition))
         {
@@ -100,7 +95,7 @@ public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerEx
         }
     }
 
-    public void HandleClick(SelectedItemController selectedItemController, InventoryItemHighlightController itemHighlightController)
+    public void HandleClick(SelectedItemController selectedItemController)
     {
         InventoryItem selectedItem = selectedItemController.SelectedItem;
 
@@ -110,7 +105,6 @@ public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerEx
             if (item != null)
             {
                 selectedItemController.PickUp(item);
-                itemHighlightController?.SetSelectedItem(item);
             }
         }
         else
@@ -122,31 +116,19 @@ public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerEx
             if (replacedItem == null)
             {
                 selectedItemController.ClearSelectedItem();
-                itemHighlightController?.SetSelectedItem(null);
             }
             else
             {
                 selectedItemController.SetSelectedItem(replacedItem);
-                itemHighlightController?.SetSelectedItem(replacedItem);
             }
         }
     }
 
-    public InventoryItem GetItem()
-    {
-        return itemInSlot;
-    }
+    public InventoryItem GetItem() => itemInSlot;
 
-    // === Tooltip logic ===
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        ShowTooltipIfCursorInside();
-    }
+    public void OnPointerEnter(PointerEventData eventData) => ShowTooltipIfCursorInside();
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        tooltipController?.HideTooltip();
-    }
+    public void OnPointerExit(PointerEventData eventData) => tooltipController?.HideTooltip();
 
     private void ShowTooltipIfCursorInside()
     {

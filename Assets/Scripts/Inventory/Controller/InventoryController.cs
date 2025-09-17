@@ -21,12 +21,9 @@ public class InventoryController : MonoBehaviour
         {
             selectedItemGrid = value;
             if (gridHandler != null) gridHandler.SetCurrentGrid(value);
-            if (itemHighlightController != null)
+            if (itemHighlightController != null && gridHandler != null && gridHandler.IsMouseOverGrid(Input.mousePosition))
             {
-                if (gridHandler != null && gridHandler.IsMouseOverGrid(Input.mousePosition))
-                    itemHighlightController.SetCurrentGrid(value);
-                else
-                    itemHighlightController.SetSelectedItem(null);
+                itemHighlightController.SetCurrentGrid(value);
             }
         }
     }
@@ -55,8 +52,7 @@ public class InventoryController : MonoBehaviour
 
     private void ParentSelectedItem(InventoryItem item)
     {
-        if (item == null) return;
-        if (!selectedItemController.HasItem) return;
+        if (item == null || !selectedItemController.HasItem) return;
         CreateSelectedItemParentIfMissing();
         if (item.transform.parent != selectedItemParentGameObject.transform)
             item.transform.SetParent(selectedItemParentGameObject.transform, false);
@@ -65,19 +61,24 @@ public class InventoryController : MonoBehaviour
     public void HandlePrimaryClick(Vector2 mousePosition)
     {
         if (!uiPanelManager || !uiPanelManager.IsInventoryOpen) return;
+
         if (selectedItemGrid != null)
         {
             if (gridHandler.IsMouseOverGrid(mousePosition))
-                gridHandler.HandleClick(selectedItemGrid, mousePosition, selectedItemController, itemHighlightController);
+                gridHandler.HandleClick(selectedItemGrid, mousePosition);
             return;
         }
+
         if (selectedItemSlot != null)
         {
-            selectedItemSlot.HandleClick(selectedItemController, itemHighlightController);
+            selectedItemSlot.HandleClick(selectedItemController);
             return;
         }
+
         if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped && !UIUtility.IsPointerOverUI(mousePosition))
+        {
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
+        }
     }
 
     public void ThrowItemOnGround()
@@ -96,10 +97,12 @@ public class InventoryController : MonoBehaviour
     public InventoryItem CreateNewInventoryItem(ItemData itemData)
     {
         if (inventoryItemPrefab == null || targetCanvas == null) return null;
+
         GameObject newItemGameObject = Instantiate(inventoryItemPrefab, targetCanvas);
         InventoryItem newInventoryItem = newItemGameObject.GetComponent<InventoryItem>();
         RectTransform newItemRectTransform = newItemGameObject.GetComponent<RectTransform>();
         newItemRectTransform.SetParent(targetCanvas);
+
         newInventoryItem?.Set(itemData);
         ParentSelectedItem(newInventoryItem);
         return newInventoryItem;
@@ -115,12 +118,9 @@ public class InventoryController : MonoBehaviour
                 selectedItemController.ClearSelectedItem();
         }
 
-        if (selectedItemGrid != null && itemHighlightController != null)
+        if (selectedItemGrid != null && itemHighlightController != null && gridHandler.IsMouseOverGrid(Input.mousePosition))
         {
-            if (gridHandler.IsMouseOverGrid(Input.mousePosition))
-                itemHighlightController.SetCurrentGrid(selectedItemGrid);
-            else
-                itemHighlightController.SetSelectedItem(null);
+            itemHighlightController.SetCurrentGrid(selectedItemGrid);
         }
     }
 }

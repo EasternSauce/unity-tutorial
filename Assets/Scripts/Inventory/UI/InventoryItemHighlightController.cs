@@ -7,8 +7,8 @@ public class InventoryItemHighlightController : MonoBehaviour
     [SerializeField] private ItemGrid currentGrid;
     [SerializeField] private InventoryGridHandler gridHandler;
     [SerializeField] private TooltipController tooltipController;
+    [SerializeField] private SelectedItemController selectedItemController;
 
-    private InventoryItem selectedItem;
     private InventoryItem currentHoverItem;
     private Vector2Int lastPosition = new Vector2Int(int.MinValue, int.MinValue);
     private Canvas parentCanvas;
@@ -18,6 +18,7 @@ public class InventoryItemHighlightController : MonoBehaviour
         if (inventoryController == null) inventoryController = FindFirstObjectByType<InventoryController>();
         if (gridHandler == null) gridHandler = FindFirstObjectByType<InventoryGridHandler>();
         if (tooltipController == null) tooltipController = FindFirstObjectByType<TooltipController>();
+        if (selectedItemController == null) selectedItemController = FindFirstObjectByType<SelectedItemController>();
 
         if (inventoryHighlight == null)
             Debug.LogWarning($"InventoryHighlight not assigned on {name}", this);
@@ -30,11 +31,9 @@ public class InventoryItemHighlightController : MonoBehaviour
         parentCanvas = grid != null ? grid.GetComponentInParent<Canvas>() : null;
     }
 
-    public void SetSelectedItem(InventoryItem item) => selectedItem = item;
-
     private void Update()
     {
-        if (currentGrid == null || inventoryHighlight == null) return;
+        if (currentGrid == null || inventoryHighlight == null || selectedItemController == null) return;
 
         if (!IsPointerInsideGrid())
         {
@@ -51,6 +50,7 @@ public class InventoryItemHighlightController : MonoBehaviour
 
     private Vector2Int GetClampedHoveredPosition()
     {
+        InventoryItem selectedItem = selectedItemController.SelectedItem;
         Vector2Int pos = currentGrid.GetTileGridPosition(Input.mousePosition, selectedItem);
         pos.x = Mathf.Clamp(pos.x, 0, currentGrid.Width - 1);
         pos.y = Mathf.Clamp(pos.y, 0, currentGrid.Height - 1);
@@ -69,10 +69,15 @@ public class InventoryItemHighlightController : MonoBehaviour
 
     private void HandleHighlight(Vector2Int position)
     {
+        InventoryItem selectedItem = selectedItemController.SelectedItem;
         if (selectedItem != null)
-            HighlightSelectedItem(position);
+        {
+            HighlightSelectedItem(position, selectedItem);
+        }
         else
+        {
             HighlightExistingItem(position);
+        }
     }
 
     private bool IsPointerInsideGrid()
@@ -131,7 +136,7 @@ public class InventoryItemHighlightController : MonoBehaviour
         tooltipController?.ShowTooltip(item, item.gameObject);
     }
 
-    private void HighlightSelectedItem(Vector2Int position)
+    private void HighlightSelectedItem(Vector2Int position, InventoryItem selectedItem)
     {
         if (selectedItem == null) return;
 
