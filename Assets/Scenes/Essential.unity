@@ -402,6 +402,7 @@ MonoBehaviour:
   currentGrid: {fileID: 2120118265}
   gridHandler: {fileID: 72065792}
   tooltipController: {fileID: 0}
+  selectedItemController: {fileID: 0}
 --- !u!114 &72065792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -496,6 +497,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 4
+  tooltipController: {fileID: 0}
 --- !u!114 &82200471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3134,6 +3136,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 6
+  tooltipController: {fileID: 0}
 --- !u!114 &448830336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3282,6 +3285,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 1
+  tooltipController: {fileID: 0}
 --- !u!114 &477890030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3566,6 +3570,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 3
+  tooltipController: {fileID: 0}
 --- !u!114 &482786663
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6660,6 +6665,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 7
+  tooltipController: {fileID: 0}
 --- !u!114 &1207701936
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6883,6 +6889,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 5
+  tooltipController: {fileID: 0}
 --- !u!114 &1231608566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8377,6 +8384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 9
+  tooltipController: {fileID: 0}
 --- !u!114 &1553239277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8617,6 +8625,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 8
+  tooltipController: {fileID: 0}
 --- !u!114 &1729633494
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9443,6 +9452,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 7
+  tooltipController: {fileID: 0}
 --- !u!114 &1857135998
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10008,6 +10018,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentSlot: 1
+  tooltipController: {fileID: 0}
 --- !u!114 &1948456956
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 
 public class InteractInput : MonoBehaviour
 {
+    [Header("UI References")]
     [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
     [SerializeField] private UIPoolBar hpBar;
     [SerializeField] private TooltipController tooltipController;
@@ -14,7 +15,10 @@ public class InteractInput : MonoBehaviour
     private Character hoveringCharacter;
     private Vector2 mousePosition;
 
-    private void Update() => CheckInteractObject();
+    private void Update()
+    {
+        CheckInteractObject();
+    }
 
     public void MousePositionInput(InputAction.CallbackContext callbackContext)
     {
@@ -48,8 +52,7 @@ public class InteractInput : MonoBehaviour
                 attackTarget = hitObject.GetComponent<IDamageable>();
                 hoveringCharacter = hitObject.GetComponent<Character>();
 
-                if (textOnScreen != null)
-                    textOnScreen.text = hoveringCharacter != null ? hoveringOverObject?.objectName ?? "" : "";
+                UpdateHoverUI();
 
                 var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
                 if (pickupItem != null && pickupItem.ItemData != null && tooltipController != null)
@@ -73,20 +76,43 @@ public class InteractInput : MonoBehaviour
             SetOutline(currentHoverOverObject, false);
             tooltipController?.HideTooltip();
             currentHoverOverObject = null;
-            hoveringOverObject = null;
-            attackTarget = null;
-            hoveringCharacter = null;
-            if (textOnScreen != null) textOnScreen.text = "";
-            if (hpBar != null) hpBar.Clear();
+        }
+
+        hoveringOverObject = null;
+        hoveringCharacter = null;
+        attackTarget = null;
+
+        if (textOnScreen != null)
+        {
+            textOnScreen.text = "";
+            textOnScreen.gameObject.SetActive(false);
+        }
+
+        if (hpBar != null) hpBar.Clear();
+    }
+
+    private void UpdateHoverUI()
+    {
+        // Ensure the text is visible
+        if (textOnScreen != null)
+        {
+            textOnScreen.gameObject.SetActive(true);
+
+            // Show the object name regardless of type
+            textOnScreen.text = hoveringOverObject != null ? hoveringOverObject.objectName : "";
         }
     }
 
     private void UpdateHPBar()
     {
         if (attackTarget != null && hpBar != null)
+        {
             hpBar.Show(attackTarget.GetLifePool());
+        }
         else if (hpBar != null)
+        {
             hpBar.Clear();
+        }
     }
 
     public bool InteractCheck() => hoveringOverObject != null;

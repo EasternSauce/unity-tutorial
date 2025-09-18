@@ -2,10 +2,11 @@ using UnityEngine;
 
 public class InteractHandler : MonoBehaviour, ICommandHandle
 {
-    [SerializeField] float interactRange = 0.5f;
+    [SerializeField] private float interactRange = 0.5f;
 
-    MoveHandler characterMovement;
-    Character character;
+    private MoveHandler characterMovement;
+    private Character character;
+    private Command currentCommand;
 
     private void Awake()
     {
@@ -13,19 +14,48 @@ public class InteractHandler : MonoBehaviour, ICommandHandle
         character = GetComponent<Character>();
     }
 
-    public void ProcessCommand(Command command)
+    private void Update()
     {
-        float distance = Vector3.Distance(transform.position, command.target.transform.position);
-
-        if (distance < interactRange)
+        if (currentCommand == null) return;
+        if (currentCommand.target == null)
         {
-            command.target.GetComponent<InteractableObject>().Interact(character);
+            currentCommand.isComplete = true;
+            currentCommand = null;
+            return;
+        }
+
+        float distance = Vector3.Distance(transform.position, currentCommand.target.transform.position);
+
+        if (distance <= interactRange)
+        {
+            var interactable = currentCommand.target.GetComponent<InteractableObject>();
+            if (interactable != null)
+            {
+                interactable.Interact(character);
+            }
+
             characterMovement.Stop();
-            command.isComplete = true;
+            currentCommand.isComplete = true;
+            currentCommand = null;
         }
         else
         {
-            characterMovement.SetDestination(command.target.transform.position);
+            characterMovement.SetDestination(currentCommand.target.transform.position);
         }
+    }
+
+    public void ProcessCommand(Command command)
+    {
+        currentCommand = command;
+    }
+
+    public void CancelInteract()
+    {
+        if (currentCommand != null)
+        {
+            currentCommand.isComplete = true;
+            currentCommand = null;
+        }
+        characterMovement.Stop();
     }
 }

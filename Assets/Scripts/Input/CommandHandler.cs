@@ -14,6 +14,8 @@ public class CommandHandler : MonoBehaviour
         if (command == null) return;
         if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true) return;
 
+        CancelCurrentCommand();
+
         switch (command.commandType)
         {
             case CommandType.Move:
@@ -32,5 +34,6 @@ public class CommandHandler : MonoBehaviour
     {
         GetComponent<MoveHandler>()?.Stop();
         GetComponent<AttackHandler>()?.CancelAttack();
+        GetComponent<InteractHandler>()?.CancelInteract();
     }
 }
