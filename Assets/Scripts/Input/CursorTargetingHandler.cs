@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 
-public class InteractInput : MonoBehaviour
+public class CursorTargetingHandler : MonoBehaviour
 {
     [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
     [SerializeField] private UIPoolBar hpBar;

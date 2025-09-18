@@ -9,7 +9,7 @@ public class PlayerCharacterInput : MonoBehaviour
     CommandHandler commandHandler;
 
     AttackInput attackInput;
-    InteractInput interactInput;
+    CursorTargetingHandler interactInput;
 
     bool isOverUIElement;
     bool isLMBPressed;
@@ -25,7 +25,7 @@ public class PlayerCharacterInput : MonoBehaviour
     {
         commandHandler = GetComponent<CommandHandler>();
         attackInput = GetComponent<AttackInput>();
-        interactInput = GetComponent<InteractInput>();
+        interactInput = GetComponent<CursorTargetingHandler>();
     }
 
     private void Update()
