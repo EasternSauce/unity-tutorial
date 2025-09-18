@@ -6,7 +6,7 @@ public class InventoryItemHighlightController : MonoBehaviour
     [SerializeField] private InventoryHighlighter inventoryHighlight;
     [SerializeField] private ItemGrid currentGrid;
     [SerializeField] private InventoryGridHandler gridHandler;
-    [SerializeField] private TooltipController tooltipController;
+    [SerializeField] private ItemTooltipController tooltipController;
     [SerializeField] private SelectedItemController selectedItemController;
 
     private InventoryItem currentHoverItem;
@@ -17,7 +17,7 @@ public class InventoryItemHighlightController : MonoBehaviour
     {
         if (inventoryController == null) inventoryController = FindFirstObjectByType<InventoryController>();
         if (gridHandler == null) gridHandler = FindFirstObjectByType<InventoryGridHandler>();
-        if (tooltipController == null) tooltipController = FindFirstObjectByType<TooltipController>();
+        if (tooltipController == null) tooltipController = FindFirstObjectByType<ItemTooltipController>();
         if (selectedItemController == null) selectedItemController = FindFirstObjectByType<SelectedItemController>();
 
         if (inventoryHighlight == null)

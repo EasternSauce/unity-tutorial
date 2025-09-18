@@ -6,7 +6,7 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
     InventoryController inventoryController;
     EquipmentItemSlot slot;
 
-    [SerializeField] private TooltipController tooltipController;
+    [SerializeField] private ItemTooltipController tooltipController;
 
     void Awake()
     {
@@ -15,7 +15,7 @@ public class SelectedEquipmentSlotTracker : MonoBehaviour, IPointerEnterHandler,
 
         if (tooltipController == null)
         {
-            tooltipController = FindFirstObjectByType<TooltipController>();
+            tooltipController = FindFirstObjectByType<ItemTooltipController>();
             if (tooltipController == null)
                 Debug.LogWarning("No TooltipController found in the scene!");
         }

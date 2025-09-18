@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private EquipmentSlot equipmentSlot;
-    [SerializeField] private TooltipController tooltipController;
+    [SerializeField] private ItemTooltipController tooltipController;
 
     private InventoryItem itemInSlot;
     private RectTransform slotRectTransform;
@@ -15,7 +15,7 @@ public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         slotRectTransform = GetComponent<RectTransform>();
         if (tooltipController == null)
-            tooltipController = FindFirstObjectByType<TooltipController>();
+            tooltipController = FindFirstObjectByType<ItemTooltipController>();
     }
 
     public void Init(PlayerInventory inventory)

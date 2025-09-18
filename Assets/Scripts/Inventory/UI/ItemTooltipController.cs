@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TooltipController : MonoBehaviour
+public class ItemTooltipController : MonoBehaviour
 {
     [SerializeField] private ItemTooltip tooltip;
     [SerializeField] private SelectedItemController selectedItemController;

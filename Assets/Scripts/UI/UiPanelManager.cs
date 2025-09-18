@@ -85,7 +85,7 @@ public class UiPanelManager : MonoBehaviour
     {
         if (panel == null) return;
 
-        var tooltip = FindFirstObjectByType<TooltipController>();
+        var tooltip = FindFirstObjectByType<ItemTooltipController>();
         if (tooltip == null) return;
 
         RectTransform rect = panel.GetComponent<RectTransform>();

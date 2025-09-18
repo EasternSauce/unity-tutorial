@@ -6,7 +6,7 @@ public class CursorTargetingHandler : MonoBehaviour
 {
     [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
     [SerializeField] private UIPoolBar hpBar;
-    [SerializeField] private TooltipController tooltipController;
+    [SerializeField] private ItemTooltipController tooltipController;
 
     private GameObject currentHoverOverObject;
     [HideInInspector] public InteractableObject hoveringOverObject;
