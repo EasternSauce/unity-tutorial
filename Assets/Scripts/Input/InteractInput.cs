@@ -4,7 +4,6 @@ using UnityEngine.EventSystems;
 
 public class InteractInput : MonoBehaviour
 {
-    [Header("UI References")]
     [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
     [SerializeField] private UIPoolBar hpBar;
     [SerializeField] private TooltipController tooltipController;
@@ -13,6 +12,7 @@ public class InteractInput : MonoBehaviour
     [HideInInspector] public InteractableObject hoveringOverObject;
     [HideInInspector] public IDamageable attackTarget;
     private Character hoveringCharacter;
+    private AIEnemy hoveringEnemy;
     private Vector2 mousePosition;
 
     private void Update()
@@ -48,13 +48,18 @@ public class InteractInput : MonoBehaviour
                 currentHoverOverObject = hitObject;
                 SetOutline(currentHoverOverObject, true);
 
-                hoveringOverObject = hitObject.GetComponent<InteractableObject>();
-                attackTarget = hitObject.GetComponent<IDamageable>();
-                hoveringCharacter = hitObject.GetComponent<Character>();
+                hoveringOverObject = hitObject.GetComponentInParent<InteractableObject>();
+                attackTarget = hitObject.GetComponentInParent<IDamageable>();
+                hoveringCharacter = hitObject.GetComponentInParent<Character>();
+                hoveringEnemy = hitObject.GetComponentInParent<AIEnemy>();
 
-                UpdateHoverUI();
+                // Only show name for enemies
+                if (textOnScreen != null)
+                {
+                    textOnScreen.text = hoveringEnemy != null ? hoveringEnemy.name : "";
+                }
 
-                var pickupItem = hitObject.GetComponent<PickUpInteractableObject>();
+                var pickupItem = hitObject.GetComponentInParent<PickUpInteractableObject>();
                 if (pickupItem != null && pickupItem.ItemData != null && tooltipController != null)
                 {
                     tooltipController.ShowTooltip(pickupItem.ItemData, pickupItem.gameObject);
@@ -79,35 +84,23 @@ public class InteractInput : MonoBehaviour
         }
 
         hoveringOverObject = null;
-        hoveringCharacter = null;
         attackTarget = null;
+        hoveringCharacter = null;
+        hoveringEnemy = null;
 
-        if (textOnScreen != null)
-        {
-            textOnScreen.text = "";
-            textOnScreen.gameObject.SetActive(false);
-        }
-
+        if (textOnScreen != null) textOnScreen.text = "";
         if (hpBar != null) hpBar.Clear();
-    }
-
-    private void UpdateHoverUI()
-    {
-        // Ensure the text is visible
-        if (textOnScreen != null)
-        {
-            textOnScreen.gameObject.SetActive(true);
-
-            // Show the object name regardless of type
-            textOnScreen.text = hoveringOverObject != null ? hoveringOverObject.objectName : "";
-        }
     }
 
     private void UpdateHPBar()
     {
-        if (attackTarget != null && hpBar != null)
+        if (hoveringEnemy != null && hpBar != null)
         {
-            hpBar.Show(attackTarget.GetLifePool());
+            attackTarget = hoveringEnemy.GetComponent<IDamageable>();
+            if (attackTarget != null)
+                hpBar.Show(attackTarget.GetLifePool());
+            else
+                hpBar.Clear();
         }
         else if (hpBar != null)
         {
