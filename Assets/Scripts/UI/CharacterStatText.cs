@@ -1,30 +1,30 @@
 using TMPro;
 using UnityEngine;
 
-public class ValueUI : MonoBehaviour
+public class CharacterStatText : MonoBehaviour
 {
-    public enum ValueUIShow
+    public enum StatCategory
     {
         Attribute,
-        Stats
+        Regular
     }
 
-    public ValueUIShow showValueType;
+    public StatCategory statCategory;
     public Attribute attributeToShow;
-    public Statistic statisticToShow;
+    public RegularStat statisticToShow;
 
     [SerializeField] TextMeshProUGUI text;
 
     public void ShowCharacterValue(Character character)
     {
-        switch (showValueType)
+        switch (statCategory)
         {
-            case ValueUIShow.Attribute:
+            case StatCategory.Attribute:
                 AttributeValue attributeValue = character.GetAttributeValue(attributeToShow);
                 SetText(attributeValue.value);
                 break;
-            case ValueUIShow.Stats:
-                StatsValue statsValue = character.GetStatsValue(statisticToShow);
+            case StatCategory.Regular:
+                RegularStatValue statsValue = character.GetStatsValue(statisticToShow);
                 if (statsValue.typeFloat == true)
                 {
                     SetText(statsValue.float_value);

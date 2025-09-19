@@ -6,9 +6,9 @@ public class UIPoolBar : MonoBehaviour
     [SerializeField] Image bar;
     [SerializeField] TMPro.TextMeshProUGUI textValue;
 
-    ValuePool targetPool;
+    ResourcePool targetPool;
 
-    public void Show(ValuePool targetPool)
+    public void Show(ResourcePool targetPool)
     {
         if (targetPool != null)
         {

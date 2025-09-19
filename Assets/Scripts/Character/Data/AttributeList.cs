@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 
 [Serializable]
-public class AttributeGroup
+public class AttributeList
 {
     public List<AttributeValue> attributeValues;
 
-    public AttributeGroup()
+    public AttributeList()
     {
         attributeValues = new List<AttributeValue>();
     }

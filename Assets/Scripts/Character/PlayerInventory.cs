@@ -59,12 +59,12 @@ public class PlayerInventory : MonoBehaviour
         return false;
     }
 
-    public void AddStats(List<StatsValue> statsValues)
+    public void AddStats(List<RegularStatValue> statsValues)
     {
         character.AddStats(statsValues);
     }
 
-    public void SubtractStats(List<StatsValue> stats)
+    public void SubtractStats(List<RegularStatValue> stats)
     {
         character.SubtractStats(stats);
     }

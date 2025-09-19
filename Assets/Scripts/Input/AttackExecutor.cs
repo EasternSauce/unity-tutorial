@@ -69,7 +69,7 @@ public abstract class AttackExecutor : MonoBehaviour
 
     protected float ApplyCooldown(float baseCooldown)
     {
-        return baseCooldown / character.GetStatsValue(Statistic.AttackSpeed).float_value;
+        return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
     }
 
     protected void ResetAnimatorTriggers(params string[] triggers)

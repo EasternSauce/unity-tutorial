@@ -6,10 +6,10 @@ public class Character : MonoBehaviour, IDamageable
     [SerializeField] private bool isPlayer = false;
     public bool IsPlayer => isPlayer;
 
-    [SerializeField] AttributeGroup attributes;
-    [SerializeField] StatsGroup stats;
-    public ValuePool lifePool;
-    public ValuePool energyPool;
+    [SerializeField] AttributeList attributes;
+    [SerializeField] RegularStatList stats;
+    public ResourcePool lifePool;
+    public ResourcePool energyPool;
 
     private bool isDead;
     public bool IsDead => isDead;
@@ -18,14 +18,14 @@ public class Character : MonoBehaviour, IDamageable
 
     private void Start()
     {
-        attributes = new AttributeGroup();
+        attributes = new AttributeList();
         attributes.Init();
 
-        stats = new StatsGroup();
+        stats = new RegularStatList();
         stats.Init();
 
-        lifePool = new ValuePool(stats.Get(Statistic.Life));
-        energyPool = new ValuePool(stats.Get(Statistic.Energy));
+        lifePool = new ResourcePool(stats.Get(RegularStat.Life));
+        energyPool = new ResourcePool(stats.Get(RegularStat.Energy));
     }
 
     private void Update()
@@ -37,7 +37,7 @@ public class Character : MonoBehaviour, IDamageable
     {
         if (isDead) return;
 
-        lifeRegen += Time.deltaTime * stats.Get(Statistic.HealthRegeneration).float_value;
+        lifeRegen += Time.deltaTime * stats.Get(RegularStat.HealthRegeneration).float_value;
         if (lifeRegen > 1f)
         {
             Heal(1);
@@ -65,7 +65,7 @@ public class Character : MonoBehaviour, IDamageable
 
     private int ApplyDefence(int damage)
     {
-        damage -= stats.Get(Statistic.Armor).integer_value;
+        damage -= stats.Get(RegularStat.Armor).integer_value;
         return Mathf.Max(damage, 1);
     }
 
@@ -86,7 +86,7 @@ public class Character : MonoBehaviour, IDamageable
         }
     }
 
-    public StatsValue GetStatsValue(Statistic statisticToGet)
+    public RegularStatValue GetStatsValue(RegularStat statisticToGet)
     {
         return stats.Get(statisticToGet);
     }
@@ -97,13 +97,13 @@ public class Character : MonoBehaviour, IDamageable
         isDead = false;
     }
 
-    public void AddStats(List<StatsValue> statsValues)
+    public void AddStats(List<RegularStatValue> statsValues)
     {
         foreach (var s in statsValues)
             stats.Sum(s);
     }
 
-    public void SubtractStats(List<StatsValue> statsValues)
+    public void SubtractStats(List<RegularStatValue> statsValues)
     {
         foreach (var s in statsValues)
             stats.Subtract(s);
@@ -111,10 +111,10 @@ public class Character : MonoBehaviour, IDamageable
 
     public int GetDamage()
     {
-        return GetStatsValue(Statistic.Damage).integer_value;
+        return GetStatsValue(RegularStat.Damage).integer_value;
     }
 
-    public ValuePool GetLifePool()
+    public ResourcePool GetLifePool()
     {
         return lifePool;
     }

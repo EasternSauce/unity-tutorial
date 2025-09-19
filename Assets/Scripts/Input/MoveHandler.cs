@@ -12,7 +12,7 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
 
     private Character character;
     [SerializeField] private float default_MoveSpeed = 3.5f;
-    private StatsValue moveSpeed;
+    private RegularStatValue moveSpeed;
     private CanMoveState canMoveState;
 
     private Command currentCommand;
@@ -27,7 +27,7 @@ public class MoveHandler : MonoBehaviour, ICommandHandle
 
     private void Start()
     {
-        moveSpeed = character.GetStatsValue(Statistic.MoveSpeed);
+        moveSpeed = character.GetStatsValue(RegularStat.MoveSpeed);
         ApplyMoveSpeed();
     }
 

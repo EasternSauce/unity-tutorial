@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum Statistic
+public enum RegularStat
 {
     Life,
     Energy,

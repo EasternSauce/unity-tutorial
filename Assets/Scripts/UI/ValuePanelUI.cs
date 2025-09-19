@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class ValuePanelUI : MonoBehaviour
 {
-    [SerializeField] List<ValueUI> attributeValueUIElements;
-    [SerializeField] List<ValueUI> statsValueUIElements;
+    [SerializeField] List<CharacterStatText> attributeValueUIElements;
+    [SerializeField] List<CharacterStatText> statsValueUIElements;
     [SerializeField] Character targetCharacter;
 
     private void Update()

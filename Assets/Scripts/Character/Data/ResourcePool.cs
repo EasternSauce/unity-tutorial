@@ -1,12 +1,12 @@
 using System;
 
 [Serializable]
-public class ValuePool
+public class ResourcePool
 {
-    public StatsValue maxValue;
+    public RegularStatValue maxValue;
     public int currentValue;
 
-    public ValuePool(StatsValue maxValue)
+    public ResourcePool(RegularStatValue maxValue)
     {
         this.maxValue = maxValue;
         this.currentValue = maxValue.integer_value;
