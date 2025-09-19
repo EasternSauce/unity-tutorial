@@ -28,12 +28,7 @@ public class InteractHandler : MonoBehaviour, ICommandHandle
 
         if (distance <= interactRange)
         {
-            var interactable = currentCommand.target.GetComponent<InteractableObject>();
-            if (interactable != null)
-            {
-                interactable.Interact(character);
-            }
-
+            currentCommand.target.GetComponent<InteractableObject>()?.Interact(character);
             characterMovement.Stop();
             currentCommand.isComplete = true;
             currentCommand = null;

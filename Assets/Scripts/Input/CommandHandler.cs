@@ -14,26 +14,33 @@ public class CommandHandler : MonoBehaviour
         if (command == null) return;
         if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true) return;
 
-        CancelCurrentCommand();
-
         switch (command.commandType)
         {
             case CommandType.Move:
+                CancelMoveAndInteract();
                 GetComponent<MoveHandler>()?.ProcessCommand(command);
                 break;
+
+            case CommandType.Interact:
+                CancelMoveAndInteract();
+                GetComponent<InteractHandler>()?.ProcessCommand(command);
+                break;
+
             case CommandType.Attack:
                 GetComponent<AttackHandler>()?.ProcessCommand(command);
-                break;
-            case CommandType.Interact:
-                GetComponent<InteractHandler>()?.ProcessCommand(command);
                 break;
         }
     }
 
-    public void CancelCurrentCommand()
+    private void CancelMoveAndInteract()
     {
         GetComponent<MoveHandler>()?.Stop();
-        GetComponent<AttackHandler>()?.CancelAttack();
         GetComponent<InteractHandler>()?.CancelInteract();
+    }
+
+    public void CancelCurrentCommand()
+    {
+        CancelMoveAndInteract();
+        GetComponent<AttackHandler>()?.CancelAttack();
     }
 }
