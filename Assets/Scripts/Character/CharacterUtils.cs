@@ -10,7 +10,7 @@ public static class CharacterUtils
 
         foreach (var character in allCharacters)
         {
-            if (character.GetComponent<PlayerCharacterInput>() != null)
+            if (character.GetComponent<PlayerInputHandler>() != null)
                 players.Add(character);
         }
 

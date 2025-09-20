@@ -3,15 +3,15 @@ using UnityEngine.InputSystem;
 
 public class AttackInput : MonoBehaviour
 {
-    CursorTargetingHandler interactInput;
+    PlayerCursorTargetingHandler interactInput;
     CommandHandler commandHandler;
-    MouseInput mouseInput;
+    PlayerMouseInput mouseInput;
 
     void Awake()
     {
-        interactInput = GetComponent<CursorTargetingHandler>();
+        interactInput = GetComponent<PlayerCursorTargetingHandler>();
         commandHandler = GetComponent<CommandHandler>();
-        mouseInput = Object.FindFirstObjectByType<MouseInput>();
+        mouseInput = Object.FindFirstObjectByType<PlayerMouseInput>();
     }
 
     public void OnRMB(InputAction.CallbackContext ctx)

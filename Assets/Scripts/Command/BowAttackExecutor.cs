@@ -87,7 +87,7 @@ public class BowAttackExecutor : AttackExecutor
     private void PrepareWeapon()
     {
         SetAttackingState(true);
-        character.GetComponent<WeaponVisibilityController>()?.ResetLingerTimer();
+        character.GetComponent<CharacterWeaponVisibilityController>()?.ResetLingerTimer();
     }
 
     private void PlayAttackAnimation()

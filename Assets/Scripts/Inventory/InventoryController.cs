@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class InventoryController : MonoBehaviour
 {
@@ -75,7 +77,7 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped && !UIUtility.IsPointerOverUI(mousePosition))
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped && !IsPointerOverUI(mousePosition))
         {
             ItemDropUtility.ThrowItemOnGround(selectedItemController);
         }
@@ -122,5 +124,14 @@ public class InventoryController : MonoBehaviour
         {
             itemHighlightController.SetCurrentGrid(selectedItemGrid);
         }
+    }
+
+    private bool IsPointerOverUI(Vector2 screenPosition)
+    {
+        if (EventSystem.current == null) return false;
+        var eventData = new PointerEventData(EventSystem.current) { position = screenPosition };
+        var results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+        return results.Count > 0;
     }
 }

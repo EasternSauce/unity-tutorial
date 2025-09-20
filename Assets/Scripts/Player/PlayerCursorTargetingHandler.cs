@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 
-public class CursorTargetingHandler : MonoBehaviour
+public class PlayerCursorTargetingHandler : MonoBehaviour
 {
     [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
     [SerializeField] private ResourceBar hpBar;

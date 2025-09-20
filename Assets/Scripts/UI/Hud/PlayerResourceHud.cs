@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CharacterResourceHud : MonoBehaviour
+public class PlayerResourceHud : MonoBehaviour
 {
     Character character;
 

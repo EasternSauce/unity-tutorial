@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class MouseInput : MonoBehaviour
+public class PlayerMouseInput : MonoBehaviour
 {
     public Vector3 mouseInputPosition;
     [HideInInspector]

@@ -2,14 +2,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-public class PlayerCharacterInput : MonoBehaviour
+public class PlayerInputHandler : MonoBehaviour
 {
     [SerializeField] private InventoryController inventoryController;
-    [SerializeField] MouseInput mouseInput;
+    [SerializeField] PlayerMouseInput mouseInput;
     CommandHandler commandHandler;
 
     AttackInput attackInput;
-    CursorTargetingHandler interactInput;
+    PlayerCursorTargetingHandler interactInput;
 
     bool isOverUIElement;
     bool isLMBPressed;
@@ -25,7 +25,7 @@ public class PlayerCharacterInput : MonoBehaviour
     {
         commandHandler = GetComponent<CommandHandler>();
         attackInput = GetComponent<AttackInput>();
-        interactInput = GetComponent<CursorTargetingHandler>();
+        interactInput = GetComponent<PlayerCursorTargetingHandler>();
     }
 
     private void Update()

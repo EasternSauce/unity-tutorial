@@ -34,7 +34,6 @@ public class CommandHandler : MonoBehaviour
         }
     }
 
-
     private void CancelMoveAndInteract()
     {
         GetComponent<MoveHandler>()?.Stop();

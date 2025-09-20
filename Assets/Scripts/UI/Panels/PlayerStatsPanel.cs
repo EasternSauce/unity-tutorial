@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterStatsPanel : MonoBehaviour
+public class PlayerStatsPanel : MonoBehaviour
 {
     [SerializeField] List<PlayerStatText> attributeValueUIElements;
     [SerializeField] List<PlayerStatText> statsValueUIElements;

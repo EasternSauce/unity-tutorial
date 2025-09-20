@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class WeaponVisibilityController : MonoBehaviour
+public class CharacterWeaponVisibilityController : MonoBehaviour
 {
     [Header("Weapon References")]
     [SerializeField] GameObject axeInHand;

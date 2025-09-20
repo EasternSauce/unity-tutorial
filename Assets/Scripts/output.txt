@@ -1,0 +1,4063 @@
+
+// FILE: .\Ability\Ability.cs
+using UnityEngine;
+
+[CreateAssetMenu]
+public class Ability : ScriptableObject
+{
+    public Sprite icon;
+    public float cooldown;
+}
+
+// FILE: .\AI\AIEnemy.cs
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AIEnemy : MonoBehaviour
+{
+    [SerializeField] private float aggroDistance = 5f;
+    [SerializeField] private float aggroLoseDistance = 7f;
+    [SerializeField] private float aggroLoseTime = 3f;
+
+    private GameObject currentTarget;
+    private float timeOutsideAggro;
+    private bool isAggroed;
+
+    private MoveHandler moveHandler;
+    private AttackHandler attackHandler;
+    private Character character;
+
+    private void Awake()
+    {
+        moveHandler = GetComponent<MoveHandler>();
+        attackHandler = GetComponent<AttackHandler>();
+        character = GetComponent<Character>();
+    }
+
+    private void Update()
+    {
+        if (character == null || character.IsDead)
+        {
+            DropAggro();
+            return;
+        }
+
+        if (currentTarget != null && !currentTarget.GetComponent<Character>().IsDead)
+        {
+            float distance = Vector3.Distance(transform.position, currentTarget.transform.position);
+
+            if (distance > aggroLoseDistance)
+            {
+                timeOutsideAggro += Time.deltaTime;
+                if (timeOutsideAggro >= aggroLoseTime)
+                    DropAggro();
+            }
+            else
+            {
+                timeOutsideAggro = 0f;
+            }
+
+            if (isAggroed)
+            {
+                attackHandler?.ProcessCommand(new Command(CommandType.Attack, currentTarget));
+            }
+        }
+        else
+        {
+            SearchForTargets();
+        }
+    }
+
+    private void SearchForTargets()
+    {
+        Character player = FindClosestPlayer();
+        if (player != null)
+        {
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+            if (distance <= aggroDistance)
+            {
+                GainAggro(player.gameObject);
+            }
+        }
+    }
+
+    private Character FindClosestPlayer()
+    {
+        List<Character> players = CharacterUtils.GetPlayerCharacters();
+        Character closest = null;
+        float minDist = float.MaxValue;
+        foreach (var p in players)
+        {
+            if (p.IsDead) continue;
+            if (!p.IsPlayer) continue;
+            float dist = Vector3.Distance(transform.position, p.transform.position);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = p;
+            }
+        }
+        return closest;
+    }
+
+    public void GainAggro(GameObject target)
+    {
+        currentTarget = target;
+        isAggroed = true;
+        timeOutsideAggro = 0f;
+    }
+
+    private void DropAggro()
+    {
+        currentTarget = null;
+        isAggroed = false;
+        timeOutsideAggro = 0f;
+        moveHandler?.Stop();
+        attackHandler?.CancelAttack();
+    }
+
+    public void OnAttacked(GameObject attacker)
+    {
+        if (attacker == null) return;
+        if (currentTarget == attacker) return;
+        GainAggro(attacker);
+    }
+}
+
+// FILE: .\Character\CanMoveState.cs
+using UnityEngine;
+
+public class CanMoveState : MonoBehaviour
+{
+    public bool isAttacking;
+
+    public bool Check()
+    {
+        return isAttacking == false;
+    }
+}
+
+// FILE: .\Character\Character.cs
+using UnityEngine;
+using System.Collections.Generic;
+
+public class Character : MonoBehaviour, IDamageable
+{
+    [SerializeField] private bool isPlayer = false;
+    public bool IsPlayer => isPlayer;
+
+    [SerializeField] AttributeList attributes;
+    [SerializeField] RegularStatList stats;
+    public ResourcePool lifePool;
+    public ResourcePool energyPool;
+
+    private bool isDead;
+    public bool IsDead => isDead;
+
+    private float lifeRegen;
+
+    private void Start()
+    {
+        attributes = new AttributeList();
+        attributes.Init();
+
+        stats = new RegularStatList();
+        stats.Init();
+
+        lifePool = new ResourcePool(stats.Get(RegularStat.Life));
+        energyPool = new ResourcePool(stats.Get(RegularStat.Energy));
+    }
+
+    private void Update()
+    {
+        LifeRegeneration();
+    }
+
+    private void LifeRegeneration()
+    {
+        if (isDead) return;
+
+        lifeRegen += Time.deltaTime * stats.Get(RegularStat.HealthRegeneration).float_value;
+        if (lifeRegen > 1f)
+        {
+            Heal(1);
+            lifeRegen -= 1f;
+        }
+    }
+
+    private void Heal(int value)
+    {
+        if (isDead) return;
+        lifePool.Restore(value);
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (isDead) return;
+
+        damage = ApplyDefence(damage);
+
+        lifePool.currentValue -= damage;
+        if (lifePool.currentValue < 0) lifePool.currentValue = 0;
+
+        CheckDeath();
+    }
+
+    private int ApplyDefence(int damage)
+    {
+        damage -= stats.Get(RegularStat.Armor).integer_value;
+        return Mathf.Max(damage, 1);
+    }
+
+    private void CheckDeath()
+    {
+        if (!isDead && lifePool.currentValue <= 0)
+        {
+            isDead = true;
+            lifePool.currentValue = 0;
+
+            var handler = GetComponent<CommandHandler>();
+            if (handler != null)
+            {
+                handler.ExecuteCommand(null);
+            }
+
+            GetComponent<CharacterDefeatHandler>().Defeated();
+        }
+    }
+
+    public RegularStatValue GetStatsValue(RegularStat statisticToGet)
+    {
+        return stats.Get(statisticToGet);
+    }
+
+    public void Restore()
+    {
+        lifePool.FullRestore();
+        isDead = false;
+    }
+
+    public void AddStats(List<RegularStatValue> statsValues)
+    {
+        foreach (var s in statsValues)
+            stats.Sum(s);
+    }
+
+    public void SubtractStats(List<RegularStatValue> statsValues)
+    {
+        foreach (var s in statsValues)
+            stats.Subtract(s);
+    }
+
+    public int GetDamage()
+    {
+        return GetStatsValue(RegularStat.Damage).integer_value;
+    }
+
+    public ResourcePool GetLifePool()
+    {
+        return lifePool;
+    }
+
+    public AttributeValue GetAttributeValue(Attribute attributeToShow)
+    {
+        return attributes.Get(attributeToShow);
+    }
+}
+
+// FILE: .\Character\CharacterAbilityHandler.cs
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Serializable]
+public class AbilityContainer
+{
+    public Ability ability;
+    public float currentCooldown;
+
+    public AbilityContainer(Ability ability)
+    {
+        this.ability = ability;
+    }
+
+    public float CooldownNormalized { get { return 1f - currentCooldown / ability.cooldown; } }
+
+    internal void Cooldown()
+    {
+        currentCooldown = ability.cooldown;
+    }
+
+    internal void ReduceCooldown(float deltaTime)
+    {
+        if (currentCooldown > 0f)
+        {
+            currentCooldown -= deltaTime;
+        }
+    }
+}
+
+public class CharacterAbilityHandler : MonoBehaviour
+{
+    [SerializeField] Ability startingAbility;
+
+    List<AbilityContainer> abilities;
+
+    public UnityEvent<AbilityContainer, int> onAbilityChange;
+    public UnityEvent<float, int> onCooldownUpdate;
+
+    private void Start()
+    {
+        AddAbility(startingAbility);
+    }
+
+    private void AddAbility(Ability abilityToAdd)
+    {
+        if (abilities == null)
+        {
+            abilities = new List<AbilityContainer>();
+        }
+
+        AbilityContainer abilityContainer = new AbilityContainer(abilityToAdd);
+        abilities.Add(abilityContainer);
+        onAbilityChange?.Invoke(abilityContainer, abilities.Count - 1);
+    }
+
+    private void Update()
+    {
+        ProcessCooldown();
+    }
+
+    private void ProcessCooldown()
+    {
+        for (int i = 0; i < abilities.Count; i++)
+        {
+            abilities[i].ReduceCooldown(Time.deltaTime);
+            onCooldownUpdate?.Invoke(abilities[i].CooldownNormalized, i);
+        }
+    }
+
+    public void ActivateAbility(AbilityContainer ability)
+    {
+        if (ability.currentCooldown > 0f) { return; }
+
+        Debug.Log("Activate: " + ability.ability.name);
+        ability.Cooldown();
+    }
+
+    public void ActivateAbility(int abilityId)
+    {
+        if (abilityId >= abilities.Count) { return; }
+        if (abilities[abilityId] == null) { return; }
+        AbilityContainer abilityContainer = abilities[abilityId];
+        ActivateAbility(abilityContainer);
+    }
+}
+
+// FILE: .\Character\CharacterAnimator.cs
+using UnityEngine;
+using UnityEngine.AI;
+
+public class CharacterAnimator : MonoBehaviour
+{
+    Animator animator;
+
+    NavMeshAgent agent;
+
+    Character character;
+
+    private void Awake()
+    {
+        animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        agent = GetComponent<NavMeshAgent>();
+        character = GetComponent<Character>();
+    }
+
+    private void Update()
+    {
+        float motion = agent.velocity.magnitude;
+
+        animator.SetFloat("motion", motion);
+        animator.SetBool("defeated", character.IsDead);
+    }
+}
+
+// FILE: .\Character\CharacterDefeatHandler.cs
+using UnityEngine;
+using UnityEngine.Events;
+
+public class CharacterDefeatHandler : MonoBehaviour
+{
+    public UnityEvent onDefeated;
+    public UnityEvent onRespawned;
+
+    public bool IsDefeated { get; private set; }
+
+    public void Defeated()
+    {
+        IsDefeated = true;
+        onDefeated?.Invoke();
+    }
+
+    public void Respawn()
+    {
+        IsDefeated = false;
+        onRespawned?.Invoke();
+
+        var commandHandler = GetComponent<CommandHandler>();
+        if (commandHandler != null)
+        {
+            commandHandler.CancelCurrentCommand();
+        }
+    }
+}
+
+// FILE: .\Character\CharacterRespawn.cs
+using UnityEngine;
+using UnityEngine.AI;
+
+[RequireComponent(typeof(CharacterDefeatHandler))]
+public class CharacterRespawn : MonoBehaviour
+{
+    private Vector3? respawnPoint;
+    private CharacterDefeatHandler characterDefeat;
+    [SerializeField] private Animator animator;
+
+    private void Awake()
+    {
+        characterDefeat = GetComponent<CharacterDefeatHandler>();
+    }
+
+    private void Start()
+    {
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(transform.position, out hit, 5f, NavMesh.AllAreas))
+        {
+            respawnPoint = hit.position;
+        }
+        else
+        {
+            respawnPoint = null;
+        }
+    }
+
+    public void Respawn()
+    {
+        if (respawnPoint == null)
+            return;
+
+        transform.position = respawnPoint.Value;
+
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        if (agent != null)
+        {
+            if (!agent.enabled)
+                agent.enabled = true;
+
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(transform.position, out hit, 2f, NavMesh.AllAreas))
+            {
+                agent.Warp(hit.position);
+            }
+            else
+            {
+                agent.enabled = false;
+            }
+        }
+
+        characterDefeat.Respawn();
+
+        AttackHandler attackHandler = GetComponent<AttackHandler>();
+        if (attackHandler != null)
+            attackHandler.CancelAttack();
+
+        if (animator != null)
+        {
+            animator.Play("Idle");
+            animator.SetBool("defeated", false);
+        }
+    }
+}
+
+// FILE: .\Character\CharacterUtils.cs
+using System.Collections.Generic;
+using UnityEngine;
+
+public static class CharacterUtils
+{
+    public static List<Character> GetPlayerCharacters()
+    {
+        var allCharacters = Object.FindObjectsByType<Character>(FindObjectsSortMode.None);
+        List<Character> players = new List<Character>();
+
+        foreach (var character in allCharacters)
+        {
+            if (character.GetComponent<PlayerCharacterInput>() != null)
+                players.Add(character);
+        }
+
+        return players;
+    }
+}
+
+// FILE: .\Character\Data\Attribute.cs
+public enum Attribute
+{
+    Strength,
+    Dexterity,
+    Intelligence
+}
+
+// FILE: .\Character\Data\AttributeList.cs
+using System;
+using System.Collections.Generic;
+
+[Serializable]
+public class AttributeList
+{
+    public List<AttributeValue> attributeValues;
+
+    public AttributeList()
+    {
+        attributeValues = new List<AttributeValue>();
+    }
+
+    public void Init()
+    {
+        attributeValues.Add(new AttributeValue(Attribute.Strength));
+        attributeValues.Add(new AttributeValue(Attribute.Dexterity));
+        attributeValues.Add(new AttributeValue(Attribute.Intelligence));
+    }
+
+    public AttributeValue Get(Attribute attributeToShow)
+    {
+        return attributeValues[(int)attributeToShow];
+    }
+}
+
+// FILE: .\Character\Data\AttributeValue.cs
+using System;
+
+[Serializable]
+public class AttributeValue
+{
+    public Attribute attributeType;
+    public int value;
+
+    public AttributeValue(Attribute attributeType, int value = 0)
+    {
+        this.attributeType = attributeType;
+        this.value = value;
+    }
+}
+
+// FILE: .\Character\Data\RegularStat.cs
+using UnityEngine;
+
+public enum RegularStat
+{
+    Life,
+    Energy,
+    Damage,
+    Armor,
+    AttackSpeed,
+    MoveSpeed,
+    HealthRegeneration
+}
+
+// FILE: .\Character\Data\RegularStatList.cs
+using System;
+using System.Collections.Generic;
+
+[Serializable]
+public class RegularStatList
+{
+    public List<RegularStatValue> regularStatValues;
+
+    public RegularStatList()
+    {
+        regularStatValues = new List<RegularStatValue>();
+    }
+
+    public void Init()
+    {
+        regularStatValues.Add(new RegularStatValue(RegularStat.Life, 100));
+        regularStatValues.Add(new RegularStatValue(RegularStat.Energy, 100));
+        regularStatValues.Add(new RegularStatValue(RegularStat.Damage, 15));
+        regularStatValues.Add(new RegularStatValue(RegularStat.Armor, 5));
+        regularStatValues.Add(new RegularStatValue(RegularStat.AttackSpeed, 0.4f));
+        regularStatValues.Add(new RegularStatValue(RegularStat.MoveSpeed, 2f));
+        regularStatValues.Add(new RegularStatValue(RegularStat.HealthRegeneration, 1f));
+    }
+
+    public RegularStatValue Get(RegularStat statisticToGet)
+    {
+        return regularStatValues[(int)statisticToGet];
+    }
+
+    public void Sum(RegularStatValue toAdd)
+    {
+        RegularStatValue statsValue = regularStatValues[(int)toAdd.statisticType];
+        if (toAdd.typeFloat)
+            statsValue.float_value += toAdd.float_value;
+        else
+            statsValue.integer_value += toAdd.integer_value;
+    }
+
+    public void Subtract(RegularStatValue toSubtract)
+    {
+        RegularStatValue statsValue = regularStatValues[(int)toSubtract.statisticType];
+        if (toSubtract.typeFloat)
+            statsValue.float_value -= toSubtract.float_value;
+        else
+            statsValue.integer_value -= toSubtract.integer_value;
+    }
+}
+
+// FILE: .\Character\Data\RegularStatValue.cs
+using System;
+
+[Serializable]
+public class RegularStatValue
+{
+    public RegularStat statisticType;
+    public bool typeFloat;
+    public int integer_value;
+    public float float_value;
+
+    public RegularStatValue(RegularStat statisticType, int value = 0)
+    {
+        this.statisticType = statisticType;
+        this.integer_value = value;
+    }
+
+    public RegularStatValue(RegularStat statisticType, float value = 0)
+    {
+        this.statisticType = statisticType;
+        this.float_value = value;
+        typeFloat = true;
+    }
+}
+
+// FILE: .\Character\Data\ResourcePool.cs
+using System;
+
+[Serializable]
+public class ResourcePool
+{
+    public RegularStatValue maxValue;
+    public int currentValue;
+
+    public ResourcePool(RegularStatValue maxValue)
+    {
+        this.maxValue = maxValue;
+        this.currentValue = maxValue.integer_value;
+    }
+
+    public void FullRestore()
+    {
+        currentValue = maxValue.integer_value;
+    }
+
+    public void Restore(int value)
+    {
+        currentValue += value;
+        if (currentValue > maxValue.integer_value)
+            currentValue = maxValue.integer_value;
+    }
+}
+
+// FILE: .\Character\PlayerCharacterInput.cs
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+
+public class PlayerCharacterInput : MonoBehaviour
+{
+    [SerializeField] private InventoryController inventoryController;
+    [SerializeField] MouseInput mouseInput;
+    CommandHandler commandHandler;
+
+    AttackInput attackInput;
+    CursorTargetingHandler interactInput;
+
+    bool isOverUIElement;
+    bool isLMBPressed;
+    bool isHoldActive = false;
+
+    private bool commandLock = false;
+    private float commandLockDuration = 0.3f;
+    private float commandLockTimer = 0f;
+
+    private CommandType currentCommandType = CommandType.None;
+
+    private void Awake()
+    {
+        commandHandler = GetComponent<CommandHandler>();
+        attackInput = GetComponent<AttackInput>();
+        interactInput = GetComponent<CursorTargetingHandler>();
+    }
+
+    private void Update()
+    {
+        isOverUIElement = EventSystem.current.IsPointerOverGameObject();
+
+        if (commandLock)
+        {
+            commandLockTimer -= Time.deltaTime;
+            if (commandLockTimer <= 0f)
+                commandLock = false;
+        }
+
+        if (isHoldActive && !isOverUIElement && !commandLock)
+            LMB_Hold_CommandProcess();
+    }
+
+    private void LMB_Hold_CommandProcess()
+    {
+        if (currentCommandType == CommandType.Interact)
+            return;
+
+        if (isLMBPressed && !isOverUIElement)
+        {
+            if (inventoryController.HasItemOnCursor && !inventoryController.SelectedItemController.SelectedItem.IsEquipped)
+            {
+                inventoryController.ThrowItemOnGround();
+                SetCommandLock();
+                return;
+            }
+
+            if (interactInput.TryGetTerrainPoint(out var point))
+                MoveCommand(point);
+        }
+    }
+
+    public void LMB_InputHandle(InputAction.CallbackContext callbackContext)
+    {
+        if (callbackContext.started)
+        {
+            isLMBPressed = true;
+            isHoldActive = true;
+
+            if (!isOverUIElement)
+                LMB_Press_ProcessCommand();
+        }
+
+        if (callbackContext.canceled)
+        {
+            isLMBPressed = false;
+            isHoldActive = false;
+            commandLock = false;
+        }
+    }
+
+    private void LMB_Press_ProcessCommand()
+    {
+        if (inventoryController.HasItemOnCursor && !inventoryController.SelectedItemController.SelectedItem.IsEquipped)
+        {
+            inventoryController.ThrowItemOnGround();
+            SetCommandLock();
+            return;
+        }
+
+        if (interactInput.InteractCheck())
+        {
+            InteractCommand(interactInput.hoveringOverObject.gameObject);
+            SetCommandLock();
+            return;
+        }
+
+        if (interactInput.TryGetTerrainPoint(out var point))
+            MoveCommand(point);
+    }
+
+    private void SetCommandLock()
+    {
+        commandLock = true;
+        commandLockTimer = commandLockDuration;
+    }
+
+    private void MoveCommand(Vector3 point)
+    {
+        CancelOngoingAttack();
+        currentCommandType = CommandType.Move;
+        commandHandler.ExecuteCommand(new Command(CommandType.Move, point));
+        currentCommandType = CommandType.None;
+    }
+
+    private void InteractCommand(GameObject target)
+    {
+        currentCommandType = CommandType.Interact;
+        commandHandler.ExecuteCommand(new Command(CommandType.Interact, target));
+        currentCommandType = CommandType.None;
+    }
+
+    private void CancelOngoingAttack()
+    {
+        var attackHandler = GetComponent<AttackHandler>();
+        if (attackHandler != null)
+            attackHandler.CancelAttack();
+    }
+}
+
+// FILE: .\Character\PlayerInventory.cs
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerInventory : MonoBehaviour
+{
+    public int currency;
+
+    [SerializeField] private ItemGrid mainInventoryItemGrid;
+    [SerializeField] private InventoryController inventoryController;
+    public InventoryController InventoryController => inventoryController;
+    [SerializeField] private List<EquipmentItemSlot> slots;
+    [SerializeField] private List<ItemData> itemsOnStart;
+
+    [Header("Weapon Slots")]
+    [SerializeField] private Transform handSlot;
+    [SerializeField] private Transform backSlot;
+
+    private Character character;
+    public InventoryItem CurrentWeapon { get; private set; }
+    private GameObject currentWeaponObject;
+
+    private void Start()
+    {
+        mainInventoryItemGrid.Init();
+
+        foreach (var slot in slots)
+            slot.Init(this);
+
+        character = GetComponent<Character>();
+        UpdateCurrentWeapon();
+
+        if (itemsOnStart == null) return;
+
+        foreach (var item in itemsOnStart)
+            AddItem(item);
+    }
+
+    public void AddCurrency(int amount)
+    {
+        currency += amount;
+    }
+
+    public bool AddItem(ItemData itemData)
+    {
+        Vector2Int? position = mainInventoryItemGrid.FindSpaceForObject(itemData);
+        if (position == null) return false;
+
+        InventoryItem newItem = inventoryController.CreateNewInventoryItem(itemData);
+        mainInventoryItemGrid.PlaceItem(newItem, position.Value.x, position.Value.y);
+        return true;
+    }
+
+    public bool TryAddItemOrDrop(ItemData itemData, InventoryController controller)
+    {
+        if (AddItem(itemData)) return true;
+
+        InventoryItem tempItem = controller.CreateNewInventoryItem(itemData);
+        controller.DropItem(GameManager.instance.playerObject.transform.position, tempItem);
+        return false;
+    }
+
+    public void AddStats(List<RegularStatValue> statsValues)
+    {
+        character.AddStats(statsValues);
+    }
+
+    public void SubtractStats(List<RegularStatValue> stats)
+    {
+        character.SubtractStats(stats);
+    }
+
+    public void UpdateCurrentWeapon()
+    {
+        CurrentWeapon = null;
+        foreach (var slot in slots)
+        {
+            var item = slot.GetItem();
+            if (item != null && item.itemData.equipmentSlot == EquipmentSlot.Weapon)
+            {
+                CurrentWeapon = item;
+                currentWeaponObject = item.GetComponentInChildren<MeshRenderer>()?.gameObject;
+                break;
+            }
+        }
+    }
+
+    public void EquipToHandSlot()
+    {
+        if (currentWeaponObject != null && handSlot != null)
+        {
+            currentWeaponObject.transform.SetParent(handSlot);
+            currentWeaponObject.transform.localPosition = Vector3.zero;
+            currentWeaponObject.transform.localRotation = Quaternion.identity;
+        }
+    }
+
+    public void EquipToRestSlot()
+    {
+        if (currentWeaponObject != null && backSlot != null)
+        {
+            currentWeaponObject.transform.SetParent(backSlot);
+            currentWeaponObject.transform.localPosition = Vector3.zero;
+            currentWeaponObject.transform.localRotation = Quaternion.identity;
+        }
+    }
+}
+
+// FILE: .\Core\GameManager.cs
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager instance;
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    public GameObject playerObject;
+}
+
+// FILE: .\Core\GameSceneManager.cs
+using System.Collections;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class GameSceneManager : MonoBehaviour
+{
+    public static GameSceneManager instance;
+
+    [SerializeField] string currentScene;
+
+    public string CurrentScene => currentScene; // public getter for current scene
+
+    AsyncOperation load;
+    AsyncOperation unload;
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    private void Start()
+    {
+        // set currentScene to first non-essential scene
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            if (SceneManager.GetSceneAt(i).name != "Essential")
+            {
+                currentScene = SceneManager.GetSceneAt(i).name;
+                break;
+            }
+        }
+    }
+
+    public void StartTransition(string toSceneName)
+    {
+        StartCoroutine(Transition(toSceneName));
+    }
+
+    public IEnumerator Transition(string toSceneName)
+    {
+        SwitchScenes(toSceneName);
+
+        while (!load.isDone || !unload.isDone)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        load = null;
+        unload = null;
+    }
+
+    public void SwitchScenes(string toSceneName)
+    {
+        load = SceneManager.LoadSceneAsync(toSceneName, LoadSceneMode.Additive);
+        unload = SceneManager.UnloadSceneAsync(currentScene);
+        currentScene = toSceneName;
+    }
+}
+
+// FILE: .\Core\SafeNavMeshAgentActivator.cs
+using System.Collections;
+using UnityEngine;
+using UnityEngine.AI;
+
+public class SafeNavMeshAgentActivator : MonoBehaviour
+{
+    private NavMeshAgent agent;
+
+    void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+    }
+
+    IEnumerator Start()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (NavMesh.SamplePosition(transform.position, out _, 1f, NavMesh.AllAreas))
+        {
+            agent.enabled = true;
+        }
+        else
+        {
+            Debug.LogWarning($"{gameObject.name}: No valid NavMesh at start position. Agent not enabled.");
+        }
+    }
+}
+
+// FILE: .\Core\ScreenTint.cs
+using System;
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class ScreenTint : MonoBehaviour
+{
+    [SerializeField] Image screenCover;
+
+    [SerializeField] Color unTintedColor;
+    [SerializeField] Color tintedColor;
+
+    float f;
+    [SerializeField] float speed = 0.5f;
+
+    [ContextMenu("Start Tint")]
+    public void Tint()
+    {
+        StopAllCoroutines();
+        f = 0f;
+        StartCoroutine(TintScreen());
+    }
+
+    [ContextMenu("Start UnTint")]
+    public void UnTint()
+    {
+        StopAllCoroutines();
+        f = 0f;
+        StartCoroutine(UnTintScreen());
+    }
+
+    IEnumerator TintScreen()
+    {
+        while (f < 1f)
+        {
+            f += Time.deltaTime * speed;
+            f = Mathf.Clamp01(f);
+
+            Color c = screenCover.color;
+            c = Color.Lerp(unTintedColor, tintedColor, f);
+            screenCover.color = c;
+
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    IEnumerator UnTintScreen()
+    {
+        while (f < 1f)
+        {
+            f += Time.deltaTime * speed;
+            f = Mathf.Clamp01(f);
+
+            Color c = screenCover.color;
+            c = Color.Lerp(tintedColor, unTintedColor, f);
+            screenCover.color = c;
+
+            yield return new WaitForEndOfFrame();
+        }
+    }
+}
+
+// FILE: .\Input\AttackExecutor.cs
+using UnityEngine;
+using UnityEngine.AI;
+
+public abstract class AttackExecutor : MonoBehaviour
+{
+    protected Character character;
+    protected MoveHandler characterMovement;
+    protected Animator animator;
+    protected Coroutine attackCoroutine;
+    protected CanMoveState canMoveState;
+
+    protected virtual void Awake()
+    {
+        character = GetComponent<Character>();
+        characterMovement = GetComponent<MoveHandler>();
+        animator = GetComponentInChildren<Animator>();
+        canMoveState = GetComponent<CanMoveState>();
+    }
+
+    protected void StopMovement()
+    {
+        characterMovement.Stop();
+        if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
+            characterMovement.Agent.isStopped = true;
+    }
+
+    protected void RotateTowardsPoint(Vector3 point)
+    {
+        Vector3 lookVector = point - transform.position;
+        lookVector.y = 0f;
+        if (lookVector == Vector3.zero) return;
+        transform.rotation = Quaternion.LookRotation(lookVector);
+    }
+
+    protected void RotateTowardsTarget(Transform target, bool forceInstant = false)
+    {
+        if (target == null) return;
+        Vector3 lookVector = target.position - transform.position;
+        lookVector.y = 0f;
+        if (lookVector == Vector3.zero) return;
+        Quaternion targetRotation = Quaternion.LookRotation(lookVector);
+        bool isMoving = characterMovement.Agent != null && characterMovement.Agent.velocity.magnitude > 0.1f;
+        if (forceInstant || isMoving) transform.rotation = targetRotation;
+        else transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);
+    }
+
+    protected bool AnimatorHasTrigger(string name)
+    {
+        if (animator == null) return false;
+        foreach (var p in animator.parameters)
+            if (p.type == AnimatorControllerParameterType.Trigger && p.name == name)
+                return true;
+        return false;
+    }
+
+    protected void StopAndClearCoroutine(ref Coroutine coroutine)
+    {
+        if (coroutine != null)
+        {
+            StopCoroutine(coroutine);
+            coroutine = null;
+        }
+    }
+
+    protected void SetAttackingState(bool state)
+    {
+        if (canMoveState != null) canMoveState.isAttacking = state;
+    }
+
+    protected float ApplyCooldown(float baseCooldown)
+    {
+        return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
+    }
+
+    protected void ResetAnimatorTriggers(params string[] triggers)
+    {
+        foreach (var t in triggers)
+            if (AnimatorHasTrigger(t))
+                animator.ResetTrigger(t);
+    }
+
+    public virtual void ResetState()
+    {
+        StopAndClearCoroutine(ref attackCoroutine);
+    }
+}
+
+// FILE: .\Input\AttackHandler.cs
+using UnityEngine;
+
+[RequireComponent(typeof(Character))]
+[RequireComponent(typeof(CanMoveState))]
+public class AttackHandler : MonoBehaviour, ICommandHandle
+{
+    private PlayerInventory playerInventory;
+    private BowAttackExecutor bowAttackExecutor;
+    private MeleeAttackExecutor meleeAttackExecutor;
+
+    private void Awake()
+    {
+        playerInventory = GetComponent<PlayerInventory>();
+        bowAttackExecutor = GetComponent<BowAttackExecutor>();
+        meleeAttackExecutor = GetComponent<MeleeAttackExecutor>();
+    }
+
+    public void ProcessCommand(Command command)
+    {
+        if (command == null || command.commandType != CommandType.Attack) return;
+
+        if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true) return;
+
+        InventoryItem weapon = playerInventory?.CurrentWeapon;
+        WeaponType weaponType = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
+
+        if (weaponType == WeaponType.Bow) bowAttackExecutor?.HandleBowAttack(command);
+        else meleeAttackExecutor?.HandleMeleeAttack(command);
+    }
+
+    public void CancelAttack()
+    {
+        bowAttackExecutor?.ResetState();
+        meleeAttackExecutor?.CancelCurrentAttack();
+    }
+}
+
+// FILE: .\Input\AttackInput.cs
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class AttackInput : MonoBehaviour
+{
+    CursorTargetingHandler interactInput;
+    CommandHandler commandHandler;
+    MouseInput mouseInput;
+
+    void Awake()
+    {
+        interactInput = GetComponent<CursorTargetingHandler>();
+        commandHandler = GetComponent<CommandHandler>();
+        mouseInput = Object.FindFirstObjectByType<MouseInput>();
+    }
+
+    public void OnRMB(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed) return;
+
+        PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+        InventoryItem weapon = playerInventory?.CurrentWeapon;
+
+        if (weapon != null && weapon.itemData.weaponType == WeaponType.Bow)
+        {
+            if (mouseInput != null)
+            {
+                Vector3 clickPos = mouseInput.rayToWorldIntersectionPoint;
+                Command bowAttackCommand = new Command(CommandType.Attack, clickPos);
+                commandHandler.ExecuteCommand(bowAttackCommand);
+            }
+        }
+        else
+        {
+            IDamageable target = interactInput.attackTarget;
+
+            if (target != null)
+            {
+                MonoBehaviour mb = target as MonoBehaviour;
+                if (mb != null)
+                {
+                    Command meleeAttackCommand = new Command(CommandType.Attack, mb.gameObject);
+                    commandHandler.ExecuteCommand(meleeAttackCommand);
+                }
+            }
+            else
+            {
+                Command whiffAttackCommand = new Command(CommandType.Attack, (GameObject)null);
+                commandHandler.ExecuteCommand(whiffAttackCommand);
+            }
+        }
+    }
+
+    public bool AttackTargetCheck()
+    {
+        return interactInput.attackTarget != null;
+    }
+}
+
+// FILE: .\Input\BowAttackExecutor.cs
+using System.Collections;
+using UnityEngine;
+
+public class BowAttackExecutor : AttackExecutor
+{
+    [SerializeField] private GameObject arrowPrefab;
+    [SerializeField] private float arrowSpeed = 15f;
+    [SerializeField] private float arrowHeightOffset = 1.2f;
+    [SerializeField] private float arrowSpawnProgress = 0.5f;
+    [SerializeField] private float defaultTimeToAttack = 1f;
+    [SerializeField] private float attackAnimationTime = 1f;
+
+    private float cooldownTimer;
+    private float animationTimer;
+    private bool isAttackLocked;
+    private Coroutine localCoroutine;
+
+    private void Update()
+    {
+        UpdateTimers();
+        UpdateAttackLock();
+        UpdateMovementState();
+    }
+
+    public void HandleBowAttack(Command command)
+    {
+        if (!CanAttack()) return;
+
+        Vector3 targetPos = GetMouseWorldPosition();
+        StopMovementAndRotate(targetPos);
+        PrepareWeapon();
+        PlayAttackAnimation();
+        StartArrowSpawnCoroutine(targetPos);
+    }
+
+    public override void ResetState()
+    {
+        base.ResetState();
+        StopArrowCoroutine();
+        ResetTimersAndLock();
+        ResetAnimatorTrigger("BowAttack");
+    }
+
+    private bool CanAttack()
+    {
+        return cooldownTimer <= 0f && localCoroutine == null;
+    }
+
+    private void UpdateTimers()
+    {
+        if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
+        if (animationTimer > 0f) animationTimer -= Time.deltaTime;
+    }
+
+    private void UpdateAttackLock()
+    {
+        if (animationTimer <= 0f)
+        {
+            isAttackLocked = false;
+            return;
+        }
+
+        float progress = 1f - (animationTimer / attackAnimationTime);
+        if (!isAttackLocked && progress >= 0.3f && progress <= 0.6f) isAttackLocked = true;
+        else if (isAttackLocked && progress > 0.6f) isAttackLocked = false;
+    }
+
+    private void UpdateMovementState()
+    {
+        SetAttackingState(isAttackLocked);
+    }
+
+    private Vector3 GetMouseWorldPosition()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(Vector3.up, transform.position + Vector3.up * arrowHeightOffset);
+        if (plane.Raycast(ray, out float distance)) return ray.GetPoint(distance);
+        return transform.position + transform.forward * 10f + Vector3.up * arrowHeightOffset;
+    }
+
+    private void StopMovementAndRotate(Vector3 targetPos)
+    {
+        StopMovement();
+        RotateTowardsPoint(targetPos);
+    }
+
+    private void PrepareWeapon()
+    {
+        SetAttackingState(true);
+        character.GetComponent<WeaponVisibilityController>()?.ResetLingerTimer();
+    }
+
+    private void PlayAttackAnimation()
+    {
+        animationTimer = attackAnimationTime;
+        isAttackLocked = false;
+        TriggerAttackAnimation();
+    }
+
+    private void StartArrowSpawnCoroutine(Vector3 targetPos)
+    {
+        float delay = attackAnimationTime * arrowSpawnProgress;
+        localCoroutine = StartCoroutine(SpawnArrowDelayed(targetPos, delay));
+    }
+
+    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SpawnArrowAtPosition(targetPos);
+        cooldownTimer = ApplyCooldown(defaultTimeToAttack);
+        StopAndClearCoroutine(ref localCoroutine);
+        isAttackLocked = false;
+        SetAttackingState(false);
+    }
+
+    private void SpawnArrowAtPosition(Vector3 targetPos)
+    {
+        if (arrowPrefab == null) return;
+        Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
+        GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
+        Arrow arrowScript = arrowObject.GetComponent<Arrow>();
+        if (arrowScript == null) { Destroy(arrowObject); return; }
+        Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
+        Vector3 dir = (flatTarget - spawnPos).normalized;
+        arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
+    }
+
+    private void StopArrowCoroutine()
+    {
+        StopAndClearCoroutine(ref localCoroutine);
+    }
+
+    private void ResetTimersAndLock()
+    {
+        animationTimer = 0f;
+        isAttackLocked = false;
+        SetAttackingState(false);
+    }
+
+    private void ResetAnimatorTrigger(string triggerName)
+    {
+        ResetAnimatorTriggers(triggerName);
+    }
+
+    private void TriggerAttackAnimation()
+    {
+        InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
+        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
+        string trigger = null;
+        if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
+        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
+        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
+        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
+    }
+}
+
+// FILE: .\Input\Command.cs
+using UnityEngine;
+
+public enum CommandType
+{
+    None,
+    Move,
+    Attack,
+    Interact
+}
+
+public class Command
+{
+    public CommandType commandType;
+    public Vector3 worldPoint;
+    public GameObject target;
+    public bool isComplete;
+
+    public Command(CommandType commandType, Vector3 worldPoint)
+    {
+        this.commandType = commandType;
+        this.worldPoint = worldPoint;
+    }
+
+    public Command(CommandType commandType, GameObject target)
+    {
+        this.commandType = commandType;
+        this.target = target;
+    }
+}
+
+// FILE: .\Input\CommandHandler.cs
+using UnityEngine;
+
+public class CommandHandler : MonoBehaviour
+{
+    private Character character;
+
+    private void Awake()
+    {
+        character = GetComponent<Character>();
+    }
+
+    public void ExecuteCommand(Command command)
+    {
+        if (command == null) return;
+        if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true) return;
+
+        switch (command.commandType)
+        {
+            case CommandType.Move:
+                CancelMoveAndInteract();
+                GetComponent<AttackHandler>()?.CancelAttack(); // ensure movement cancels attacks
+                GetComponent<MoveHandler>()?.ProcessCommand(command);
+                break;
+
+            case CommandType.Interact:
+                CancelMoveAndInteract();
+                GetComponent<AttackHandler>()?.CancelAttack(); // 🔥 cancel attack immediately
+                GetComponent<InteractHandler>()?.ProcessCommand(command);
+                break;
+
+            case CommandType.Attack:
+                GetComponent<AttackHandler>()?.ProcessCommand(command);
+                break;
+        }
+    }
+
+    private void CancelMoveAndInteract()
+    {
+        GetComponent<MoveHandler>()?.Stop();
+        GetComponent<InteractHandler>()?.CancelInteract();
+    }
+
+    public void CancelCurrentCommand()
+    {
+        CancelMoveAndInteract();
+        GetComponent<AttackHandler>()?.CancelAttack();
+    }
+}
+
+// FILE: .\Input\CommandProcessor.cs
+
+public class CommandProcessor
+{
+    private readonly ICommandHandle moveHandler;
+    private readonly ICommandHandle attackHandler;
+    private readonly ICommandHandle interactHandler;
+
+    public CommandProcessor(
+        ICommandHandle moveHandler,
+        ICommandHandle attackHandler,
+        ICommandHandle interactHandler)
+    {
+        this.moveHandler = moveHandler;
+        this.attackHandler = attackHandler;
+        this.interactHandler = interactHandler;
+    }
+
+    public void Process(Command command)
+    {
+        switch (command.commandType)
+        {
+            case CommandType.Move:
+                moveHandler.ProcessCommand(command);
+                break;
+            case CommandType.Attack:
+                attackHandler.ProcessCommand(command);
+                break;
+            case CommandType.Interact:
+                interactHandler.ProcessCommand(command);
+                break;
+        }
+    }
+}
+
+// FILE: .\Input\CursorTargetingHandler.cs
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+
+public class CursorTargetingHandler : MonoBehaviour
+{
+    [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
+    [SerializeField] private ResourceBar hpBar;
+    [SerializeField] private ItemTooltipController tooltipController;
+
+    private GameObject currentHoverOverObject;
+    [HideInInspector] public InteractableObject hoveringOverObject;
+    [HideInInspector] public IDamageable attackTarget;
+    private Character hoveringCharacter;
+    private AIEnemy hoveringEnemy;
+    private Vector2 mousePosition;
+
+    private void Update()
+    {
+        CheckInteractObject();
+    }
+
+    public void MousePositionInput(InputAction.CallbackContext callbackContext)
+    {
+        mousePosition = callbackContext.ReadValue<Vector2>();
+    }
+
+    private void CheckInteractObject()
+    {
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            ClearCurrentHover();
+            return;
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+        RaycastHit hit;
+        float hoverRadius = 0.05f;
+        int interactMask = ~LayerMask.GetMask("Player", "Terrain");
+
+        if (Physics.SphereCast(ray, hoverRadius, out hit, float.MaxValue, interactMask))
+        {
+            GameObject hitObject = hit.transform.gameObject;
+
+            if (currentHoverOverObject != hitObject)
+            {
+                SetOutline(currentHoverOverObject, false);
+                currentHoverOverObject = hitObject;
+                SetOutline(currentHoverOverObject, true);
+
+                hoveringOverObject = hitObject.GetComponentInParent<InteractableObject>();
+                attackTarget = hitObject.GetComponentInParent<IDamageable>();
+                hoveringCharacter = hitObject.GetComponentInParent<Character>();
+                hoveringEnemy = hitObject.GetComponentInParent<AIEnemy>();
+
+                // Only show name for enemies
+                if (textOnScreen != null)
+                {
+                    textOnScreen.text = hoveringEnemy != null ? hoveringEnemy.name : "";
+                }
+
+                var pickupItem = hitObject.GetComponentInParent<PickUpInteractableObject>();
+                if (pickupItem != null && pickupItem.ItemData != null && tooltipController != null)
+                {
+                    tooltipController.ShowTooltip(pickupItem.ItemData, pickupItem.gameObject);
+                }
+
+                UpdateHPBar();
+            }
+        }
+        else
+        {
+            ClearCurrentHover();
+        }
+    }
+
+    private void ClearCurrentHover()
+    {
+        if (currentHoverOverObject != null)
+        {
+            SetOutline(currentHoverOverObject, false);
+            tooltipController?.HideTooltip();
+            currentHoverOverObject = null;
+        }
+
+        hoveringOverObject = null;
+        attackTarget = null;
+        hoveringCharacter = null;
+        hoveringEnemy = null;
+
+        if (textOnScreen != null) textOnScreen.text = "";
+        if (hpBar != null) hpBar.Clear();
+    }
+
+    private void UpdateHPBar()
+    {
+        if (hoveringEnemy != null && hpBar != null)
+        {
+            attackTarget = hoveringEnemy.GetComponent<IDamageable>();
+            if (attackTarget != null)
+                hpBar.Show(attackTarget.GetLifePool());
+            else
+                hpBar.Clear();
+        }
+        else if (hpBar != null)
+        {
+            hpBar.Clear();
+        }
+    }
+
+    public bool InteractCheck() => hoveringOverObject != null;
+
+    public bool TryGetTerrainPoint(out Vector3 point)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+        int terrainMask = LayerMask.GetMask("Terrain");
+
+        if (Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, terrainMask))
+        {
+            point = hit.point;
+            return true;
+        }
+
+        point = Vector3.zero;
+        return false;
+    }
+
+    private void SetOutline(GameObject obj, bool enabled)
+    {
+        if (obj == null) return;
+        var outline = obj.GetComponent<Outline>();
+        if (outline != null) outline.enabled = enabled;
+    }
+}
+
+// FILE: .\Input\ICommandHandle.cs
+
+public interface ICommandHandle
+{
+    void ProcessCommand(Command command);
+}
+
+// FILE: .\Input\InteractHandler.cs
+using UnityEngine;
+
+public class InteractHandler : MonoBehaviour, ICommandHandle
+{
+    [SerializeField] private float interactRange = 0.5f;
+
+    private MoveHandler characterMovement;
+    private Character character;
+    private Command currentCommand;
+
+    private void Awake()
+    {
+        characterMovement = GetComponent<MoveHandler>();
+        character = GetComponent<Character>();
+    }
+
+    private void Update()
+    {
+        if (currentCommand == null) return;
+        if (currentCommand.target == null)
+        {
+            currentCommand.isComplete = true;
+            currentCommand = null;
+            return;
+        }
+
+        float distance = Vector3.Distance(transform.position, currentCommand.target.transform.position);
+
+        if (distance <= interactRange)
+        {
+            currentCommand.target.GetComponent<InteractableObject>()?.Interact(character);
+            characterMovement.Stop();
+            currentCommand.isComplete = true;
+            currentCommand = null;
+        }
+        else
+        {
+            characterMovement.SetDestination(currentCommand.target.transform.position);
+        }
+    }
+
+    public void ProcessCommand(Command command)
+    {
+        currentCommand = command;
+    }
+
+    public void CancelInteract()
+    {
+        if (currentCommand != null)
+        {
+            currentCommand.isComplete = true;
+            currentCommand = null;
+        }
+        characterMovement.Stop();
+    }
+}
+
+// FILE: .\Input\MeleeAttackExecutor.cs
+using System.Collections;
+using UnityEngine;
+
+public class MeleeAttackExecutor : AttackExecutor
+{
+    [SerializeField] private float attackRange = 2.5f;
+    [SerializeField] private float defaultTimeToAttack = 1f;
+    [SerializeField] private float attackAnimationTime = 1f;
+
+    private float attackTimer;
+    private GameObject currentTarget;
+    private AttackPhase currentPhase = AttackPhase.None;
+    private float phaseTimer;
+    private bool hasDealtDamage;
+
+    private enum AttackPhase { None, Windup, Damage, Recovery }
+
+    private void Update()
+    {
+        if (attackTimer > 0f) attackTimer -= Time.deltaTime;
+        if (phaseTimer > 0f) phaseTimer -= Time.deltaTime;
+        SetAttackingState(currentPhase != AttackPhase.None);
+    }
+
+    public void HandleMeleeAttack(Command command)
+    {
+        if (command.target == null || character == null || character.IsDead) return;
+        if (command.target.GetComponent<Character>()?.IsDead == true) return;
+
+        if (currentTarget != command.target) CancelCurrentAttack();
+        else if (attackCoroutine != null) return;
+
+        currentTarget = command.target;
+        attackCoroutine = StartCoroutine(MeleeAttackRoutine(command));
+    }
+
+    private IEnumerator MeleeAttackRoutine(Command command)
+    {
+        while (currentTarget != null && character != null && !character.IsDead)
+        {
+            Transform targetTransform = currentTarget.transform;
+            float distance = Vector3.Distance(transform.position, targetTransform.position);
+            float range = attackRange;
+
+            InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
+            if (weapon == null || weapon.itemData.weaponType == WeaponType.None) range = 1.5f;
+
+            if (distance <= range + 0.1f)
+            {
+                StopMovement();
+                RotateTowardsTarget(targetTransform, true);
+
+                if (attackTimer <= 0f && currentPhase == AttackPhase.None)
+                {
+                    StartAttackPhase();
+                    yield return new WaitForSeconds(attackAnimationTime * 0.4f);
+                    ExecuteDamageOnTarget();
+                    yield return new WaitForSeconds(attackAnimationTime * 0.6f);
+                    EndAttackPhase();
+                }
+            }
+            else
+            {
+                Vector3 dir = (targetTransform.position - transform.position).normalized;
+                Vector3 destination = targetTransform.position - dir * range;
+
+                if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
+                {
+                    characterMovement.Agent.stoppingDistance = 0f;
+                    characterMovement.Agent.isStopped = false;
+                    characterMovement.SetDestination(destination);
+                }
+            }
+            yield return null;
+        }
+
+        if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
+            characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
+
+        StopAndClearCoroutine(ref attackCoroutine);
+    }
+
+    private void StartAttackPhase()
+    {
+        hasDealtDamage = false;
+        currentPhase = AttackPhase.Windup;
+        phaseTimer = attackAnimationTime;
+        TriggerAttackAnimation();
+    }
+
+    private void ExecuteDamageOnTarget()
+    {
+        if (hasDealtDamage || currentTarget == null || character == null || character.IsDead) return;
+
+        IDamageable target = currentTarget.GetComponent<IDamageable>();
+        if (target != null && (!(target is Character c) || !c.IsDead)) target.TakeDamage(character.GetDamage());
+
+        hasDealtDamage = true;
+        attackTimer = ApplyCooldown(defaultTimeToAttack);
+        currentPhase = AttackPhase.Damage;
+    }
+
+    private void EndAttackPhase()
+    {
+        currentPhase = AttackPhase.None;
+    }
+
+    private void TriggerAttackAnimation()
+    {
+        InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
+        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
+
+        string trigger = null;
+        if (type == WeaponType.OneHandedAxe && AnimatorHasTrigger("OneHandedMeleeAttack")) trigger = "OneHandedMeleeAttack";
+        else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack")) trigger = "TwoHandedMeleeAttack";
+        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
+        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
+
+        if (!string.IsNullOrEmpty(trigger))
+        {
+            animator.Update(0f);
+            animator.SetTrigger(trigger);
+        }
+    }
+
+    public void CancelCurrentAttack()
+    {
+        StopAndClearCoroutine(ref attackCoroutine);
+        currentTarget = null;
+        currentPhase = AttackPhase.None;
+    }
+
+    public override void ResetState()
+    {
+        base.ResetState();
+        CancelCurrentAttack();
+        hasDealtDamage = false;
+        SetAttackingState(false);
+        ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
+    }
+}
+
+// FILE: .\Input\MouseInput.cs
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class MouseInput : MonoBehaviour
+{
+    public Vector3 mouseInputPosition;
+    [HideInInspector]
+    public Vector3 rayToWorldIntersectionPoint;
+
+    public void MousePositionUpdate(InputAction.CallbackContext callbackContext)
+    {
+        mouseInputPosition = callbackContext.ReadValue<Vector2>();
+    }
+
+    void Update()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(mouseInputPosition);
+        RaycastHit hit;
+
+        int layerMask = LayerMask.GetMask("Terrain");
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
+        {
+            rayToWorldIntersectionPoint = hit.point;
+        }
+    }
+}
+
+// FILE: .\Input\MoveHandler.cs
+using UnityEngine;
+using UnityEngine.AI;
+
+[RequireComponent(typeof(CanMoveState))]
+public class MoveHandler : MonoBehaviour, ICommandHandle
+{
+    [SerializeField] private float defaultStoppingDistance = 0.1f;
+    [SerializeField] private NavMeshAgent agent;
+
+    public NavMeshAgent Agent => agent;
+    public float DefaultStoppingDistance => defaultStoppingDistance;
+
+    private Character character;
+    [SerializeField] private float default_MoveSpeed = 3.5f;
+    private RegularStatValue moveSpeed;
+    private CanMoveState canMoveState;
+
+    private Command currentCommand;
+    public Command CurrentCommand => currentCommand;
+
+    private void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        character = GetComponent<Character>();
+        canMoveState = GetComponent<CanMoveState>();
+    }
+
+    private void Start()
+    {
+        moveSpeed = character.GetStatsValue(RegularStat.MoveSpeed);
+        ApplyMoveSpeed();
+    }
+
+    private void Update()
+    {
+        if (moveSpeed == null) return;
+
+        ApplyMoveSpeed();
+
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            if (currentCommand != null)
+            {
+                if (agent.remainingDistance <= agent.stoppingDistance && !agent.pathPending)
+                {
+                    currentCommand.isComplete = true;
+                    currentCommand = null;
+                }
+            }
+        }
+    }
+
+    private void ApplyMoveSpeed()
+    {
+        if (agent == null) return;
+
+        float newSpeed = default_MoveSpeed * moveSpeed.float_value;
+
+        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            agent.speed = newSpeed;
+    }
+
+    public void SetDestination(Vector3 destinationPosition)
+    {
+        if (canMoveState.Check() == true)
+        {
+            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+                agent.SetDestination(destinationPosition);
+            }
+        }
+    }
+
+    public void Stop()
+    {
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
+    }
+
+    public void ProcessCommand(Command command)
+    {
+        SetDestination(command.worldPoint);
+        currentCommand = command;
+    }
+}
+
+// FILE: .\InteractableObject\DestructibleObject.cs
+using UnityEngine;
+
+[RequireComponent(typeof(InteractableObject))]
+public class DestructibleObject : MonoBehaviour, IDamageable
+{
+    public ResourcePool GetLifePool()
+    {
+        return null;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        Destroy(gameObject);
+    }
+}
+
+// FILE: .\InteractableObject\InteractableObject.cs
+using System;
+using UnityEngine;
+
+public class InteractableObject : MonoBehaviour
+{
+    public Action<Character> interact;
+    public string objectName;
+
+    private void Start()
+    {
+        objectName = gameObject.name;
+    }
+
+    public void Subscribe(Action<Character> action)
+    {
+        interact += action;
+    }
+
+    public void Interact(Character interactor)
+    {
+        interact?.Invoke(interactor);
+    }
+
+}
+
+// FILE: .\InteractableObject\ItemChestInteractableObject.cs
+using UnityEngine;
+
+[RequireComponent(typeof(InteractableObject))]
+public class ItemChestInteractableObject : MonoBehaviour
+{
+    Animator animator;
+    [SerializeField] ItemDropList dropList;
+
+    [SerializeField] float ringInnerRadius = 1f;
+    [SerializeField] float ringOuterRadius = 2f;
+
+    bool isOpened = false;
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+        GetComponent<InteractableObject>().Subscribe(OpenChest);
+    }
+
+    public void OpenChest(Character character)
+    {
+        if (isOpened) return;
+
+        GetComponent<Collider>().enabled = false;
+        animator.SetBool("Open", true);
+
+        for (int i = 0; i < 50; i++)
+        {
+            Vector3 spawnPos = SelectRandomPosition();
+            ItemSpawnManager.instance.SpawnItem(spawnPos, dropList.GetDrop());
+        }
+
+        isOpened = true;
+    }
+
+    private Vector3 SelectRandomPosition()
+    {
+        float angle = Random.Range(0f, Mathf.PI * 2);
+        float radius = Random.Range(ringInnerRadius, ringOuterRadius);
+
+        float x = Mathf.Cos(angle) * radius;
+        float z = Mathf.Sin(angle) * radius;
+
+        return transform.position + new Vector3(x, 0f, z);
+    }
+}
+
+// FILE: .\InteractableObject\PickUpInteractableObject.cs
+using UnityEngine;
+
+public class PickUpInteractableObject : MonoBehaviour
+{
+    [SerializeField] int coinCount;
+    [SerializeField] ItemData itemData;
+
+    private void Start()
+    {
+        GetComponent<InteractableObject>().Subscribe(PickUp);
+    }
+
+    public void PickUp(Character character)
+    {
+        PlayerInventory inventory = character.GetComponent<PlayerInventory>();
+        if (inventory == null) return;
+
+        if (coinCount >= 0)
+        {
+            inventory.AddCurrency(coinCount);
+        }
+
+        if (itemData != null)
+        {
+            inventory.TryAddItemOrDrop(itemData, inventory.InventoryController);
+        }
+
+        Destroy(gameObject);
+    }
+
+    public void SetItem(ItemData itemToSpawn)
+    {
+        itemData = itemToSpawn;
+    }
+
+    public ItemData ItemData => itemData;
+}
+
+// FILE: .\InteractableObject\SceneTransitionInteractableObject.cs
+using UnityEngine;
+
+public class SceneTransitionInteractableObject : MonoBehaviour
+{
+    [SerializeField] string sceneName;
+
+    void Start()
+    {
+        GetComponent<InteractableObject>().Subscribe(Transition);
+    }
+
+    public void Transition(Character character)
+    {
+        GameSceneManager.instance.StartTransition(sceneName);
+    }
+}
+
+// FILE: .\Inventory\Controller\InventoryController.cs
+using UnityEngine;
+
+public class InventoryController : MonoBehaviour
+{
+    [SerializeField] private InventoryGridHandler gridHandler;
+    [SerializeField] private SelectedItemController selectedItemController;
+    [SerializeField] private InventoryItemHighlightController itemHighlightController;
+    [SerializeField] private GameObject inventoryItemPrefab;
+    [SerializeField] private Transform targetCanvas;
+    [SerializeField] private PanelManager uiPanelManager;
+
+    private ItemGrid selectedItemGrid;
+    private EquipmentItemSlot selectedItemSlot;
+    private GameObject selectedItemParentGameObject;
+
+    public EquipmentItemSlot SelectedItemSlot { get => selectedItemSlot; set => selectedItemSlot = value; }
+    public ItemGrid SelectedItemGrid
+    {
+        get => selectedItemGrid;
+        set
+        {
+            selectedItemGrid = value;
+            if (gridHandler != null) gridHandler.SetCurrentGrid(value);
+            if (itemHighlightController != null && gridHandler != null && gridHandler.IsMouseOverGrid(Input.mousePosition))
+            {
+                itemHighlightController.SetCurrentGrid(value);
+            }
+        }
+    }
+
+    public bool HasItemOnCursor => selectedItemController.HasItem;
+    public SelectedItemController SelectedItemController => selectedItemController;
+
+    private void Awake()
+    {
+        if (uiPanelManager == null) uiPanelManager = FindFirstObjectByType<PanelManager>();
+        CreateSelectedItemParentIfMissing();
+    }
+
+    private void CreateSelectedItemParentIfMissing()
+    {
+        if (selectedItemParentGameObject == null)
+        {
+            selectedItemParentGameObject = GameObject.Find("SelectedItemContainer");
+            if (selectedItemParentGameObject == null)
+            {
+                selectedItemParentGameObject = new GameObject("SelectedItemContainer");
+                if (targetCanvas != null) selectedItemParentGameObject.transform.SetParent(targetCanvas, false);
+            }
+        }
+    }
+
+    private void ParentSelectedItem(InventoryItem item)
+    {
+        if (item == null || !selectedItemController.HasItem) return;
+        CreateSelectedItemParentIfMissing();
+        if (item.transform.parent != selectedItemParentGameObject.transform)
+            item.transform.SetParent(selectedItemParentGameObject.transform, false);
+    }
+
+    public void HandlePrimaryClick(Vector2 mousePosition)
+    {
+        if (!uiPanelManager || !uiPanelManager.IsInventoryOpen) return;
+
+        if (selectedItemGrid != null)
+        {
+            if (gridHandler.IsMouseOverGrid(mousePosition))
+                gridHandler.HandleClick(selectedItemGrid, mousePosition);
+            return;
+        }
+
+        if (selectedItemSlot != null)
+        {
+            selectedItemSlot.HandleClick(selectedItemController);
+            return;
+        }
+
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped && !UIUtility.IsPointerOverUI(mousePosition))
+        {
+            ItemDropUtility.ThrowItemOnGround(selectedItemController);
+        }
+    }
+
+    public void ThrowItemOnGround()
+    {
+        if (!uiPanelManager || !uiPanelManager.IsInventoryOpen) return;
+        if (selectedItemController.HasItem && !selectedItemController.SelectedItem.IsEquipped)
+            ItemDropUtility.ThrowItemOnGround(selectedItemController);
+    }
+
+    public void DropItem(Vector3 dropPosition, InventoryItem itemToDrop)
+    {
+        if (itemToDrop != null && !itemToDrop.IsEquipped)
+            ItemDropUtility.DropItem(dropPosition, itemToDrop);
+    }
+
+    public InventoryItem CreateNewInventoryItem(ItemData itemData)
+    {
+        if (inventoryItemPrefab == null || targetCanvas == null) return null;
+
+        GameObject newItemGameObject = Instantiate(inventoryItemPrefab, targetCanvas);
+        InventoryItem newInventoryItem = newItemGameObject.GetComponent<InventoryItem>();
+        RectTransform newItemRectTransform = newItemGameObject.GetComponent<RectTransform>();
+        newItemRectTransform.SetParent(targetCanvas);
+
+        newInventoryItem?.Set(itemData);
+        ParentSelectedItem(newInventoryItem);
+        return newInventoryItem;
+    }
+
+    private void LateUpdate()
+    {
+        if (selectedItemController != null && selectedItemController.HasItem)
+        {
+            if (!selectedItemController.SelectedItem.IsEquipped)
+                ParentSelectedItem(selectedItemController.SelectedItem);
+            else
+                selectedItemController.ClearSelectedItem();
+        }
+
+        if (selectedItemGrid != null && itemHighlightController != null && gridHandler.IsMouseOverGrid(Input.mousePosition))
+        {
+            itemHighlightController.SetCurrentGrid(selectedItemGrid);
+        }
+    }
+}
+
+// FILE: .\Inventory\Controller\SelectedItemController.cs
+using UnityEngine;
+
+public class SelectedItemController : MonoBehaviour
+{
+    public InventoryItem SelectedItem { get; private set; }
+    public bool HasItem => IsValidItem(SelectedItem);
+
+    [SerializeField] private RectTransform parentTransform;
+    [SerializeField] private CharacterDefeatHandler defeatHandler;
+    [SerializeField] private Canvas canvas;
+
+    private RectTransform selectedItemRectTransform;
+
+    private void Update()
+    {
+        if (!HasItem || selectedItemRectTransform == null) return;
+
+        bool canShow = defeatHandler == null || !defeatHandler.IsDefeated;
+        if (selectedItemRectTransform.gameObject.activeSelf != canShow)
+            selectedItemRectTransform.gameObject.SetActive(canShow);
+
+        Vector2 mousePos = Input.mousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            parentTransform, mousePos, canvas.worldCamera, out Vector2 localPoint);
+        selectedItemRectTransform.localPosition = localPoint;
+    }
+
+    public void SetSelectedItem(InventoryItem item)
+    {
+        if (!IsValidItem(item))
+        {
+            ClearSelectedItem();
+            return;
+        }
+
+        SelectedItem = item;
+        selectedItemRectTransform = item.GetComponent<RectTransform>();
+        selectedItemRectTransform.SetParent(parentTransform, false);
+        selectedItemRectTransform.localScale = Vector3.one;
+        selectedItemRectTransform.pivot = new Vector2(0.5f, 0.5f);
+        selectedItemRectTransform.SetAsLastSibling();
+    }
+
+    public void ClearSelectedItem()
+    {
+        SelectedItem = null;
+        selectedItemRectTransform = null;
+    }
+
+    public InventoryItem PickUp(InventoryItem item)
+    {
+        if (!IsValidItem(item)) return null;
+        SetSelectedItem(item);
+        return SelectedItem;
+    }
+
+    public InventoryItem Drop()
+    {
+        if (!HasItem) return null;
+        if (defeatHandler != null && defeatHandler.IsDefeated) return null;
+
+        InventoryItem temp = SelectedItem;
+        ClearSelectedItem();
+        return temp;
+    }
+
+    private bool IsValidItem(InventoryItem item)
+    {
+        if (item == null) return false;
+        if (!item.gameObject.activeInHierarchy) return false;
+        if (item.IsEquipped) return false;
+        return true;
+    }
+}
+
+// FILE: .\Inventory\Data\EquipmentSlot.cs
+public enum EquipmentSlot
+{
+    None,
+    Weapon,
+    OffHand,
+    Armor,
+    Helmet,
+    Belt,
+    Boots,
+    Ring,
+    Amulet,
+    Gloves
+}
+
+
+// FILE: .\Inventory\Data\ItemData.cs
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu]
+public class ItemData : ScriptableObject
+{
+    public EquipmentSlot equipmentSlot;
+    public int sizeWidth = 1;
+    public int sizeHeight = 1;
+    public List<RegularStatValue> stats;
+    public Sprite icon;
+
+    [Tooltip("Set only if this item is a weapon")]
+    public WeaponType weaponType = WeaponType.None;
+}
+
+// FILE: .\Inventory\Data\WeaponType.cs
+public enum WeaponType
+{
+    None,
+    Bow,
+    OneHandedAxe,
+    TwoHandedAxe
+}
+
+// FILE: .\Inventory\Grid\InventoryGridHandler.cs
+using System.Collections.Generic;
+using UnityEngine;
+
+public class InventoryGridHandler : MonoBehaviour
+{
+    [SerializeField] private SelectedItemController selectedItemController;
+    [SerializeField] private InventoryItemHighlightController itemHighlightController;
+    [SerializeField] private CharacterDefeatHandler defeatHandler;
+
+    private ItemGrid currentGrid;
+
+    private void Awake()
+    {
+        if (selectedItemController == null) selectedItemController = FindFirstObjectByType<SelectedItemController>();
+        if (itemHighlightController == null) itemHighlightController = FindFirstObjectByType<InventoryItemHighlightController>();
+        if (defeatHandler == null) defeatHandler = FindFirstObjectByType<CharacterDefeatHandler>();
+    }
+
+    public void SetCurrentGrid(ItemGrid grid)
+    {
+        currentGrid = grid;
+    }
+
+    public Vector2Int GetTileGridPosition(Vector2 mousePosition, InventoryItem item = null)
+    {
+        if (currentGrid == null) return Vector2Int.zero;
+
+        RectTransform rectTransform = currentGrid.GetComponent<RectTransform>();
+        Vector2 localMousePosition;
+        Camera cam = rectTransform.GetComponentInParent<Canvas>()?.worldCamera;
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, mousePosition, cam, out localMousePosition);
+
+        Vector2 pivotOffset = new Vector2(rectTransform.rect.width * rectTransform.pivot.x,
+                                          rectTransform.rect.height * rectTransform.pivot.y);
+        localMousePosition += pivotOffset;
+
+        if (item != null)
+        {
+            localMousePosition.x -= (item.itemData.sizeWidth - 1) * ItemGrid.TileSizeWidth / 2f;
+            localMousePosition.y += (item.itemData.sizeHeight - 1) * ItemGrid.TileSizeHeight / 2f;
+        }
+
+        int x = Mathf.FloorToInt(localMousePosition.x / ItemGrid.TileSizeWidth);
+        int y = Mathf.FloorToInt((rectTransform.rect.height - localMousePosition.y) / ItemGrid.TileSizeHeight);
+
+        x = Mathf.Clamp(x, 0, currentGrid.Width - 1);
+        y = Mathf.Clamp(y, 0, currentGrid.Height - 1);
+
+        return new Vector2Int(x, y);
+    }
+
+    public Vector2Int GetClampedTileGridPosition(Vector2 mousePosition, InventoryItem item)
+    {
+        if (currentGrid == null) return Vector2Int.zero;
+
+        Vector2Int pos = GetTileGridPosition(mousePosition, item);
+
+        if (item != null)
+        {
+            pos.x = Mathf.Min(pos.x, currentGrid.Width - item.itemData.sizeWidth);
+            pos.y = Mathf.Min(pos.y, currentGrid.Height - item.itemData.sizeHeight);
+        }
+
+        pos.x = Mathf.Clamp(pos.x, 0, currentGrid.Width - 1);
+        pos.y = Mathf.Clamp(pos.y, 0, currentGrid.Height - 1);
+
+        return pos;
+    }
+
+    public bool IsMouseOverGrid(Vector2 mousePosition)
+    {
+        if (currentGrid == null) return false;
+        Vector2Int pos = GetTileGridPosition(mousePosition);
+        return currentGrid.BoundaryCheck(pos.x, pos.y, 1, 1);
+    }
+
+    public void InsertItem(ItemGrid grid, InventoryItem itemToInsert)
+    {
+        if (grid == null || itemToInsert == null) return;
+
+        Vector2Int? posOnGrid = grid.FindSpaceForObject(itemToInsert.itemData);
+        if (posOnGrid == null) return;
+
+        grid.PlaceItem(itemToInsert, posOnGrid.Value.x, posOnGrid.Value.y);
+    }
+
+    public void PlaceItemInput(ItemGrid grid, InventoryItem selectedItem, Vector2Int positionOnGrid)
+    {
+        if (selectedItem == null || grid == null) return;
+        if (!grid.BoundaryCheck(positionOnGrid.x, positionOnGrid.y, selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight)) return;
+
+        var overlappedItems = grid.GetOverlappingItems(positionOnGrid.x, positionOnGrid.y, selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight);
+
+        if (overlappedItems.Count > 1) return;
+
+        InventoryItem overlapItem = overlappedItems.Count == 1 ? overlappedItems[0] : null;
+
+        if (overlapItem != null) grid.ClearGridFromItem(overlapItem);
+        grid.PlaceItem(selectedItem, positionOnGrid.x, positionOnGrid.y);
+
+        selectedItemController?.ClearSelectedItem();
+
+        if (overlapItem != null)
+        {
+            selectedItemController?.PickUp(overlapItem);
+        }
+    }
+
+    public void HandleClick(ItemGrid grid, Vector2 mousePosition)
+    {
+        if (!IsMouseOverGrid(mousePosition)) return;
+
+        InventoryItem selectedItem = selectedItemController.HasItem ? selectedItemController.SelectedItem : null;
+        Vector2Int tilePos = GetClampedTileGridPosition(mousePosition, selectedItem);
+
+        if (selectedItem != null)
+        {
+            PlaceItemInput(grid, selectedItem, tilePos);
+        }
+        else
+        {
+            InventoryItem item = grid.PickUpItem(tilePos);
+            if (item != null)
+            {
+                selectedItemController.PickUp(item);
+            }
+        }
+    }
+}
+
+// FILE: .\Inventory\Grid\InventoryGridHoverHandler.cs
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+[RequireComponent(typeof(ItemGrid))]
+public class SelectedInventoryGridTracker : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    InventoryController inventoryController;
+    ItemGrid itemGrid;
+
+#pragma warning disable CS0618
+    private void Start()
+    {
+        inventoryController = FindObjectOfType<InventoryController>();
+        itemGrid = GetComponent<ItemGrid>();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        inventoryController.SelectedItemGrid = itemGrid;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        inventoryController.SelectedItemGrid = null;
+    }
+}
+
+// FILE: .\Inventory\Grid\ItemGrid.cs
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ItemGrid : MonoBehaviour
+{
+    InventoryItem[,] inventoryItemGrid;
+
+    public const float TileSizeWidth = 32f;
+    public const float TileSizeHeight = 32f;
+
+    [SerializeField] int gridSizeWidth;
+    [SerializeField] int gridSizeHeight;
+
+    RectTransform rectTransform;
+
+    [SerializeField] GameObject inventoryItemPrefab;
+
+    public int Width => gridSizeWidth;
+    public int Height => gridSizeHeight;
+
+    public void Init()
+    {
+        rectTransform = GetComponent<RectTransform>();
+        inventoryItemGrid = new InventoryItem[gridSizeWidth, gridSizeHeight];
+        Vector2 size = new()
+        {
+            x = TileSizeWidth * gridSizeWidth,
+            y = TileSizeHeight * gridSizeHeight
+        };
+        rectTransform.sizeDelta = size;
+    }
+
+    public void PlaceItem(InventoryItem itemToPlace, int x, int y)
+    {
+        RectTransform itemRectTransform = itemToPlace.GetComponent<RectTransform>();
+        itemRectTransform.SetParent(transform);
+
+        for (int ix = 0; ix < itemToPlace.itemData.sizeWidth; ix++)
+        {
+            for (int iy = 0; iy < itemToPlace.itemData.sizeHeight; iy++)
+            {
+                inventoryItemGrid[x + ix, y + iy] = itemToPlace;
+            }
+        }
+
+        itemToPlace.positionOnGridX = x;
+        itemToPlace.positionOnGridY = y;
+
+        itemRectTransform.localPosition = CalculatePositionOfObjectOnGrid(itemToPlace, x, y);
+    }
+
+    public Vector2Int? FindSpaceForObject(ItemData itemData)
+    {
+        int width = gridSizeWidth - itemData.sizeWidth + 1;
+        int height = gridSizeHeight - itemData.sizeHeight + 1;
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (CheckAvailableSpace(x, y, itemData.sizeWidth, itemData.sizeHeight) == true)
+                {
+                    return new Vector2Int(x, y);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private bool CheckAvailableSpace(int posX, int posY, int sizeWidth, int sizeHeight)
+    {
+        for (int x = 0; x < sizeWidth; x++)
+        {
+            for (int y = 0; y < sizeHeight; y++)
+            {
+                if (inventoryItemGrid[posX + x, posY + y] != null)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public InventoryItem GetItem(int x, int y)
+    {
+        if (!PositionCheck(x, y)) return null;
+        return inventoryItemGrid[x, y];
+    }
+
+    public Vector2 CalculatePositionOfObjectOnGrid(InventoryItem item, int x, int y)
+    {
+        Vector2 positionOnGrid = new()
+        {
+            x = TileSizeWidth * x + TileSizeWidth * item.itemData.sizeWidth / 2,
+            y = -(TileSizeHeight * y + TileSizeHeight * item.itemData.sizeHeight / 2)
+        };
+        return positionOnGrid;
+    }
+
+    public Vector2Int GetTileGridPosition(Vector2 mousePosition, InventoryItem item = null)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            rectTransform,
+            mousePosition,
+            null,
+            out Vector2 localMousePosition
+        );
+
+        if (item != null)
+        {
+            localMousePosition.x -= (item.itemData.sizeWidth - 1) * TileSizeWidth / 2;
+            localMousePosition.y += (item.itemData.sizeHeight - 1) * TileSizeHeight / 2;
+        }
+
+        int x = Mathf.FloorToInt(localMousePosition.x / TileSizeWidth);
+        int y = Mathf.FloorToInt(-localMousePosition.y / TileSizeHeight);
+
+        x = Mathf.Clamp(x, 0, gridSizeWidth - 1);
+        y = Mathf.Clamp(y, 0, gridSizeHeight - 1);
+
+        return new Vector2Int(x, y);
+    }
+
+    public InventoryItem PickUpItem(Vector2Int tilePositionOnGrid)
+    {
+        if (!PositionCheck(tilePositionOnGrid.x, tilePositionOnGrid.y))
+            return null;
+
+        InventoryItem pickedItem = inventoryItemGrid[tilePositionOnGrid.x, tilePositionOnGrid.y];
+
+        if (pickedItem == null) return null;
+
+        ClearGridFromItem(pickedItem);
+
+        return pickedItem;
+    }
+
+    public void ClearGridFromItem(InventoryItem pickedItem)
+    {
+        for (int ix = 0; ix < pickedItem.itemData.sizeWidth; ix++)
+        {
+            for (int iy = 0; iy < pickedItem.itemData.sizeHeight; iy++)
+            {
+                inventoryItemGrid[pickedItem.positionOnGridX + ix, pickedItem.positionOnGridY + iy] = null;
+            }
+        }
+    }
+
+    public bool PositionCheck(int x, int y)
+    {
+        if (x < 0 || y < 0)
+        {
+            return false;
+        }
+
+        if (x >= gridSizeWidth || y >= gridSizeHeight)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool BoundaryCheck(int posX, int posY, int width, int height)
+    {
+        if (!PositionCheck(posX, posY)) return false;
+
+        posX += width - 1;
+        posY += height - 1;
+
+        if (!PositionCheck(posX, posY)) return false;
+
+        return true;
+    }
+
+    public List<InventoryItem> GetOverlappingItems(int posX, int posY, int sizeWidth, int sizeHeight)
+    {
+        List<InventoryItem> overlappedItems = new List<InventoryItem>();
+
+        for (int x = 0; x < sizeWidth; x++)
+        {
+            for (int y = 0; y < sizeHeight; y++)
+            {
+                InventoryItem item = inventoryItemGrid[posX + x, posY + y];
+                if (item != null && !overlappedItems.Contains(item))
+                {
+                    overlappedItems.Add(item);
+                }
+            }
+        }
+
+        return overlappedItems;
+    }
+}
+
+// FILE: .\Inventory\Input\InventoryClickHandler.cs
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+
+public class InventoryInputHandler : MonoBehaviour
+{
+    [SerializeField] private InventoryController inventoryController;
+
+    private void Awake()
+    {
+        if (inventoryController == null)
+            inventoryController = FindFirstObjectByType<InventoryController>();
+
+        if (inventoryController == null)
+            Debug.LogError("InventoryInputHandler: InventoryController is missing.");
+    }
+
+    public void LMB_InputHandle(InputAction.CallbackContext ctx)
+    {
+        if (ctx.started)
+        {
+            inventoryController.HandlePrimaryClick(UnityEngine.Input.mousePosition);
+        }
+    }
+}
+
+// FILE: .\Inventory\Item\EquipmentItemSlot.cs
+using System;
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+public class EquipmentItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    [SerializeField] private EquipmentSlot equipmentSlot;
+    [SerializeField] private ItemTooltipController tooltipController;
+
+    private InventoryItem itemInSlot;
+    private RectTransform slotRectTransform;
+    private PlayerInventory inventory;
+
+    private void Awake()
+    {
+        slotRectTransform = GetComponent<RectTransform>();
+        if (tooltipController == null)
+            tooltipController = FindFirstObjectByType<ItemTooltipController>();
+    }
+
+    public void Init(PlayerInventory inventory)
+    {
+        this.inventory = inventory;
+    }
+
+    public bool Check(InventoryItem itemToPlace)
+    {
+        return equipmentSlot == itemToPlace.itemData.equipmentSlot;
+    }
+
+    public InventoryItem ReplaceItem(InventoryItem itemToPlace)
+    {
+        InventoryItem replaceItem = PickUpItem();
+        PlaceItem(itemToPlace);
+        return replaceItem;
+    }
+
+    public void PlaceItem(InventoryItem itemToPlace)
+    {
+        if (itemToPlace == null || itemToPlace.itemData == null)
+        {
+            Debug.LogError("Cannot place item: itemToPlace or its itemData is null.");
+            return;
+        }
+
+        if (inventory == null)
+        {
+            Debug.LogError("Inventory is not initialized on EquipmentItemSlot.");
+            return;
+        }
+
+        itemInSlot = itemToPlace;
+        inventory.AddStats(itemInSlot.itemData.stats);
+
+        RectTransform rt = itemToPlace.GetComponent<RectTransform>();
+        if (rt != null)
+        {
+            rt.SetParent(slotRectTransform);
+            rt.position = slotRectTransform.position;
+        }
+        else
+        {
+            Debug.LogWarning("Item does not have RectTransform.");
+        }
+
+        if (itemToPlace.itemData.equipmentSlot == EquipmentSlot.Weapon)
+            inventory.UpdateCurrentWeapon();
+
+        ShowTooltipIfCursorInside();
+    }
+
+    public InventoryItem PickUpItem()
+    {
+        InventoryItem pickUpItem = itemInSlot;
+        if (pickUpItem != null)
+        {
+            inventory.SubtractStats(pickUpItem.itemData.stats);
+            ClearSlot(pickUpItem);
+        }
+
+        inventory.UpdateCurrentWeapon();
+        return pickUpItem;
+    }
+
+    private void ClearSlot(InventoryItem pickUpItem)
+    {
+        itemInSlot = null;
+        RectTransform rt = pickUpItem.GetComponent<RectTransform>();
+        rt.SetParent(null);
+
+        if (tooltipController != null &&
+            RectTransformUtility.RectangleContainsScreenPoint(slotRectTransform, Input.mousePosition))
+        {
+            tooltipController.HideTooltip();
+        }
+    }
+
+    public void HandleClick(SelectedItemController selectedItemController)
+    {
+        InventoryItem selectedItem = selectedItemController.SelectedItem;
+
+        if (!selectedItemController.HasItem)
+        {
+            InventoryItem item = PickUpItem();
+            if (item != null)
+            {
+                selectedItemController.PickUp(item);
+            }
+        }
+        else
+        {
+            if (!Check(selectedItem)) return;
+
+            InventoryItem replacedItem = ReplaceItem(selectedItem);
+
+            if (replacedItem == null)
+            {
+                selectedItemController.ClearSelectedItem();
+            }
+            else
+            {
+                selectedItemController.SetSelectedItem(replacedItem);
+            }
+        }
+    }
+
+    public InventoryItem GetItem() => itemInSlot;
+
+    public void OnPointerEnter(PointerEventData eventData) => ShowTooltipIfCursorInside();
+
+    public void OnPointerExit(PointerEventData eventData) => tooltipController?.HideTooltip();
+
+    private void ShowTooltipIfCursorInside()
+    {
+        if (itemInSlot == null || tooltipController == null) return;
+
+        if (RectTransformUtility.RectangleContainsScreenPoint(slotRectTransform, Input.mousePosition))
+        {
+            tooltipController.ShowTooltip(itemInSlot, itemInSlot.gameObject);
+        }
+    }
+}
+
+// FILE: .\Inventory\Item\InventoryItem.cs
+using UnityEngine;
+using UnityEngine.UI;
+
+public class InventoryItem : MonoBehaviour
+{
+    public ItemData itemData;
+    public int positionOnGridX;
+    public int positionOnGridY;
+    public bool IsEquipped { get; set; }
+
+    public void Set(ItemData itemData)
+    {
+        this.itemData = itemData;
+        GetComponent<Image>().sprite = itemData.icon;
+        Vector2 size = new Vector2(
+            itemData.sizeWidth * ItemGrid.TileSizeWidth,
+            itemData.sizeHeight * ItemGrid.TileSizeHeight
+        );
+        GetComponent<RectTransform>().sizeDelta = size;
+    }
+}
+
+// FILE: .\Inventory\Utility\ItemDropUtility.cs
+using UnityEngine;
+
+public static class ItemDropUtility
+{
+    public static void ThrowItemOnGround(SelectedItemController selectedItemController)
+    {
+        InventoryItem itemToDrop = selectedItemController.Drop();
+        if (itemToDrop != null)
+            DropItem(GameManager.instance.playerObject.transform.position, itemToDrop);
+    }
+
+    public static void DropItem(Vector3 dropPosition, InventoryItem itemToDrop)
+    {
+        if (itemToDrop == null) return;
+        ItemSpawnManager.instance.SpawnItem(dropPosition, itemToDrop.itemData);
+        Object.Destroy(itemToDrop.gameObject);
+    }
+}
+
+// FILE: .\Inventory\Utility\UIUtility.cs
+using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
+
+public static class UIUtility
+{
+    public static bool IsPointerOverUI(Vector2 screenPosition)
+    {
+        if (EventSystem.current == null) return false;
+        var eventData = new PointerEventData(EventSystem.current) { position = screenPosition };
+        var results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+        return results.Count > 0;
+    }
+}
+
+// FILE: .\Systems\Audio\AudioSystem.cs
+using UnityEngine;
+
+public class AudioSystem : MonoBehaviour
+{
+    [SerializeField] AudioSource mainAudioSource;
+
+    public void Play(AudioClip audioClip)
+    {
+        mainAudioSource.clip = audioClip;
+        mainAudioSource.Play();
+    }
+}
+
+// FILE: .\Systems\Combat\IDamageable.cs
+using UnityEngine;
+
+public interface IDamageable
+{
+    public void TakeDamage(int damage);
+
+    public ResourcePool GetLifePool();
+}
+
+// FILE: .\Systems\Item\ItemDropList.cs
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+[Serializable]
+public class ItemDrop
+{
+    public ItemData item;
+    public int weight = 1;
+}
+
+[CreateAssetMenu]
+public class ItemDropList : ScriptableObject
+{
+    public List<ItemDrop> drops;
+    public int totalWeight;
+
+    [ContextMenu("Calculate weights")]
+    public void CalculateTotalWeight()
+    {
+        totalWeight = 0;
+        foreach (ItemDrop drop in drops)
+        {
+            totalWeight += drop.weight;
+        }
+        totalWeight += 1;
+    }
+
+    public string GetDropName()
+    {
+        ItemData itemData = GetDrop();
+        return itemData.name;
+    }
+
+    public ItemData GetDrop()
+    {
+        ItemData toDrop = drops[0].item;
+        int roll = UnityEngine.Random.Range(0, totalWeight);
+        int i = 0;
+
+        while (roll > 0)
+        {
+            roll -= drops[i].weight;
+            toDrop = drops[i].item;
+            i++;
+        }
+
+        return toDrop;
+    }
+}
+
+// FILE: .\Systems\Item\ItemSpawnManager.cs
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class ItemSpawnManager : MonoBehaviour
+{
+    public static ItemSpawnManager instance;
+
+    [SerializeField] LayerMask terrainLayerMask;
+    [SerializeField] GameObject itemPrefab;
+
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+    }
+
+    public void SpawnItem(Vector3 position, ItemData itemToSpawn)
+    {
+        if (itemToSpawn == null || itemPrefab == null) return;
+
+        position += Vector3.up * 50f;
+
+        if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, Mathf.Infinity, terrainLayerMask))
+        {
+            Scene currentScene = SceneManager.GetSceneByName(GameSceneManager.instance.CurrentScene);
+
+            GameObject groundItemsParent = null;
+            foreach (var root in currentScene.GetRootGameObjects())
+            {
+                if (root.name == "GroundItems")
+                {
+                    groundItemsParent = root;
+                    break;
+                }
+            }
+
+            if (groundItemsParent == null)
+            {
+                groundItemsParent = new GameObject("GroundItems");
+                SceneManager.MoveGameObjectToScene(groundItemsParent, currentScene);
+            }
+
+            GameObject newItemGameObject = Instantiate(
+                itemPrefab,
+                hit.point + Vector3.up * (itemPrefab.GetComponent<Renderer>().bounds.size.y / 2f),
+                Quaternion.identity
+            );
+
+            newItemGameObject.GetComponent<PickUpInteractableObject>().SetItem(itemToSpawn);
+
+            newItemGameObject.transform.SetParent(groundItemsParent.transform);
+        }
+        else
+        {
+            Debug.LogWarning("ItemSpawnManager: Could not find valid ground to spawn item.");
+        }
+    }
+}
+
+// FILE: .\TestScripts\DropSystemTest.cs
+using UnityEngine;
+
+public class DropSystemTest : MonoBehaviour
+{
+    [SerializeField] ItemDropList dropList;
+
+    private void Update()
+    {
+        if (dropList == null) { return; }
+
+        if (Input.GetKey(KeyCode.Z))
+        {
+            Debug.Log(dropList.GetDropName());
+        }
+    }
+}
+
+// FILE: .\UI\Hud\AbilityPanel.cs
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.InputSystem;
+
+public class AbilityPanel : MonoBehaviour
+{
+    [SerializeField] List<AbilitySlotButton> slotButtons;
+    public UnityEvent<int> onAbilityActivate;
+
+    public void ActivateAbility_1(InputAction.CallbackContext context)
+    {
+        if (context.started == true)
+        {
+            ActivateAbility(0);
+        }
+    }
+    public void ActivateAbility_2(InputAction.CallbackContext context)
+    {
+        if (context.started == true)
+        {
+            ActivateAbility(1);
+        }
+    }
+    public void ActivateAbility_3(InputAction.CallbackContext context)
+    {
+        if (context.started == true)
+        {
+            ActivateAbility(2);
+        }
+    }
+    public void ActivateAbility_4(InputAction.CallbackContext context)
+    {
+        if (context.started == true)
+        {
+            ActivateAbility(3);
+        }
+    }
+    public void ActivateAbility_5(InputAction.CallbackContext context)
+    {
+        if (context.started == true)
+        {
+            ActivateAbility(4);
+        }
+    }
+    public void ActivateAbility_6(InputAction.CallbackContext context)
+    {
+        if (context.started == true)
+        {
+            ActivateAbility(5);
+        }
+    }
+
+    public void ActivateAbility(int abilitySlot)
+    {
+        Debug.Log("Activated ability Num:" + abilitySlot.ToString());
+        onAbilityActivate?.Invoke(abilitySlot);
+    }
+
+    public void ActivatePotion(int potionSlot)
+    {
+        Debug.Log("Activated potion Num:" + potionSlot.ToString());
+    }
+
+    public void UpdateAbility(AbilityContainer ability, int abilitySlotId)
+    {
+        slotButtons[abilitySlotId].UpdateAbility(ability);
+    }
+
+    public void UpdateCooldown(float cooldownNormalized, int abilitySlotId)
+    {
+        slotButtons[abilitySlotId].UpdateCooldown(cooldownNormalized);
+    }
+}
+
+// FILE: .\UI\Hud\AbilitySlotButton.cs
+using System;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class AbilitySlotButton : MonoBehaviour
+{
+    [SerializeField] Image abilityIcon;
+
+    public void UpdateAbility(AbilityContainer ability)
+    {
+        abilityIcon.sprite = ability.ability.icon;
+    }
+
+    internal void UpdateCooldown(float cooldownNormalized)
+    {
+        abilityIcon.fillAmount = cooldownNormalized;
+    }
+}
+
+// FILE: .\UI\Hud\PlayerResourceHud.cs
+using UnityEngine;
+
+public class CharacterResourceHud : MonoBehaviour
+{
+    Character character;
+
+    private void Awake()
+    {
+        character = GetComponent<Character>();
+    }
+
+    [SerializeField] ResourceBar hpBar;
+    [SerializeField] ResourceBar energyBar;
+
+    private void Update()
+    {
+        hpBar.Show(character.lifePool);
+        energyBar.Show(character.energyPool);
+    }
+}
+
+// FILE: .\UI\Hud\ResourceBar.cs
+using UnityEngine;
+using UnityEngine.UI;
+
+public class ResourceBar : MonoBehaviour
+{
+    [SerializeField] Image bar;
+    [SerializeField] TMPro.TextMeshProUGUI textValue;
+
+    ResourcePool targetPool;
+
+    public void Show(ResourcePool targetPool)
+    {
+        if (targetPool != null)
+        {
+            this.targetPool = targetPool;
+            gameObject.SetActive(true);
+        }
+    }
+
+    public void Clear()
+    {
+        this.targetPool = null;
+        gameObject.SetActive(false);
+    }
+
+    private void Update()
+    {
+        if (targetPool == null) { return; }
+        bar.fillAmount = Mathf.InverseLerp(0f, targetPool.maxValue.integer_value, targetPool.currentValue);
+        if (textValue != null)
+        {
+            textValue.text = targetPool.currentValue.ToString() + "/" + targetPool.maxValue.integer_value.ToString();
+        }
+    }
+}
+
+// FILE: .\UI\Inventory\EquipmentSlotHoverHandler.cs
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+public class EquipmentSlotHoverHandler : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    InventoryController inventoryController;
+    EquipmentItemSlot slot;
+
+    [SerializeField] private ItemTooltipController tooltipController;
+
+    void Awake()
+    {
+        inventoryController = FindFirstObjectByType<InventoryController>();
+        slot = GetComponent<EquipmentItemSlot>();
+
+        if (tooltipController == null)
+        {
+            tooltipController = FindFirstObjectByType<ItemTooltipController>();
+            if (tooltipController == null)
+                Debug.LogWarning("No TooltipController found in the scene!");
+        }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        inventoryController.SelectedItemSlot = slot;
+
+        var item = slot.GetItem();
+        if (item != null)
+        {
+            tooltipController?.ShowTooltip(item, slot.gameObject);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        inventoryController.SelectedItemSlot = null;
+        tooltipController?.HideTooltip();
+    }
+}
+
+// FILE: .\UI\Inventory\InventoryHighlighter.cs
+using UnityEngine;
+
+public class InventoryHighlighter : MonoBehaviour
+{
+    [SerializeField] RectTransform highlighter;
+
+    public void SetSize(InventoryItem inventoryItem)
+    {
+        Vector2 size = new Vector2();
+        size.x = inventoryItem.itemData.sizeWidth * ItemGrid.TileSizeWidth;
+        size.y = inventoryItem.itemData.sizeHeight * ItemGrid.TileSizeHeight;
+        highlighter.sizeDelta = size;
+    }
+
+    public void SetPosition(ItemGrid targetGrid, InventoryItem targetItem)
+    {
+        Vector2 position = targetGrid.CalculatePositionOfObjectOnGrid(targetItem,
+            targetItem.positionOnGridX,
+            targetItem.positionOnGridY
+            );
+
+        highlighter.localPosition = position;
+    }
+
+    public void SetParent(ItemGrid targetGrid)
+    {
+        if (targetGrid == null) return;
+        highlighter.SetParent(targetGrid.transform, false);
+    }
+
+    public void SetPosition(ItemGrid targetGrid, InventoryItem targetItem, int posX, int posY)
+    {
+        Vector2 pos = targetGrid.CalculatePositionOfObjectOnGrid(
+            targetItem,
+            posX,
+            posY
+            );
+
+        highlighter.localPosition = pos;
+    }
+
+    public void Show(bool set)
+    {
+        highlighter.gameObject.SetActive(set);
+    }
+}
+
+// FILE: .\UI\Inventory\InventoryItemHighlightController.cs
+using UnityEngine;
+
+public class InventoryItemHighlightController : MonoBehaviour
+{
+    [SerializeField] private InventoryController inventoryController;
+    [SerializeField] private InventoryHighlighter inventoryHighlight;
+    [SerializeField] private ItemGrid currentGrid;
+    [SerializeField] private InventoryGridHandler gridHandler;
+    [SerializeField] private ItemTooltipController tooltipController;
+    [SerializeField] private SelectedItemController selectedItemController;
+
+    private InventoryItem currentHoverItem;
+    private Vector2Int lastPosition = new Vector2Int(int.MinValue, int.MinValue);
+    private Canvas parentCanvas;
+
+    private void Awake()
+    {
+        if (inventoryController == null) inventoryController = FindFirstObjectByType<InventoryController>();
+        if (gridHandler == null) gridHandler = FindFirstObjectByType<InventoryGridHandler>();
+        if (tooltipController == null) tooltipController = FindFirstObjectByType<ItemTooltipController>();
+        if (selectedItemController == null) selectedItemController = FindFirstObjectByType<SelectedItemController>();
+
+        if (inventoryHighlight == null)
+            Debug.LogWarning($"InventoryHighlight not assigned on {name}", this);
+    }
+
+    public void SetCurrentGrid(ItemGrid grid)
+    {
+        currentGrid = grid;
+        if (inventoryHighlight != null) inventoryHighlight.SetParent(grid);
+        parentCanvas = grid != null ? grid.GetComponentInParent<Canvas>() : null;
+    }
+
+    private void Update()
+    {
+        if (currentGrid == null || inventoryHighlight == null || selectedItemController == null) return;
+
+        if (!IsPointerInsideGrid())
+        {
+            ClearHover();
+            return;
+        }
+
+        Vector2Int hoveredPosition = GetClampedHoveredPosition();
+        if (HasHoveredPositionChanged(hoveredPosition))
+        {
+            HandleHighlight(hoveredPosition);
+        }
+    }
+
+    private Vector2Int GetClampedHoveredPosition()
+    {
+        InventoryItem selectedItem = selectedItemController.SelectedItem;
+        Vector2Int pos = currentGrid.GetTileGridPosition(Input.mousePosition, selectedItem);
+        pos.x = Mathf.Clamp(pos.x, 0, currentGrid.Width - 1);
+        pos.y = Mathf.Clamp(pos.y, 0, currentGrid.Height - 1);
+        return pos;
+    }
+
+    private bool HasHoveredPositionChanged(Vector2Int pos)
+    {
+        if (pos != lastPosition)
+        {
+            lastPosition = pos;
+            return true;
+        }
+        return false;
+    }
+
+    private void HandleHighlight(Vector2Int position)
+    {
+        InventoryItem selectedItem = selectedItemController.SelectedItem;
+        if (selectedItem != null)
+        {
+            HighlightSelectedItem(position, selectedItem);
+        }
+        else
+        {
+            HighlightExistingItem(position);
+        }
+    }
+
+    private bool IsPointerInsideGrid()
+    {
+        if (currentGrid == null) return false;
+
+        RectTransform rectTransform = currentGrid.GetComponent<RectTransform>();
+        Vector2 localMousePos;
+        Camera cam = parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? parentCanvas.worldCamera
+            : null;
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, Input.mousePosition, cam, out localMousePos);
+        return rectTransform.rect.Contains(localMousePos);
+    }
+
+    private void HighlightExistingItem(Vector2Int position)
+    {
+        if (!currentGrid.PositionCheck(position.x, position.y))
+        {
+            ClearHover();
+            inventoryHighlight.Show(false);
+            return;
+        }
+
+        InventoryItem item = currentGrid.GetItem(position.x, position.y);
+        if (item != currentHoverItem)
+        {
+            UpdateHoverItem(item);
+        }
+    }
+
+    private void UpdateHoverItem(InventoryItem item)
+    {
+        if (currentHoverItem != null)
+            tooltipController?.HideTooltip();
+
+        currentHoverItem = item;
+
+        if (currentHoverItem != null)
+        {
+            inventoryHighlight.Show(true);
+            inventoryHighlight.SetSize(currentHoverItem);
+            inventoryHighlight.SetPosition(currentGrid, currentHoverItem);
+            inventoryHighlight.transform.SetAsFirstSibling();
+            ShowTooltipForInventoryGridItem(currentHoverItem);
+        }
+        else
+        {
+            inventoryHighlight.Show(false);
+        }
+    }
+
+    private void ShowTooltipForInventoryGridItem(InventoryItem item)
+    {
+        tooltipController?.ShowTooltip(item, item.gameObject);
+    }
+
+    private void HighlightSelectedItem(Vector2Int position, InventoryItem selectedItem)
+    {
+        if (selectedItem == null) return;
+
+        bool canPlace = currentGrid.BoundaryCheck(position.x, position.y, selectedItem.itemData.sizeWidth, selectedItem.itemData.sizeHeight);
+        inventoryHighlight.Show(canPlace);
+
+        if (canPlace)
+        {
+            inventoryHighlight.SetSize(selectedItem);
+            inventoryHighlight.SetPosition(currentGrid, selectedItem, position.x, position.y);
+            inventoryHighlight.transform.SetAsFirstSibling();
+        }
+
+        if (currentHoverItem != null)
+        {
+            tooltipController?.HideTooltip();
+            currentHoverItem = null;
+        }
+    }
+
+    public void ClearHover()
+    {
+        if (currentHoverItem != null)
+        {
+            tooltipController?.HideTooltip();
+            currentHoverItem = null;
+        }
+
+        inventoryHighlight.Show(false);
+        lastPosition = new Vector2Int(int.MinValue, int.MinValue);
+    }
+}
+
+// FILE: .\UI\Panels\InventoryPanel.cs
+using UnityEngine;
+
+public class InventoryPanel : MonoBehaviour
+{
+    [SerializeField] TMPro.TextMeshProUGUI currencyText;
+    [SerializeField] PlayerInventory playerInventory;
+    int currency = -1;
+
+    void Update()
+    {
+        if (currency != playerInventory.currency)
+        {
+            currencyText.text = playerInventory.currency.ToString();
+            currency = playerInventory.currency;
+        }
+
+    }
+}
+
+// FILE: .\UI\Panels\PanelManager.cs
+using UnityEngine;
+
+public class PanelManager : MonoBehaviour
+{
+    [SerializeField] GameObject inventoryPanel;
+    [SerializeField] GameObject statsPanel;
+    [SerializeField] GameObject questPanel;
+
+    private bool canOpenPanels = true;
+
+    public bool IsInventoryOpen => inventoryPanel.activeInHierarchy && canOpenPanels;
+
+    private void Start()
+    {
+        if (GameManager.instance != null && GameManager.instance.playerObject != null)
+        {
+            CharacterDefeatHandler defeatHandler = GameManager.instance.playerObject.GetComponent<CharacterDefeatHandler>();
+
+            if (defeatHandler != null)
+            {
+                defeatHandler.onDefeated.AddListener(HandleDefeat);
+                defeatHandler.onRespawned.AddListener(HandleRespawn);
+            }
+            else
+            {
+                Debug.LogWarning("UiPanelManager: No CharacterDefeatHandler found on playerObject!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("UiPanelManager: GameManager or playerObject is not set in Start!");
+        }
+    }
+
+    private void HandleDefeat()
+    {
+        canOpenPanels = false;
+        CloseAllPanels();
+    }
+
+    private void HandleRespawn()
+    {
+        canOpenPanels = true;
+    }
+
+    public void ToggleInventoryPanel()
+    {
+        if (!canOpenPanels) return;
+
+        bool newState = !inventoryPanel.activeInHierarchy;
+        inventoryPanel.SetActive(newState);
+
+        var highlight = FindFirstObjectByType<InventoryItemHighlightController>();
+        if (highlight != null)
+            highlight.ClearHover();
+
+        if (!newState)
+            HideTooltipIfCursorOver(inventoryPanel);
+    }
+
+    public void ToggleStatsPanel()
+    {
+        if (!canOpenPanels) return;
+        statsPanel.SetActive(!statsPanel.activeInHierarchy);
+        questPanel.SetActive(false);
+    }
+
+    public void ToggleQuestsPanel()
+    {
+        if (!canOpenPanels) return;
+        questPanel.SetActive(!questPanel.activeInHierarchy);
+        statsPanel.SetActive(false);
+    }
+
+    public void CloseAllPanels()
+    {
+        inventoryPanel.SetActive(false);
+        statsPanel.SetActive(false);
+        questPanel.SetActive(false);
+
+        HideTooltipIfCursorOver(inventoryPanel);
+    }
+
+    private void HideTooltipIfCursorOver(GameObject panel)
+    {
+        if (panel == null) return;
+
+        var tooltip = FindFirstObjectByType<ItemTooltipController>();
+        if (tooltip == null) return;
+
+        RectTransform rect = panel.GetComponent<RectTransform>();
+        if (rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition))
+        {
+            tooltip.HideTooltip();
+        }
+    }
+}
+
+// FILE: .\UI\Panels\PlayerStatsPanel.cs
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CharacterStatsPanel : MonoBehaviour
+{
+    [SerializeField] List<PlayerStatText> attributeValueUIElements;
+    [SerializeField] List<PlayerStatText> statsValueUIElements;
+    [SerializeField] Character targetCharacter;
+
+    private void Update()
+    {
+        UpdatePanel(targetCharacter);
+    }
+
+    public void UpdatePanel(Character character)
+    {
+        for (int i = 0; i < attributeValueUIElements.Count; i++)
+        {
+            attributeValueUIElements[i].ShowCharacterValue(character);
+        }
+        for (int i = 0; i < statsValueUIElements.Count; i++)
+        {
+            statsValueUIElements[i].ShowCharacterValue(character);
+        }
+    }
+}
+
+// FILE: .\UI\Panels\PlayerStatText.cs
+using TMPro;
+using UnityEngine;
+
+public class PlayerStatText : MonoBehaviour
+{
+    public enum StatCategory
+    {
+        Attribute,
+        Regular
+    }
+
+    public StatCategory statCategory;
+    public Attribute attributeToShow;
+    public RegularStat statisticToShow;
+
+    [SerializeField] TextMeshProUGUI text;
+
+    public void ShowCharacterValue(Character character)
+    {
+        switch (statCategory)
+        {
+            case StatCategory.Attribute:
+                AttributeValue attributeValue = character.GetAttributeValue(attributeToShow);
+                SetText(attributeValue.value);
+                break;
+            case StatCategory.Regular:
+                RegularStatValue statsValue = character.GetStatsValue(statisticToShow);
+                if (statsValue.typeFloat == true)
+                {
+                    SetText(statsValue.float_value);
+                }
+                else
+                {
+                    SetText(statsValue.integer_value);
+                }
+                break;
+        }
+    }
+
+    public void SetText(float floatValue)
+    {
+        text.text = floatValue.ToString();
+    }
+
+    public void SetText(int integerValue)
+    {
+        text.text = integerValue.ToString();
+    }
+}
+
+// FILE: .\UI\Tooltip\ItemTooltip.cs
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class ItemTooltip : MonoBehaviour
+{
+    [SerializeField] private TMP_Text tooltipText;
+    [SerializeField] private Image tooltipIcon;
+    [SerializeField] private Vector2 offset = new Vector2(16f, -16f);
+
+    private RectTransform rectTransform;
+    private Canvas parentCanvas;
+    private bool followMouse;
+    private Vector2 initialAnchoredPosition;
+    private Vector2 initialPivot;
+
+    public GameObject CurrentTarget { get; private set; }
+    public Vector2 InitialPivot => initialPivot;
+    public Vector2 InitialAnchoredPosition => initialAnchoredPosition;
+
+    public void SetCurrentTarget(GameObject target)
+    {
+        CurrentTarget = target;
+    }
+
+    private void Awake()
+    {
+        rectTransform = GetComponent<RectTransform>();
+        if (tooltipText == null) tooltipText = GetComponentInChildren<TMP_Text>(true);
+        if (tooltipIcon == null) tooltipIcon = GetComponentInChildren<Image>(true);
+        parentCanvas = GetComponentInParent<Canvas>();
+
+        initialAnchoredPosition = rectTransform.anchoredPosition;
+        initialPivot = rectTransform.pivot;
+
+        var cg = GetComponent<CanvasGroup>();
+        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+        cg.blocksRaycasts = false;
+
+        if (tooltipText != null) tooltipText.raycastTarget = false;
+        if (tooltipIcon != null) tooltipIcon.raycastTarget = false;
+
+        gameObject.SetActive(false);
+    }
+
+    private void Update()
+    {
+        if (gameObject.activeSelf && followMouse)
+            FollowMouse();
+    }
+
+    private void FollowMouse()
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            parentCanvas.transform as RectTransform,
+            Input.mousePosition,
+            parentCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : parentCanvas.worldCamera,
+            out Vector2 localPos
+        );
+        rectTransform.localPosition = localPos + offset;
+    }
+
+    public void ShowForItem(InventoryItem item, bool followMouseCursor, GameObject target)
+    {
+        if (item == null || item.itemData == null) return;
+        string tooltipTextValue = ItemTooltipBuilder.BuildTooltip(item.itemData);
+        ShowInternal(tooltipTextValue, item.itemData.icon, followMouseCursor, target);
+    }
+
+    public void ShowForItemData(ItemData data, bool followMouseCursor, GameObject target)
+    {
+        if (data == null) return;
+        string tooltipTextValue = ItemTooltipBuilder.BuildTooltip(data);
+        ShowInternal(tooltipTextValue, data.icon, followMouseCursor, target);
+    }
+
+    private void ShowInternal(string text, Sprite icon, bool followMouseCursor, GameObject target)
+    {
+        CurrentTarget = target;
+        gameObject.SetActive(true);
+
+        tooltipText.text = text;
+        tooltipText.enableAutoSizing = false;
+
+        if (tooltipIcon != null)
+        {
+            tooltipIcon.enabled = icon != null;
+            tooltipIcon.sprite = icon;
+        }
+
+        followMouse = followMouseCursor;
+        if (followMouse)
+        {
+            rectTransform.pivot = new Vector2(0f, 1f);
+            FollowMouse();
+        }
+        else
+        {
+            rectTransform.pivot = initialPivot;
+            rectTransform.anchoredPosition = initialAnchoredPosition;
+        }
+
+        Canvas.ForceUpdateCanvases();
+    }
+
+    public void HideIfTarget(GameObject target)
+    {
+        if (CurrentTarget == target)
+        {
+            CurrentTarget = null;
+            gameObject.SetActive(false);
+        }
+    }
+
+    public void Hide()
+    {
+        if (CurrentTarget != null)
+        {
+            CurrentTarget = null;
+            gameObject.SetActive(false);
+        }
+    }
+}
+
+// FILE: .\UI\Tooltip\ItemTooltipBuilder.cs
+using UnityEngine;
+using System.Text;
+
+public static class ItemTooltipBuilder
+{
+    public static string BuildTooltip(ItemData itemData)
+    {
+        if (itemData == null) return "";
+
+        StringBuilder tooltip = new StringBuilder();
+        tooltip.AppendLine(itemData.name);
+
+        if (itemData.stats != null && itemData.stats.Count > 0)
+        {
+            foreach (var stat in itemData.stats)
+            {
+                string valueText = stat.typeFloat ? stat.float_value.ToString("0.##") : stat.integer_value.ToString();
+                tooltip.AppendLine($"{stat.statisticType}: {valueText}");
+            }
+        }
+
+        if (itemData.equipmentSlot != EquipmentSlot.None)
+            tooltip.AppendLine($"Slot: {itemData.equipmentSlot}");
+
+        if (itemData.weaponType != WeaponType.None)
+            tooltip.AppendLine($"Weapon: {itemData.weaponType}");
+
+        return tooltip.ToString();
+    }
+}
+
+// FILE: .\UI\Tooltip\ItemTooltipController.cs
+using UnityEngine;
+
+public class ItemTooltipController : MonoBehaviour
+{
+    [SerializeField] private ItemTooltip tooltip;
+    [SerializeField] private SelectedItemController selectedItemController;
+
+    public void ShowTooltip(ItemData data, GameObject target)
+    {
+        if (data == null) return;
+        tooltip?.ShowForItemData(data, false, target);
+    }
+
+    public void ShowTooltip(InventoryItem item, GameObject target)
+    {
+        if (item == null) return;
+        tooltip?.ShowForItem(item, true, target);
+    }
+
+    public void HideTooltip()
+    {
+        tooltip?.Hide();
+    }
+}
+
+// FILE: .\Weapon\Arrow.cs
+using UnityEngine;
+
+public class Arrow : MonoBehaviour
+{
+    private Character shooter;
+    private Vector3 velocity;
+
+    [SerializeField] private float lifetime = 10f;
+    [SerializeField] private Vector3 rotationOffset = new Vector3(0f, 90f, 0f);
+
+    public void Initialize(Character shooter, Vector3 direction, float speed, float heightOffset)
+    {
+        this.shooter = shooter;
+        velocity = direction.normalized * speed;
+        transform.rotation = Quaternion.LookRotation(velocity) * Quaternion.Euler(rotationOffset);
+        Destroy(gameObject, lifetime);
+    }
+
+    private void Update()
+    {
+        transform.position += velocity * Time.deltaTime;
+        transform.rotation = Quaternion.LookRotation(velocity) * Quaternion.Euler(rotationOffset);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject == shooter.gameObject) return;
+
+        if (other.TryGetComponent<IDamageable>(out var damageable))
+        {
+            damageable.TakeDamage(shooter.GetDamage());
+
+            AIEnemy aiEnemy = other.GetComponent<AIEnemy>();
+            if (aiEnemy != null)
+                aiEnemy.OnAttacked(shooter.gameObject);
+        }
+
+        Destroy(gameObject);
+    }
+}
+
+// FILE: .\Weapon\WeaponVisibilityController.cs
+using UnityEngine;
+
+public class WeaponVisibilityController : MonoBehaviour
+{
+    [Header("Weapon References")]
+    [SerializeField] GameObject axeInHand;
+    [SerializeField] GameObject axeOnBack;
+    [SerializeField] GameObject bowInHand;
+    [SerializeField] GameObject bowOnBack;
+
+    [Header("Settings")]
+    [SerializeField] float lingerTime = 2f;
+
+    PlayerInventory inventory;
+    CanMoveState canMoveState;
+
+    float lingerTimer;
+
+    private void Awake()
+    {
+        inventory = GetComponent<PlayerInventory>();
+        canMoveState = GetComponent<CanMoveState>();
+    }
+
+    private void Update()
+    {
+        UpdateWeaponVisibility();
+    }
+
+    private void UpdateWeaponVisibility()
+    {
+        axeInHand.SetActive(false);
+        axeOnBack.SetActive(false);
+        bowInHand.SetActive(false);
+        bowOnBack.SetActive(false);
+
+        if (inventory == null || inventory.CurrentWeapon == null)
+            return;
+
+        var weaponType = inventory.CurrentWeapon.itemData.weaponType;
+        bool isAttacking = canMoveState != null && canMoveState.isAttacking;
+
+        if (isAttacking)
+            ResetLingerTimer();
+
+        if (lingerTimer > 0f)
+            lingerTimer -= Time.deltaTime;
+
+        bool keepInHand = isAttacking || lingerTimer > 0f;
+
+        switch (weaponType)
+        {
+            case WeaponType.None:
+                break;
+
+            case WeaponType.Bow:
+                if (keepInHand)
+                    bowInHand.SetActive(true);
+                else
+                    bowOnBack.SetActive(true);
+                break;
+
+            case WeaponType.OneHandedAxe:
+            case WeaponType.TwoHandedAxe:
+                if (keepInHand)
+                    axeInHand.SetActive(true);
+                else
+                    axeOnBack.SetActive(true);
+                break;
+        }
+    }
+
+    public void ResetLingerTimer()
+    {
+        lingerTimer = lingerTime;
+    }
+}
+
