@@ -11,7 +11,6 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
     private GameObject currentHoverOverObject;
     [HideInInspector] public InteractableObject hoveringOverObject;
     [HideInInspector] public IDamageable attackTarget;
-    private Character hoveringCharacter;
     private AIEnemy hoveringEnemy;
     private Vector2 mousePosition;
 
@@ -50,10 +49,8 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
 
                 hoveringOverObject = hitObject.GetComponentInParent<InteractableObject>();
                 attackTarget = hitObject.GetComponentInParent<IDamageable>();
-                hoveringCharacter = hitObject.GetComponentInParent<Character>();
                 hoveringEnemy = hitObject.GetComponentInParent<AIEnemy>();
 
-                // Only show name for enemies
                 if (textOnScreen != null)
                 {
                     textOnScreen.text = hoveringEnemy != null ? hoveringEnemy.name : "";
@@ -85,7 +82,6 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
 
         hoveringOverObject = null;
         attackTarget = null;
-        hoveringCharacter = null;
         hoveringEnemy = null;
 
         if (textOnScreen != null) textOnScreen.text = "";

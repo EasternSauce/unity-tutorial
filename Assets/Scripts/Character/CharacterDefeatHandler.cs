@@ -19,7 +19,7 @@ public class CharacterDefeatHandler : MonoBehaviour
         IsDefeated = false;
         onRespawned?.Invoke();
 
-        var commandHandler = GetComponent<CommandHandler>();
+        var commandHandler = GetComponent<CharacterCommandExecutor>();
         if (commandHandler != null)
         {
             commandHandler.CancelCurrentCommand();

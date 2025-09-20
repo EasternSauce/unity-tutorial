@@ -2,7 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Character))]
 [RequireComponent(typeof(CanMoveState))]
-public class AttackHandler : MonoBehaviour, ICommandHandle
+public class AttackCommandHandler : MonoBehaviour, ICommandHandler
 {
     private PlayerInventory playerInventory;
     private BowAttackExecutor bowAttackExecutor;

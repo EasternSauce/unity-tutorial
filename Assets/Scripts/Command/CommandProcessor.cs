@@ -1,14 +1,14 @@
 
 public class CommandProcessor
 {
-    private readonly ICommandHandle moveHandler;
-    private readonly ICommandHandle attackHandler;
-    private readonly ICommandHandle interactHandler;
+    private readonly ICommandHandler moveHandler;
+    private readonly ICommandHandler attackHandler;
+    private readonly ICommandHandler interactHandler;
 
     public CommandProcessor(
-        ICommandHandle moveHandler,
-        ICommandHandle attackHandler,
-        ICommandHandle interactHandler)
+        ICommandHandler moveHandler,
+        ICommandHandler attackHandler,
+        ICommandHandler interactHandler)
     {
         this.moveHandler = moveHandler;
         this.attackHandler = attackHandler;

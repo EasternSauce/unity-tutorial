@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(CanMoveState))]
-public class MoveHandler : MonoBehaviour, ICommandHandle
+public class MoveCommandHandler : MonoBehaviour, ICommandHandler
 {
     [SerializeField] private float defaultStoppingDistance = 0.1f;
     [SerializeField] private NavMeshAgent agent;

@@ -11,14 +11,14 @@ public class AIEnemy : MonoBehaviour
     private float timeOutsideAggro;
     private bool isAggroed;
 
-    private MoveHandler moveHandler;
-    private AttackHandler attackHandler;
+    private MoveCommandHandler moveHandler;
+    private AttackCommandHandler attackHandler;
     private Character character;
 
     private void Awake()
     {
-        moveHandler = GetComponent<MoveHandler>();
-        attackHandler = GetComponent<AttackHandler>();
+        moveHandler = GetComponent<MoveCommandHandler>();
+        attackHandler = GetComponent<AttackCommandHandler>();
         character = GetComponent<Character>();
     }
 

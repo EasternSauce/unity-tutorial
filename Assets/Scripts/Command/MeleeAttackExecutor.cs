@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class MeleeAttackExecutor : AttackExecutor
+public class MeleeAttackExecutor : BaseAttackExecutor
 {
     [SerializeField] private float attackRange = 2.5f;
     [SerializeField] private float defaultTimeToAttack = 1f;

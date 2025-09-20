@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class BowAttackExecutor : AttackExecutor
+public class BowAttackExecutor : BaseAttackExecutor
 {
     [SerializeField] private GameObject arrowPrefab;
     [SerializeField] private float arrowSpeed = 15f;

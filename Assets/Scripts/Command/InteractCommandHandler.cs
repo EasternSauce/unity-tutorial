@@ -1,16 +1,16 @@
 using UnityEngine;
 
-public class InteractHandler : MonoBehaviour, ICommandHandle
+public class InteractCommandHandler : MonoBehaviour, ICommandHandler
 {
     [SerializeField] private float interactRange = 0.5f;
 
-    private MoveHandler characterMovement;
+    private MoveCommandHandler characterMovement;
     private Character character;
     private Command currentCommand;
 
     private void Awake()
     {
-        characterMovement = GetComponent<MoveHandler>();
+        characterMovement = GetComponent<MoveCommandHandler>();
         character = GetComponent<Character>();
     }
 

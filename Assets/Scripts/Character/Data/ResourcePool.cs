@@ -9,7 +9,7 @@ public class ResourcePool
     public ResourcePool(RegularStatValue maxValue)
     {
         this.maxValue = maxValue;
-        this.currentValue = maxValue.integer_value;
+        currentValue = maxValue.integer_value;
     }
 
     public void FullRestore()

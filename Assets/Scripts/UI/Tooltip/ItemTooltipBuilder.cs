@@ -1,4 +1,3 @@
-using UnityEngine;
 using System.Text;
 
 public static class ItemTooltipBuilder

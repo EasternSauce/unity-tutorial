@@ -6,9 +6,8 @@ public class PlayerInputHandler : MonoBehaviour
 {
     [SerializeField] private InventoryController inventoryController;
     [SerializeField] PlayerMouseInput mouseInput;
-    CommandHandler commandHandler;
+    CharacterCommandExecutor commandHandler;
 
-    AttackInput attackInput;
     PlayerCursorTargetingHandler interactInput;
 
     bool isOverUIElement;
@@ -23,8 +22,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     private void Awake()
     {
-        commandHandler = GetComponent<CommandHandler>();
-        attackInput = GetComponent<AttackInput>();
+        commandHandler = GetComponent<CharacterCommandExecutor>();
         interactInput = GetComponent<PlayerCursorTargetingHandler>();
     }
 
@@ -124,7 +122,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     private void CancelOngoingAttack()
     {
-        var attackHandler = GetComponent<AttackHandler>();
+        var attackHandler = GetComponent<AttackCommandHandler>();
         if (attackHandler != null)
             attackHandler.CancelAttack();
     }

@@ -52,7 +52,7 @@ public class CharacterRespawn : MonoBehaviour
 
         characterDefeat.Respawn();
 
-        AttackHandler attackHandler = GetComponent<AttackHandler>();
+        AttackCommandHandler attackHandler = GetComponent<AttackCommandHandler>();
         if (attackHandler != null)
             attackHandler.CancelAttack();
 

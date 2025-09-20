@@ -1,6 +1,6 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class GameSceneManager : MonoBehaviour
 {
@@ -8,7 +8,7 @@ public class GameSceneManager : MonoBehaviour
 
     [SerializeField] string currentScene;
 
-    public string CurrentScene => currentScene; // public getter for current scene
+    public string CurrentScene => currentScene;
 
     AsyncOperation load;
     AsyncOperation unload;
@@ -20,15 +20,20 @@ public class GameSceneManager : MonoBehaviour
 
     private void Start()
     {
-        // set currentScene to first non-essential scene
+        currentScene = GetFirstNonEssentialScene();
+    }
+
+    private string GetFirstNonEssentialScene()
+    {
         for (int i = 0; i < SceneManager.sceneCount; i++)
         {
-            if (SceneManager.GetSceneAt(i).name != "Essential")
+            Scene scene = SceneManager.GetSceneAt(i);
+            if (scene.name != "Essential")
             {
-                currentScene = SceneManager.GetSceneAt(i).name;
-                break;
+                return scene.name;
             }
         }
+        return null;
     }
 
     public void StartTransition(string toSceneName)

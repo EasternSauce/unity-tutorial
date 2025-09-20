@@ -4,13 +4,13 @@ using UnityEngine.InputSystem;
 public class AttackInput : MonoBehaviour
 {
     PlayerCursorTargetingHandler interactInput;
-    CommandHandler commandHandler;
+    CharacterCommandExecutor commandHandler;
     PlayerMouseInput mouseInput;
 
     void Awake()
     {
         interactInput = GetComponent<PlayerCursorTargetingHandler>();
-        commandHandler = GetComponent<CommandHandler>();
+        commandHandler = GetComponent<CharacterCommandExecutor>();
         mouseInput = Object.FindFirstObjectByType<PlayerMouseInput>();
     }
 

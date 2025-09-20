@@ -1,10 +1,9 @@
 using UnityEngine;
-using UnityEngine.AI;
 
-public abstract class AttackExecutor : MonoBehaviour
+public abstract class BaseAttackExecutor : MonoBehaviour
 {
     protected Character character;
-    protected MoveHandler characterMovement;
+    protected MoveCommandHandler characterMovement;
     protected Animator animator;
     protected Coroutine attackCoroutine;
     protected CanMoveState canMoveState;
@@ -12,7 +11,7 @@ public abstract class AttackExecutor : MonoBehaviour
     protected virtual void Awake()
     {
         character = GetComponent<Character>();
-        characterMovement = GetComponent<MoveHandler>();
+        characterMovement = GetComponent<MoveCommandHandler>();
         animator = GetComponentInChildren<Animator>();
         canMoveState = GetComponent<CanMoveState>();
     }
