@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CharacterUI : MonoBehaviour
+public class CharacterResourceHud : MonoBehaviour
 {
     Character character;
 
@@ -9,8 +9,8 @@ public class CharacterUI : MonoBehaviour
         character = GetComponent<Character>();
     }
 
-    [SerializeField] UIPoolBar hpBar;
-    [SerializeField] UIPoolBar energyBar;
+    [SerializeField] ResourceBar hpBar;
+    [SerializeField] ResourceBar energyBar;
 
     private void Update()
     {

@@ -7,7 +7,7 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private InventoryItemHighlightController itemHighlightController;
     [SerializeField] private GameObject inventoryItemPrefab;
     [SerializeField] private Transform targetCanvas;
-    [SerializeField] private UiPanelManager uiPanelManager;
+    [SerializeField] private PanelManager uiPanelManager;
 
     private ItemGrid selectedItemGrid;
     private EquipmentItemSlot selectedItemSlot;
@@ -33,7 +33,7 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
-        if (uiPanelManager == null) uiPanelManager = FindFirstObjectByType<UiPanelManager>();
+        if (uiPanelManager == null) uiPanelManager = FindFirstObjectByType<PanelManager>();
         CreateSelectedItemParentIfMissing();
     }
 

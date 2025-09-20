@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class UiPanelManager : MonoBehaviour
+public class PanelManager : MonoBehaviour
 {
     [SerializeField] GameObject inventoryPanel;
     [SerializeField] GameObject statsPanel;

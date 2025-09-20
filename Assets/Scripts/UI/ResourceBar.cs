@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIPoolBar : MonoBehaviour
+public class ResourceBar : MonoBehaviour
 {
     [SerializeField] Image bar;
     [SerializeField] TMPro.TextMeshProUGUI textValue;

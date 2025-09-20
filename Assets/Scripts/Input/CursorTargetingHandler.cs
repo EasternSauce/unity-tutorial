@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 public class CursorTargetingHandler : MonoBehaviour
 {
     [SerializeField] private TMPro.TextMeshProUGUI textOnScreen;
-    [SerializeField] private UIPoolBar hpBar;
+    [SerializeField] private ResourceBar hpBar;
     [SerializeField] private ItemTooltipController tooltipController;
 
     private GameObject currentHoverOverObject;
