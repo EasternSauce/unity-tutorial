@@ -30,14 +30,9 @@ public class Arrow : MonoBehaviour
         {
             damageable.TakeDamage(shooter.GetDamage());
 
-            // Updated AI reference
-            AICombatController aiCombat = other.GetComponent<AICombatController>();
-            if (aiCombat != null)
-            {
-                AggroController aggro = aiCombat.GetComponent<AggroController>();
-                if (aggro != null)
-                    aggro.GainAggro(shooter.gameObject);
-            }
+            AIEnemy aiEnemy = other.GetComponent<AIEnemy>();
+            if (aiEnemy != null)
+                aiEnemy.OnAttacked(shooter.gameObject);
         }
 
         Destroy(gameObject);
