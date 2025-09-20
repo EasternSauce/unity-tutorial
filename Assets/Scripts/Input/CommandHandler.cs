@@ -18,11 +18,13 @@ public class CommandHandler : MonoBehaviour
         {
             case CommandType.Move:
                 CancelMoveAndInteract();
+                GetComponent<AttackHandler>()?.CancelAttack(); // ensure movement cancels attacks
                 GetComponent<MoveHandler>()?.ProcessCommand(command);
                 break;
 
             case CommandType.Interact:
                 CancelMoveAndInteract();
+                GetComponent<AttackHandler>()?.CancelAttack(); // 🔥 cancel attack immediately
                 GetComponent<InteractHandler>()?.ProcessCommand(command);
                 break;
 
@@ -31,6 +33,7 @@ public class CommandHandler : MonoBehaviour
                 break;
         }
     }
+
 
     private void CancelMoveAndInteract()
     {
