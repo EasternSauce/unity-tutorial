@@ -30,7 +30,7 @@ public class Arrow : MonoBehaviour
         {
             damageable.TakeDamage(shooter.GetDamage());
 
-            AIEnemy aiEnemy = other.GetComponent<AIEnemy>();
+            AIController aiEnemy = other.GetComponent<AIController>();
             if (aiEnemy != null)
                 aiEnemy.OnAttacked(shooter.gameObject);
         }

@@ -11,7 +11,7 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
     private GameObject currentHoverOverObject;
     [HideInInspector] public InteractableObject hoveringOverObject;
     [HideInInspector] public IDamageable attackTarget;
-    private AIEnemy hoveringEnemy;
+    private AIController hoveringEnemy;
     private Vector2 mousePosition;
 
     private void Update()
@@ -49,7 +49,7 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
 
                 hoveringOverObject = hitObject.GetComponentInParent<InteractableObject>();
                 attackTarget = hitObject.GetComponentInParent<IDamageable>();
-                hoveringEnemy = hitObject.GetComponentInParent<AIEnemy>();
+                hoveringEnemy = hitObject.GetComponentInParent<AIController>();
 
                 if (textOnScreen != null)
                 {
