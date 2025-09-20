@@ -30,15 +30,32 @@ public class AIEnemy : MonoBehaviour
             return;
         }
 
-        if (currentTarget != null && !currentTarget.GetComponent<Character>().IsDead)
+        if (currentTarget != null)
         {
+            var targetCharacter = currentTarget.GetComponent<Character>();
+            if (targetCharacter == null)
+            {
+                DropAggro();
+                return;
+            }
+
+            if (targetCharacter.IsDead)
+            {
+                DropAggro();
+                return;
+            }
+
             float distance = Vector3.Distance(transform.position, currentTarget.transform.position);
 
             if (distance > aggroLoseDistance)
             {
                 timeOutsideAggro += Time.deltaTime;
+                Debug.Log($"{name}: Target out of range ({distance}), counting {timeOutsideAggro}/{aggroLoseTime}");
+
                 if (timeOutsideAggro >= aggroLoseTime)
+                {
                     DropAggro();
+                }
             }
             else
             {
@@ -76,8 +93,6 @@ public class AIEnemy : MonoBehaviour
         float minDist = float.MaxValue;
         foreach (var p in players)
         {
-            if (p.IsDead) continue;
-            if (!p.IsPlayer) continue;
             float dist = Vector3.Distance(transform.position, p.transform.position);
             if (dist < minDist)
             {
