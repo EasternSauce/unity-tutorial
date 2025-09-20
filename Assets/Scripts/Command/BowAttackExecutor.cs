@@ -25,12 +25,15 @@ public class BowAttackExecutor : BaseAttackExecutor
     public void HandleBowAttack(Command command)
     {
         if (!CanAttack()) return;
+        if (command.target == null) return;
+        Character targetCharacter = command.target.GetComponent<Character>();
+        if (targetCharacter == null || targetCharacter.IsDead) return;
 
-        Vector3 targetPos = GetMouseWorldPosition();
+        Vector3 targetPos = command.target.transform.position;
         StopMovementAndRotate(targetPos);
         PrepareWeapon();
         PlayAttackAnimation();
-        StartArrowSpawnCoroutine(targetPos);
+        StartArrowSpawnCoroutine(targetPos, targetCharacter);
     }
 
     public override void ResetState()
@@ -70,14 +73,6 @@ public class BowAttackExecutor : BaseAttackExecutor
         SetAttackingState(isAttackLocked);
     }
 
-    private Vector3 GetMouseWorldPosition()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Plane plane = new Plane(Vector3.up, transform.position + Vector3.up * arrowHeightOffset);
-        if (plane.Raycast(ray, out float distance)) return ray.GetPoint(distance);
-        return transform.position + transform.forward * 10f + Vector3.up * arrowHeightOffset;
-    }
-
     private void StopMovementAndRotate(Vector3 targetPos)
     {
         StopMovement();
@@ -97,16 +92,19 @@ public class BowAttackExecutor : BaseAttackExecutor
         TriggerAttackAnimation();
     }
 
-    private void StartArrowSpawnCoroutine(Vector3 targetPos)
+    private void StartArrowSpawnCoroutine(Vector3 targetPos, Character targetCharacter)
     {
         float delay = attackAnimationTime * arrowSpawnProgress;
-        localCoroutine = StartCoroutine(SpawnArrowDelayed(targetPos, delay));
+        localCoroutine = StartCoroutine(SpawnArrowDelayed(targetPos, delay, targetCharacter));
     }
 
-    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
+    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay, Character targetCharacter)
     {
         yield return new WaitForSeconds(delay);
-        SpawnArrowAtPosition(targetPos);
+        if (targetCharacter != null && !targetCharacter.IsDead)
+        {
+            SpawnArrowAtPosition(targetPos);
+        }
         cooldownTimer = ApplyCooldown(defaultTimeToAttack);
         StopAndClearCoroutine(ref localCoroutine);
         isAttackLocked = false;

@@ -38,6 +38,13 @@ public class MeleeAttackExecutor : BaseAttackExecutor
     {
         while (currentTarget != null && character != null && !character.IsDead)
         {
+            Character targetCharacter = currentTarget.GetComponent<Character>();
+            if (targetCharacter == null || targetCharacter.IsDead)
+            {
+                currentTarget = null;
+                break;
+            }
+
             Transform targetTransform = currentTarget.transform;
             float distance = Vector3.Distance(transform.position, targetTransform.position);
             float range = attackRange;
@@ -92,8 +99,17 @@ public class MeleeAttackExecutor : BaseAttackExecutor
     {
         if (hasDealtDamage || currentTarget == null || character == null || character.IsDead) return;
 
-        IDamageable target = currentTarget.GetComponent<IDamageable>();
-        if (target != null && (!(target is Character c) || !c.IsDead)) target.TakeDamage(character.GetDamage());
+        Character targetCharacter = currentTarget.GetComponent<Character>();
+        if (targetCharacter != null && !targetCharacter.IsDead)
+        {
+            targetCharacter.TakeDamage(character.GetDamage());
+            if (targetCharacter.IsDead)
+            {
+                currentTarget = null;
+                StopAndClearCoroutine(ref attackCoroutine);
+                return;
+            }
+        }
 
         hasDealtDamage = true;
         attackTimer = ApplyCooldown(defaultTimeToAttack);
