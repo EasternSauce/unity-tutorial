@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 3650609626759164196}
   - component: {fileID: 8927179593164126509}
   - component: {fileID: 5651644109129081959}
-  - component: {fileID: 5125308829604460641}
   - component: {fileID: 254584760537483575}
   - component: {fileID: 7527973647089528187}
   - component: {fileID: 7617368940083294593}
@@ -23,6 +22,9 @@ GameObject:
   - component: {fileID: 3810563472766681406}
   - component: {fileID: 2678309537643834986}
   - component: {fileID: 1338710687925481526}
+  - component: {fileID: 7928575470621302264}
+  - component: {fileID: 3922572803176375151}
+  - component: {fileID: 1750851380276926281}
   m_Layer: 8
   m_Name: EnemyCharacter
   m_TagString: Untagged
@@ -114,10 +116,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a311255ec7f4b854ca35e5df8391c489, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultTimeToAttack: 1
-  attackAnimationTime: 1
-  attackLockStart: 0.3
-  attackLockEnd: 0.6
 --- !u!114 &8927179593164126509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134,7 +132,7 @@ MonoBehaviour:
   attributes:
     attributeValues: []
   stats:
-    stats: []
+    regularStatValues: []
   lifePool:
     maxValue:
       statisticType: 0
@@ -162,20 +160,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectName: 
---- !u!114 &5125308829604460641
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6313870040128712383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad3123596e9204b4583fb25091f3ecf6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  aiGroup: {fileID: 11400000, guid: eef71b5cc467b734cb17ead71daba553, type: 2}
-  attackRange: 5
 --- !u!114 &254584760537483575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -215,7 +199,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 5125308829604460641}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UnityEngine.Behaviour, UnityEngine
         m_MethodName: set_enabled
         m_Mode: 6
@@ -278,7 +262,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 5125308829604460641}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UnityEngine.Behaviour, UnityEngine
         m_MethodName: set_enabled
         m_Mode: 6
@@ -412,6 +396,8 @@ MonoBehaviour:
   arrowSpeed: 15
   arrowHeightOffset: 1.2
   arrowSpawnProgress: 0.5
+  defaultTimeToAttack: 1
+  attackAnimationTime: 1
 --- !u!114 &1338710687925481526
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -425,3 +411,44 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 2.5
+  defaultTimeToAttack: 1
+  attackAnimationTime: 1
+--- !u!114 &7928575470621302264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6313870040128712383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8946ba9cb8ecdb47980868697e524e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  aggroDistance: 5
+  aggroLoseDistance: 7
+  aggroLoseTime: 3
+--- !u!114 &3922572803176375151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6313870040128712383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 681b6a584849d41499b5d397837d3444, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1750851380276926281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6313870040128712383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b81932d310ca459438de321bf92d4b7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -11,7 +11,8 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
     private GameObject currentHoverOverObject;
     [HideInInspector] public InteractableObject hoveringOverObject;
     [HideInInspector] public IDamageable attackTarget;
-    private AIEnemy hoveringEnemy;
+    private AICombatController hoveringCombat;
+    private AggroController hoveringAggro;
     private Vector2 mousePosition;
 
     private void Update()
@@ -49,11 +50,14 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
 
                 hoveringOverObject = hitObject.GetComponentInParent<InteractableObject>();
                 attackTarget = hitObject.GetComponentInParent<IDamageable>();
-                hoveringEnemy = hitObject.GetComponentInParent<AIEnemy>();
+
+                // Updated AI reference
+                hoveringCombat = hitObject.GetComponentInParent<AICombatController>();
+                hoveringAggro = hoveringCombat != null ? hoveringCombat.GetComponent<AggroController>() : null;
 
                 if (textOnScreen != null)
                 {
-                    textOnScreen.text = hoveringEnemy != null ? hoveringEnemy.name : "";
+                    textOnScreen.text = hoveringCombat != null ? hoveringCombat.name : "";
                 }
 
                 var pickupItem = hitObject.GetComponentInParent<PickUpInteractableObject>();
@@ -82,7 +86,8 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
 
         hoveringOverObject = null;
         attackTarget = null;
-        hoveringEnemy = null;
+        hoveringCombat = null;
+        hoveringAggro = null;
 
         if (textOnScreen != null) textOnScreen.text = "";
         if (hpBar != null) hpBar.Clear();
@@ -90,9 +95,9 @@ public class PlayerCursorTargetingHandler : MonoBehaviour
 
     private void UpdateHPBar()
     {
-        if (hoveringEnemy != null && hpBar != null)
+        if (hoveringAggro != null && hoveringAggro.CurrentTarget != null && hpBar != null)
         {
-            attackTarget = hoveringEnemy.GetComponent<IDamageable>();
+            attackTarget = hoveringAggro.CurrentTarget.GetComponent<IDamageable>();
             if (attackTarget != null)
                 hpBar.Show(attackTarget.GetLifePool());
             else
