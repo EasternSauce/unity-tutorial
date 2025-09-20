@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class CharacterStatText : MonoBehaviour
+public class PlayerStatText : MonoBehaviour
 {
     public enum StatCategory
     {

@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class CharacterStatsPanel : MonoBehaviour
 {
-    [SerializeField] List<CharacterStatText> attributeValueUIElements;
-    [SerializeField] List<CharacterStatText> statsValueUIElements;
+    [SerializeField] List<PlayerStatText> attributeValueUIElements;
+    [SerializeField] List<PlayerStatText> statsValueUIElements;
     [SerializeField] Character targetCharacter;
 
     private void Update()
