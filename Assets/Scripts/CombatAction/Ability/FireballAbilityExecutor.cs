@@ -28,7 +28,7 @@ public class FireballAbilityExecutor : BaseAttackExecutor
             else if (isAttackLocked && progress > 0.6f) isAttackLocked = false;
         }
 
-        SetAttackingState(isAttackLocked);
+        SetPerformingCombatAction(isAttackLocked);
     }
 
     public void CastFireball(Vector3 targetPos)
@@ -37,7 +37,7 @@ public class FireballAbilityExecutor : BaseAttackExecutor
 
         StopMovement();
         RotateTowardsPoint(targetPos);
-        SetAttackingState(true);
+        SetPerformingCombatAction(true);
 
         animationTimer = attackAnimationTime;
         isAttackLocked = false;
@@ -68,7 +68,7 @@ public class FireballAbilityExecutor : BaseAttackExecutor
         cooldownTimer = ApplyCooldown(defaultTimeToAttack);
         StopAndClearCoroutine(ref localCoroutine);
         isAttackLocked = false;
-        SetAttackingState(false);
+        SetPerformingCombatAction(false);
     }
 
     private void TriggerAttackAnimation()
@@ -82,7 +82,7 @@ public class FireballAbilityExecutor : BaseAttackExecutor
         StopAndClearCoroutine(ref localCoroutine);
         animationTimer = 0f;
         isAttackLocked = false;
-        SetAttackingState(false);
+        SetPerformingCombatAction(false);
         ResetAnimatorTriggers("SpellCast");
     }
 }

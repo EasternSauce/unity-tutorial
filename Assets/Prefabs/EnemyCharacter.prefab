@@ -16,7 +16,6 @@ GameObject:
   - component: {fileID: 8927179593164126509}
   - component: {fileID: 5651644109129081959}
   - component: {fileID: 254584760537483575}
-  - component: {fileID: 7527973647089528187}
   - component: {fileID: 7617368940083294593}
   - component: {fileID: 7599319321417753288}
   - component: {fileID: 3810563472766681406}
@@ -148,6 +147,7 @@ MonoBehaviour:
       integer_value: 0
       float_value: 0
     currentValue: 0
+  isPerformingCombatAction: 0
 --- !u!114 &5651644109129081959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,19 +323,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
---- !u!114 &7527973647089528187
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6313870040128712383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c8ec895b01b8bcd409b8de01965d5346, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isAttacking: 0
 --- !u!114 &7617368940083294593
 MonoBehaviour:
   m_ObjectHideFlags: 0

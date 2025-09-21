@@ -67,7 +67,7 @@ public class BowAttackExecutor : BaseAttackExecutor
 
     private void UpdateMovementState()
     {
-        SetAttackingState(isAttackLocked);
+        SetPerformingCombatAction(isAttackLocked);
     }
 
     private Vector3 GetMouseWorldPosition()
@@ -86,7 +86,7 @@ public class BowAttackExecutor : BaseAttackExecutor
 
     private void PrepareWeapon()
     {
-        SetAttackingState(true);
+        SetPerformingCombatAction(true);
         character.GetComponent<CharacterWeaponVisibilityController>()?.ResetLingerTimer();
     }
 
@@ -110,7 +110,7 @@ public class BowAttackExecutor : BaseAttackExecutor
         cooldownTimer = ApplyCooldown(defaultTimeToAttack);
         StopAndClearCoroutine(ref localCoroutine);
         isAttackLocked = false;
-        SetAttackingState(false);
+        SetPerformingCombatAction(false);
     }
 
     private void SpawnArrowAtPosition(Vector3 targetPos)
@@ -134,7 +134,7 @@ public class BowAttackExecutor : BaseAttackExecutor
     {
         animationTimer = 0f;
         isAttackLocked = false;
-        SetAttackingState(false);
+        SetPerformingCombatAction(false);
     }
 
     private void ResetAnimatorTrigger(string triggerName)

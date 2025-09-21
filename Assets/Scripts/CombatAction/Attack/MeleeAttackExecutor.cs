@@ -19,7 +19,7 @@ public class MeleeAttackExecutor : BaseAttackExecutor
     {
         if (attackTimer > 0f) attackTimer -= Time.deltaTime;
         if (phaseTimer > 0f) phaseTimer -= Time.deltaTime;
-        SetAttackingState(currentPhase != AttackPhase.None);
+        SetPerformingCombatAction(currentPhase != AttackPhase.None);
     }
 
     public void HandleMeleeAttack(Command command)
@@ -158,7 +158,7 @@ public class MeleeAttackExecutor : BaseAttackExecutor
         base.ResetState();
         CancelCurrentAttack();
         hasDealtDamage = false;
-        SetAttackingState(false);
+        SetPerformingCombatAction(false);
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
     }
 }

@@ -59,7 +59,7 @@ public abstract class BaseAttackExecutor : MonoBehaviour
         }
     }
 
-    protected void SetAttackingState(bool state)
+    protected void SetPerformingCombatAction(bool state)
     {
         if (character != null) character.isPerformingCombatAction = state;
     }
@@ -79,6 +79,6 @@ public abstract class BaseAttackExecutor : MonoBehaviour
     public virtual void ResetState()
     {
         StopAndClearCoroutine(ref attackCoroutine);
-        SetAttackingState(false);
+        SetPerformingCombatAction(false);
     }
 }
