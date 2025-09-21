@@ -12,20 +12,17 @@ public class CharacterWeaponVisibilityController : MonoBehaviour
     [SerializeField] float lingerTime = 2f;
 
     PlayerInventory inventory;
-    CanMoveState canMoveState;
+    Character character;
 
     float lingerTimer;
 
     private void Awake()
     {
         inventory = GetComponent<PlayerInventory>();
-        canMoveState = GetComponent<CanMoveState>();
+        character = GetComponent<Character>();
     }
 
-    private void Update()
-    {
-        UpdateWeaponVisibility();
-    }
+    private void Update() => UpdateWeaponVisibility();
 
     private void UpdateWeaponVisibility()
     {
@@ -38,40 +35,30 @@ public class CharacterWeaponVisibilityController : MonoBehaviour
             return;
 
         var weaponType = inventory.CurrentWeapon.itemData.weaponType;
-        bool isAttacking = canMoveState != null && canMoveState.isAttacking;
+        bool isPerformingCombatAction = character != null && character.isPerformingCombatAction;
 
-        if (isAttacking)
+        if (isPerformingCombatAction)
             ResetLingerTimer();
 
         if (lingerTimer > 0f)
             lingerTimer -= Time.deltaTime;
 
-        bool keepInHand = isAttacking || lingerTimer > 0f;
+        bool keepInHand = isPerformingCombatAction || lingerTimer > 0f;
 
         switch (weaponType)
         {
-            case WeaponType.None:
-                break;
-
+            case WeaponType.None: break;
             case WeaponType.Bow:
-                if (keepInHand)
-                    bowInHand.SetActive(true);
-                else
-                    bowOnBack.SetActive(true);
+                if (keepInHand) bowInHand.SetActive(true);
+                else bowOnBack.SetActive(true);
                 break;
-
             case WeaponType.OneHandedAxe:
             case WeaponType.TwoHandedAxe:
-                if (keepInHand)
-                    axeInHand.SetActive(true);
-                else
-                    axeOnBack.SetActive(true);
+                if (keepInHand) axeInHand.SetActive(true);
+                else axeOnBack.SetActive(true);
                 break;
         }
     }
 
-    public void ResetLingerTimer()
-    {
-        lingerTimer = lingerTime;
-    }
+    public void ResetLingerTimer() => lingerTimer = lingerTime;
 }

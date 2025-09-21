@@ -6,14 +6,12 @@ public abstract class BaseAttackExecutor : MonoBehaviour
     protected MoveCommandHandler characterMovement;
     protected Animator animator;
     protected Coroutine attackCoroutine;
-    protected CanMoveState canMoveState;
 
     protected virtual void Awake()
     {
         character = GetComponent<Character>();
         characterMovement = GetComponent<MoveCommandHandler>();
         animator = GetComponentInChildren<Animator>();
-        canMoveState = GetComponent<CanMoveState>();
     }
 
     protected void StopMovement()
@@ -63,7 +61,7 @@ public abstract class BaseAttackExecutor : MonoBehaviour
 
     protected void SetAttackingState(bool state)
     {
-        if (canMoveState != null) canMoveState.isAttacking = state;
+        if (character != null) character.isPerformingCombatAction = state;
     }
 
     protected float ApplyCooldown(float baseCooldown)
@@ -81,5 +79,6 @@ public abstract class BaseAttackExecutor : MonoBehaviour
     public virtual void ResetState()
     {
         StopAndClearCoroutine(ref attackCoroutine);
+        SetAttackingState(false);
     }
 }

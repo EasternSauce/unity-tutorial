@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class Character : MonoBehaviour, IDamageable
 {
@@ -15,6 +14,9 @@ public class Character : MonoBehaviour, IDamageable
     public bool IsDead => isDead;
 
     private float lifeRegen;
+
+    [Header("Combat State")]
+    public bool isPerformingCombatAction;
 
     private void Start()
     {
@@ -78,18 +80,13 @@ public class Character : MonoBehaviour, IDamageable
 
             var handler = GetComponent<CharacterCommandExecutor>();
             if (handler != null)
-            {
                 handler.ExecuteCommand(null);
-            }
 
             GetComponent<CharacterDefeatHandler>().Defeated();
         }
     }
 
-    public RegularStatValue GetStatsValue(RegularStat statisticToGet)
-    {
-        return stats.Get(statisticToGet);
-    }
+    public RegularStatValue GetStatsValue(RegularStat statisticToGet) => stats.Get(statisticToGet);
 
     public void Restore()
     {
@@ -97,30 +94,17 @@ public class Character : MonoBehaviour, IDamageable
         isDead = false;
     }
 
-    public void AddStats(List<RegularStatValue> statsValues)
+    public void AddStats(System.Collections.Generic.List<RegularStatValue> statsValues)
     {
-        foreach (var s in statsValues)
-            stats.Sum(s);
+        foreach (var s in statsValues) stats.Sum(s);
     }
 
-    public void SubtractStats(List<RegularStatValue> statsValues)
+    public void SubtractStats(System.Collections.Generic.List<RegularStatValue> statsValues)
     {
-        foreach (var s in statsValues)
-            stats.Subtract(s);
+        foreach (var s in statsValues) stats.Subtract(s);
     }
 
-    public int GetDamage()
-    {
-        return GetStatsValue(RegularStat.Damage).integer_value;
-    }
-
-    public ResourcePool GetLifePool()
-    {
-        return lifePool;
-    }
-
-    public AttributeValue GetAttributeValue(Attribute attributeToShow)
-    {
-        return attributes.Get(attributeToShow);
-    }
+    public int GetDamage() => GetStatsValue(RegularStat.Damage).integer_value;
+    public ResourcePool GetLifePool() => lifePool;
+    public AttributeValue GetAttributeValue(Attribute attributeToShow) => attributes.Get(attributeToShow);
 }

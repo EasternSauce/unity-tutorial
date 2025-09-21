@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(CanMoveState))]
+[RequireComponent(typeof(Character))]
 public class MoveCommandHandler : MonoBehaviour, ICommandHandler
 {
     [SerializeField] private float defaultStoppingDistance = 0.1f;
@@ -13,7 +13,6 @@ public class MoveCommandHandler : MonoBehaviour, ICommandHandler
     private Character character;
     [SerializeField] private float default_MoveSpeed = 3.5f;
     private RegularStatValue moveSpeed;
-    private CanMoveState canMoveState;
 
     private Command currentCommand;
     public Command CurrentCommand => currentCommand;
@@ -22,7 +21,6 @@ public class MoveCommandHandler : MonoBehaviour, ICommandHandler
     {
         agent = GetComponent<NavMeshAgent>();
         character = GetComponent<Character>();
-        canMoveState = GetComponent<CanMoveState>();
     }
 
     private void Start()
@@ -55,29 +53,23 @@ public class MoveCommandHandler : MonoBehaviour, ICommandHandler
         if (agent == null) return;
 
         float newSpeed = default_MoveSpeed * moveSpeed.float_value;
-
         if (agent.isActiveAndEnabled && agent.isOnNavMesh)
             agent.speed = newSpeed;
     }
 
     public void SetDestination(Vector3 destinationPosition)
     {
-        if (canMoveState.Check() == true)
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
-            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
-            {
-                agent.isStopped = false;
-                agent.SetDestination(destinationPosition);
-            }
+            agent.isStopped = false;
+            agent.SetDestination(destinationPosition);
         }
     }
 
     public void Stop()
     {
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
-        {
             agent.isStopped = true;
-        }
     }
 
     public void ProcessCommand(Command command)

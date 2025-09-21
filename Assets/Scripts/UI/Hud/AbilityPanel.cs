@@ -53,7 +53,6 @@ public class AbilityPanel : MonoBehaviour
 
     public void ActivateAbility(int abilitySlot)
     {
-        Debug.Log("Activated ability Num:" + abilitySlot.ToString());
         onAbilityActivate?.Invoke(abilitySlot);
     }
 
