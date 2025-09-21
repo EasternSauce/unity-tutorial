@@ -51,7 +51,7 @@ public class FireballAbilityExecutor : BaseAttackExecutor
     {
         yield return new WaitForSeconds(delay);
 
-        Vector3 spawnPos = transform.position + Vector3.up * fireballHeightOffset + transform.forward * 0.5f;
+        Vector3 spawnPos = transform.position + Vector3.up * fireballHeightOffset;
         Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
         Vector3 dir = (flatTarget - spawnPos).normalized;
 
@@ -84,5 +84,10 @@ public class FireballAbilityExecutor : BaseAttackExecutor
         isAttackLocked = false;
         SetPerformingCombatAction(false);
         ResetAnimatorTriggers("SpellCast");
+    }
+
+    override protected float ApplyCooldown(float baseCooldown)
+    {
+        return baseCooldown; // todo: add cast speed stat at some point
     }
 }

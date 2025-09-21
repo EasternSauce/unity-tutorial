@@ -152,4 +152,10 @@ public class BowAttackExecutor : BaseAttackExecutor
         else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
         if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
     }
+
+    override protected float ApplyCooldown(float baseCooldown)
+    {
+        return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
+    }
+
 }

@@ -38,7 +38,6 @@ public class MeleeAttackExecutor : BaseAttackExecutor
     {
         while (currentTarget != null && character != null && !character.IsDead)
         {
-            // ✅ Only cancel if it's a Character and it died
             Character targetCharacter = currentTarget.GetComponent<Character>();
             if (targetCharacter != null && targetCharacter.IsDead)
             {
@@ -100,15 +99,12 @@ public class MeleeAttackExecutor : BaseAttackExecutor
     {
         if (hasDealtDamage || currentTarget == null || character == null || character.IsDead) return;
 
-        // ✅ Generalized to IDamageable (supports destructibles too)
         if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
         {
-            // Don’t hit dead Characters, but destructibles are fine
             if (!(damageable is Character c) || !c.IsDead)
             {
                 damageable.TakeDamage(character.GetDamage());
 
-                // If it was a Character and it died, stop attacking
                 if (damageable is Character deadChar && deadChar.IsDead)
                 {
                     currentTarget = null;
@@ -160,5 +156,10 @@ public class MeleeAttackExecutor : BaseAttackExecutor
         hasDealtDamage = false;
         SetPerformingCombatAction(false);
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
+    }
+
+    override protected float ApplyCooldown(float baseCooldown)
+    {
+        return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
     }
 }

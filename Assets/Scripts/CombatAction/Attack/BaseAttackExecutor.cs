@@ -64,10 +64,7 @@ public abstract class BaseAttackExecutor : MonoBehaviour
         if (character != null) character.isPerformingCombatAction = state;
     }
 
-    protected float ApplyCooldown(float baseCooldown)
-    {
-        return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
-    }
+    protected abstract float ApplyCooldown(float baseCooldown);
 
     protected void ResetAnimatorTriggers(params string[] triggers)
     {
