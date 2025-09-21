@@ -11753,7 +11753,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73aa58bd8d6938840aa87290d1eaa73e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fireballPrefab: {fileID: 1712540611187126178, guid: 780ab96a32c5a584e953549874dc879d, type: 3}
+  fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
   fireballSpeed: 15
   fireballHeightOffset: 1.2
   defaultTimeToAttack: 1
