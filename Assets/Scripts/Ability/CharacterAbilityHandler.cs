@@ -14,7 +14,7 @@ public class AbilityContainer
         this.ability = ability;
     }
 
-    public float CooldownNormalized { get { return 1f - currentCooldown / ability.cooldown; } }
+    public float CooldownNormalized => 1f - currentCooldown / ability.cooldown;
 
     internal void Cooldown()
     {
@@ -33,6 +33,7 @@ public class AbilityContainer
 public class CharacterAbilityHandler : MonoBehaviour
 {
     [SerializeField] Ability startingAbility;
+    [SerializeField] FireballAbilityExecutor fireballExecutor;
 
     List<AbilityContainer> abilities;
 
@@ -72,17 +73,30 @@ public class CharacterAbilityHandler : MonoBehaviour
 
     public void ActivateAbility(AbilityContainer ability)
     {
-        if (ability.currentCooldown > 0f) { return; }
+        if (ability.currentCooldown > 0f) return;
 
-        Debug.Log("Activate: " + ability.ability.name);
+        if (ability.ability.name == "Fireball" && fireballExecutor != null)
+        {
+            Vector3 targetPos = GetMouseWorldPosition();
+            fireballExecutor.CastFireball(targetPos);
+        }
+
         ability.Cooldown();
     }
 
     public void ActivateAbility(int abilityId)
     {
-        if (abilityId >= abilities.Count) { return; }
-        if (abilities[abilityId] == null) { return; }
-        AbilityContainer abilityContainer = abilities[abilityId];
-        ActivateAbility(abilityContainer);
+        if (abilityId >= abilities.Count) return;
+        if (abilities[abilityId] == null) return;
+
+        ActivateAbility(abilities[abilityId]);
+    }
+
+    private Vector3 GetMouseWorldPosition()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(Vector3.up, transform.position);
+        if (plane.Raycast(ray, out float distance)) return ray.GetPoint(distance);
+        return transform.position + transform.forward * 10f;
     }
 }

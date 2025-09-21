@@ -10886,6 +10886,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1454312871}
     - target: {fileID: 708920662019824349, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: startingAbility
+      value: 
+      objectReference: {fileID: 11400000, guid: b398f7054e42b0b4cb57ec0d83ac924a, type: 2}
+    - target: {fileID: 708920662019824349, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      propertyPath: fireballExecutor
+      value: 
+      objectReference: {fileID: 6365066707932090209}
+    - target: {fileID: 708920662019824349, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: onAbilityChange.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1256735854}
@@ -11614,6 +11622,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8591223694103453509, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6365066707932090202}
+    - targetCorrespondingSourceObject: {fileID: 8591223694103453509, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6365066707932090209}
   m_SourcePrefab: {fileID: 100100000, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
 --- !u!114 &6365066707932090170 stripped
 MonoBehaviour:
@@ -11730,6 +11741,24 @@ MonoBehaviour:
   attackRange: 2.5
   defaultTimeToAttack: 1
   attackAnimationTime: 1
+--- !u!114 &6365066707932090209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 796244759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73aa58bd8d6938840aa87290d1eaa73e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fireballPrefab: {fileID: 1712540611187126178, guid: 780ab96a32c5a584e953549874dc879d, type: 3}
+  fireballSpeed: 15
+  fireballHeightOffset: 1.2
+  defaultTimeToAttack: 1
+  attackAnimationTime: 1
+  attackSpawnProgress: 0.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
