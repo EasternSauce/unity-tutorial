@@ -25,8 +25,10 @@ public class BowAttackExecutor : CombatActionExecutor
     public void HandleBowAttack(Command command)
     {
         if (!CanAttack()) return;
+        if (command.target == null) return;
 
-        Vector3 targetPos = GetMouseWorldPosition();
+        Vector3 targetPos = command.target.transform.position + Vector3.up * arrowHeightOffset;
+
         StopMovementAndRotate(targetPos);
         PrepareWeapon();
         PlayAttackAnimation();
@@ -70,14 +72,6 @@ public class BowAttackExecutor : CombatActionExecutor
         SetPerformingCombatAction(isAttackLocked);
     }
 
-    private Vector3 GetMouseWorldPosition()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Plane plane = new Plane(Vector3.up, transform.position + Vector3.up * arrowHeightOffset);
-        if (plane.Raycast(ray, out float distance)) return ray.GetPoint(distance);
-        return transform.position + transform.forward * 10f + Vector3.up * arrowHeightOffset;
-    }
-
     private void StopMovementAndRotate(Vector3 targetPos)
     {
         StopMovement();
@@ -116,10 +110,16 @@ public class BowAttackExecutor : CombatActionExecutor
     private void SpawnArrowAtPosition(Vector3 targetPos)
     {
         if (arrowPrefab == null) return;
+
         Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
         GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
         Arrow arrowScript = arrowObject.GetComponent<Arrow>();
-        if (arrowScript == null) { Destroy(arrowObject); return; }
+        if (arrowScript == null)
+        {
+            Destroy(arrowObject);
+            return;
+        }
+
         Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
         Vector3 dir = (flatTarget - spawnPos).normalized;
         arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
@@ -147,15 +147,16 @@ public class BowAttackExecutor : CombatActionExecutor
         InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
         WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
         string trigger = null;
+
         if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
         else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
         else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
+
         if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
     }
 
-    override protected float ApplyCooldown(float baseCooldown)
+    protected override float ApplyCooldown(float baseCooldown)
     {
         return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
     }
-
 }
