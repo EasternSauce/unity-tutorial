@@ -11,7 +11,8 @@ public class Fireball : MonoBehaviour
     [SerializeField] private float damage = 20f;
 
     [Header("Explosion Settings")]
-    [SerializeField] private GameObject explosionEffectPrefab; // Particle System prefab
+    [SerializeField] private GameObject explosionEffectPrefab;
+    [SerializeField] private float prefabDiameter = 2f;
 
     private float explosionRadius = 1f;
 
@@ -21,6 +22,11 @@ public class Fireball : MonoBehaviour
         velocity = direction.normalized * speed;
         transform.rotation = Quaternion.LookRotation(velocity) * Quaternion.Euler(rotationOffset);
         Destroy(gameObject, lifetime);
+    }
+
+    public void SetExplosionRadius(float radius)
+    {
+        explosionRadius = radius;
     }
 
     private void Update()
@@ -39,19 +45,16 @@ public class Fireball : MonoBehaviour
 
     private void Explode()
     {
-        // Spawn explosion VFX
         if (explosionEffectPrefab != null)
         {
             GameObject vfx = Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
 
-            // Scale to match explosion radius (assuming prefab is ~1 unit)
-            vfx.transform.localScale = Vector3.one * (explosionRadius * 2f);
+            float scaleFactor = (explosionRadius * 2f) / prefabDiameter;
+            vfx.transform.localScale = Vector3.one * scaleFactor;
 
-            // Automatically destroy VFX after 3 seconds
             Destroy(vfx, 3f);
         }
 
-        // Deal AOE damage
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
         foreach (var hit in hitColliders)
         {
