@@ -10,6 +10,13 @@ public class AIAggro : MonoBehaviour
     private bool isAggroed;
     public GameObject CurrentTarget { get; private set; }
 
+    private AICombat aiCombat;
+
+    private void Awake()
+    {
+        aiCombat = GetComponent<AICombat>();
+    }
+
     public bool HasTarget()
     {
         return CurrentTarget != null;
@@ -45,7 +52,12 @@ public class AIAggro : MonoBehaviour
     {
         if (CurrentTarget == null) return false;
         float distance = Vector3.Distance(transform.position, CurrentTarget.transform.position);
-        if (distance > aggroLoseDistance)
+
+        float effectiveLoseDistance = aggroLoseDistance;
+        if (aiCombat != null && aiCombat.WeaponType == AIWeaponType.Bow)
+            effectiveLoseDistance *= 1.5f; // 50% higher for ranged enemies
+
+        if (distance > effectiveLoseDistance)
         {
             timeOutsideAggro += Time.deltaTime;
             if (timeOutsideAggro >= aggroLoseTime)

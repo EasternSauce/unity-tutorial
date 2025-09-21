@@ -13,13 +13,24 @@ public class AICombat : MonoBehaviour
     private AIAggro aggro;
 
     [SerializeField] private AIWeaponType weaponType = AIWeaponType.Melee;
-    [SerializeField] private float preferredRangedDistance = 5f;
+    [SerializeField] private float minimumRangedDistance = 3f;
+    [SerializeField] private float distanceAdjustCooldown = 1.5f;
+
+    public AIWeaponType WeaponType => weaponType;
+
+    private float preferredRangedDistance = 10f; // doubled from previous 5
+    private float distanceAdjustTimer = 0f;
 
     private void Awake()
     {
         attackHandler = GetComponent<AttackCommandHandler>();
         moveHandler = GetComponent<MoveCommandHandler>();
         aggro = GetComponent<AIAggro>();
+    }
+
+    private void Update()
+    {
+        distanceAdjustTimer -= Time.deltaTime;
     }
 
     public void HandleTarget(GameObject target)
@@ -30,7 +41,7 @@ public class AICombat : MonoBehaviour
         if (aggro.ShouldAttack())
         {
             if (weaponType == AIWeaponType.Bow)
-                KeepDistanceFromTarget(target);
+                AdjustDistance(target);
 
             if (weaponType == AIWeaponType.Bow)
                 GetComponent<BowAttackExecutor>()?.HandleBowAttack(new Command(CommandType.Attack, target));
@@ -43,12 +54,19 @@ public class AICombat : MonoBehaviour
         }
     }
 
-    private void KeepDistanceFromTarget(GameObject target)
+    private void AdjustDistance(GameObject target)
     {
         if (target == null || moveHandler == null) return;
 
         float distance = Vector3.Distance(transform.position, target.transform.position);
-        if (distance < preferredRangedDistance)
+
+        if (distance < minimumRangedDistance)
+        {
+            moveHandler?.Stop();
+            return;
+        }
+
+        if (distance < preferredRangedDistance && distanceAdjustTimer <= 0f)
         {
             Vector3 dir = (transform.position - target.transform.position).normalized;
             Vector3 destination = target.transform.position + dir * preferredRangedDistance;
@@ -59,10 +77,17 @@ public class AICombat : MonoBehaviour
                 moveHandler.Agent.isStopped = false;
                 moveHandler.SetDestination(destination);
             }
+
+            distanceAdjustTimer = distanceAdjustCooldown;
         }
-        else
+        else if (distance > preferredRangedDistance)
         {
-            moveHandler?.Stop();
+            if (moveHandler.Agent != null && moveHandler.Agent.enabled && moveHandler.Agent.isOnNavMesh)
+            {
+                moveHandler.Agent.stoppingDistance = 0f;
+                moveHandler.Agent.isStopped = false;
+                moveHandler.SetDestination(target.transform.position);
+            }
         }
     }
 
