@@ -30,8 +30,13 @@ public class Fireball : MonoBehaviour
         if (other.TryGetComponent<IDamageable>(out var damageable))
         {
             damageable.TakeDamage((int)damage);
+
+            AIController aiEnemy = other.GetComponent<AIController>();
+            if (aiEnemy != null)
+                aiEnemy.OnAttacked(shooter.gameObject);
         }
 
         Destroy(gameObject);
     }
+
 }
