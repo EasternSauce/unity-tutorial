@@ -38,8 +38,9 @@ public class MeleeAttackExecutor : BaseAttackExecutor
     {
         while (currentTarget != null && character != null && !character.IsDead)
         {
+            // ✅ Only cancel if it's a Character and it died
             Character targetCharacter = currentTarget.GetComponent<Character>();
-            if (targetCharacter == null || targetCharacter.IsDead)
+            if (targetCharacter != null && targetCharacter.IsDead)
             {
                 currentTarget = null;
                 break;
@@ -99,15 +100,21 @@ public class MeleeAttackExecutor : BaseAttackExecutor
     {
         if (hasDealtDamage || currentTarget == null || character == null || character.IsDead) return;
 
-        Character targetCharacter = currentTarget.GetComponent<Character>();
-        if (targetCharacter != null && !targetCharacter.IsDead)
+        // ✅ Generalized to IDamageable (supports destructibles too)
+        if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
         {
-            targetCharacter.TakeDamage(character.GetDamage());
-            if (targetCharacter.IsDead)
+            // Don’t hit dead Characters, but destructibles are fine
+            if (!(damageable is Character c) || !c.IsDead)
             {
-                currentTarget = null;
-                StopAndClearCoroutine(ref attackCoroutine);
-                return;
+                damageable.TakeDamage(character.GetDamage());
+
+                // If it was a Character and it died, stop attacking
+                if (damageable is Character deadChar && deadChar.IsDead)
+                {
+                    currentTarget = null;
+                    StopAndClearCoroutine(ref attackCoroutine);
+                    return;
+                }
             }
         }
 
