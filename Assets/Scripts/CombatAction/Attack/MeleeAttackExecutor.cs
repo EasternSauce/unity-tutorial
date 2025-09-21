@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class MeleeAttackExecutor : BaseAttackExecutor
+public class MeleeAttackExecutor : CombatActionExecutor
 {
     [SerializeField] private float attackRange = 2.5f;
     [SerializeField] private float defaultTimeToAttack = 1f;
@@ -28,10 +28,10 @@ public class MeleeAttackExecutor : BaseAttackExecutor
         if (command.target.GetComponent<Character>()?.IsDead == true) return;
 
         if (currentTarget != command.target) CancelCurrentAttack();
-        else if (attackCoroutine != null) return;
+        else if (combatActionCoroutine != null) return;
 
         currentTarget = command.target;
-        attackCoroutine = StartCoroutine(MeleeAttackRoutine(command));
+        combatActionCoroutine = StartCoroutine(MeleeAttackRoutine(command));
     }
 
     private IEnumerator MeleeAttackRoutine(Command command)
@@ -84,7 +84,7 @@ public class MeleeAttackExecutor : BaseAttackExecutor
         if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
             characterMovement.Agent.stoppingDistance = characterMovement.DefaultStoppingDistance;
 
-        StopAndClearCoroutine(ref attackCoroutine);
+        StopAndClearCoroutine(ref combatActionCoroutine);
     }
 
     private void StartAttackPhase()
@@ -108,7 +108,7 @@ public class MeleeAttackExecutor : BaseAttackExecutor
                 if (damageable is Character deadChar && deadChar.IsDead)
                 {
                     currentTarget = null;
-                    StopAndClearCoroutine(ref attackCoroutine);
+                    StopAndClearCoroutine(ref combatActionCoroutine);
                     return;
                 }
             }
@@ -144,7 +144,7 @@ public class MeleeAttackExecutor : BaseAttackExecutor
 
     public void CancelCurrentAttack()
     {
-        StopAndClearCoroutine(ref attackCoroutine);
+        StopAndClearCoroutine(ref combatActionCoroutine);
         currentTarget = null;
         currentPhase = AttackPhase.None;
     }

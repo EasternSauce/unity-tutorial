@@ -1,11 +1,11 @@
 using UnityEngine;
 
-public abstract class BaseAttackExecutor : MonoBehaviour
+public abstract class CombatActionExecutor : MonoBehaviour
 {
     protected Character character;
     protected MoveCommandHandler characterMovement;
     protected Animator animator;
-    protected Coroutine attackCoroutine;
+    protected Coroutine combatActionCoroutine;
 
     protected virtual void Awake()
     {
@@ -75,7 +75,7 @@ public abstract class BaseAttackExecutor : MonoBehaviour
 
     public virtual void ResetState()
     {
-        StopAndClearCoroutine(ref attackCoroutine);
+        StopAndClearCoroutine(ref combatActionCoroutine);
         SetPerformingCombatAction(false);
     }
 }

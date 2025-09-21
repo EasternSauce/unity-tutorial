@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class FireballAbilityExecutor : BaseAttackExecutor
+public class FireballAbilityExecutor : CombatActionExecutor
 {
     [SerializeField] private GameObject fireballPrefab;
     private float fireballSpeed = 15f;
