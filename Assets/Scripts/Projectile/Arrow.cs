@@ -2,39 +2,43 @@ using UnityEngine;
 
 public class Arrow : MonoBehaviour
 {
-    private Character shooter;
-    private Vector3 velocity;
+    private Character owner;
+    private Vector3 direction;
+    private float speed;
+    private float heightOffset;
 
-    [SerializeField] private float lifetime = 10f;
-    [SerializeField] private Vector3 rotationOffset = new Vector3(0f, 90f, 0f);
-
-    public void Initialize(Character shooter, Vector3 direction, float speed, float heightOffset)
+    public void Initialize(Character owner, Vector3 dir, float speed, float heightOffset)
     {
-        this.shooter = shooter;
-        velocity = direction.normalized * speed;
-        transform.rotation = Quaternion.LookRotation(velocity) * Quaternion.Euler(rotationOffset);
-        Destroy(gameObject, lifetime);
+        this.owner = owner;
+        this.direction = dir;
+        this.speed = speed;
+        this.heightOffset = heightOffset;
     }
 
     private void Update()
     {
-        transform.position += velocity * Time.deltaTime;
-        transform.rotation = Quaternion.LookRotation(velocity) * Quaternion.Euler(rotationOffset);
+        transform.position += direction * speed * Time.deltaTime;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject == shooter.gameObject) return;
+        if (other.gameObject == owner.gameObject) return;
 
         if (other.TryGetComponent<IDamageable>(out var damageable))
         {
-            damageable.TakeDamage(shooter.GetDamage());
+            Character targetChar = other.GetComponent<Character>();
 
-            AIController aiEnemy = other.GetComponent<AIController>();
-            if (aiEnemy != null)
-                aiEnemy.OnAttacked(shooter.gameObject);
+            if (targetChar != null)
+            {
+                bool isOwnerPlayer = owner.IsPlayer;
+                bool isTargetPlayer = targetChar.IsPlayer;
+
+                if (isOwnerPlayer != isTargetPlayer)
+                {
+                    damageable.TakeDamage(owner.GetDamage());
+                    Destroy(gameObject);
+                }
+            }
         }
-
-        Destroy(gameObject);
     }
 }
