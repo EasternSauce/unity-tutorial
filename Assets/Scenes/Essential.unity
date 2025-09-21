@@ -11754,11 +11754,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
-  fireballSpeed: 15
-  fireballHeightOffset: 1.2
-  defaultTimeToAttack: 1
-  attackAnimationTime: 1
-  attackSpawnProgress: 0.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

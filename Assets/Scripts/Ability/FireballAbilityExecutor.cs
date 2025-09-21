@@ -4,11 +4,11 @@ using UnityEngine;
 public class FireballAbilityExecutor : BaseAttackExecutor
 {
     [SerializeField] private GameObject fireballPrefab;
-    [SerializeField] private float fireballSpeed = 15f;
-    [SerializeField] private float fireballHeightOffset = 1.2f;
-    [SerializeField] private float defaultTimeToAttack = 1f;
-    [SerializeField] private float attackAnimationTime = 1f;
-    [SerializeField] private float attackSpawnProgress = 0.5f;
+    private float fireballSpeed = 15f;
+    private float fireballHeightOffset = 1.2f;
+    private float defaultTimeToAttack = 1f;
+    private float attackAnimationTime = 1f;
+    private float attackSpawnProgress = 0.95f;
 
     private float cooldownTimer;
     private float animationTimer;
@@ -73,9 +73,7 @@ public class FireballAbilityExecutor : BaseAttackExecutor
 
     private void TriggerAttackAnimation()
     {
-        if (AnimatorHasTrigger("BowAttack")) animator.SetTrigger("BowAttack");
-        else if (AnimatorHasTrigger("Attack")) animator.SetTrigger("Attack");
-        else if (AnimatorHasTrigger("FistAttack")) animator.SetTrigger("FistAttack");
+        if (AnimatorHasTrigger("SpellCast")) animator.SetTrigger("SpellCast");
     }
 
     public override void ResetState()
@@ -85,6 +83,6 @@ public class FireballAbilityExecutor : BaseAttackExecutor
         animationTimer = 0f;
         isAttackLocked = false;
         SetAttackingState(false);
-        ResetAnimatorTriggers("BowAttack", "Attack", "FistAttack");
+        ResetAnimatorTriggers("SpellCast");
     }
 }
