@@ -170,6 +170,7 @@ MonoBehaviour:
   lifetime: 10
   rotationOffset: {x: 0, y: 90, z: 0}
   damage: 20
+  explosionEffectPrefab: {fileID: 4107294206966289536, guid: da0bf2848eb17f64d8fff055742f9574, type: 3}
 --- !u!54 &4575742603680685355
 Rigidbody:
   m_ObjectHideFlags: 0
