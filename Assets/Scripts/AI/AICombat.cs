@@ -14,12 +14,10 @@ public class AICombat : MonoBehaviour
 
     [SerializeField] private AIWeaponType weaponType = AIWeaponType.Melee;
     [SerializeField] private float minimumRangedDistance = 3f;
-    [SerializeField] private float distanceAdjustCooldown = 1.5f;
 
     public AIWeaponType WeaponType => weaponType;
 
-    private float preferredRangedDistance = 10f; // doubled from previous 5
-    private float distanceAdjustTimer = 0f;
+    private float preferredRangedDistance = 10f;
 
     private void Awake()
     {
@@ -30,7 +28,7 @@ public class AICombat : MonoBehaviour
 
     private void Update()
     {
-        distanceAdjustTimer -= Time.deltaTime;
+
     }
 
     public void HandleTarget(GameObject target)
@@ -66,28 +64,18 @@ public class AICombat : MonoBehaviour
             return;
         }
 
-        if (distance < preferredRangedDistance && distanceAdjustTimer <= 0f)
-        {
-            Vector3 dir = (transform.position - target.transform.position).normalized;
-            Vector3 destination = target.transform.position + dir * preferredRangedDistance;
-
-            if (moveHandler.Agent != null && moveHandler.Agent.enabled && moveHandler.Agent.isOnNavMesh)
-            {
-                moveHandler.Agent.stoppingDistance = 0f;
-                moveHandler.Agent.isStopped = false;
-                moveHandler.SetDestination(destination);
-            }
-
-            distanceAdjustTimer = distanceAdjustCooldown;
-        }
-        else if (distance > preferredRangedDistance)
+        if (distance > preferredRangedDistance)
         {
             if (moveHandler.Agent != null && moveHandler.Agent.enabled && moveHandler.Agent.isOnNavMesh)
             {
-                moveHandler.Agent.stoppingDistance = 0f;
+                moveHandler.Agent.stoppingDistance = preferredRangedDistance * 0.8f;
                 moveHandler.Agent.isStopped = false;
                 moveHandler.SetDestination(target.transform.position);
             }
+        }
+        else
+        {
+            moveHandler?.Stop();
         }
     }
 

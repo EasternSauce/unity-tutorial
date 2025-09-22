@@ -25,15 +25,24 @@ public class BowAttackExecutor : CombatActionExecutor
     public void HandleBowAttack(Command command)
     {
         if (!CanAttack()) return;
-        if (command.target == null) return;
 
-        Vector3 targetPos = command.target.transform.position + Vector3.up * arrowHeightOffset;
+        Vector3 targetPos;
+
+        if (command != null && command.target != null)
+        {
+            targetPos = command.target.transform.position + Vector3.up * arrowHeightOffset;
+        }
+        else
+        {
+            targetPos = GetMouseWorldPosition();
+        }
 
         StopMovementAndRotate(targetPos);
         PrepareWeapon();
         PlayAttackAnimation();
         StartArrowSpawnCoroutine(targetPos);
     }
+
 
     public override void ResetState()
     {
@@ -144,40 +153,29 @@ public class BowAttackExecutor : CombatActionExecutor
 
     private void TriggerAttackAnimation()
     {
-        WeaponType type = WeaponType.None;
-
         InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
-        if (weapon != null)
-        {
-            type = weapon.itemData.weaponType;
-        }
-        else
-        {
-            AICombat aiCombat = character.GetComponent<AICombat>();
-            if (aiCombat != null)
-            {
-                type = aiCombat.WeaponType == AIWeaponType.Bow
-                    ? WeaponType.Bow
-                    : WeaponType.OneHandedAxe;
-            }
-        }
-
+        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
         string trigger = null;
 
-        if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack"))
-            trigger = "BowAttack";
-        else if (AnimatorHasTrigger("Attack"))
-            trigger = "Attack";
-        else if (AnimatorHasTrigger("FistAttack"))
-            trigger = "FistAttack";
+        if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
+        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
+        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
 
-        if (!string.IsNullOrEmpty(trigger))
-            animator.SetTrigger(trigger);
+        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
     }
-
 
     protected override float ApplyCooldown(float baseCooldown)
     {
         return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
+    }
+
+    private Vector3 GetMouseWorldPosition()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(Vector3.up, transform.position + Vector3.up * arrowHeightOffset);
+        if (plane.Raycast(ray, out float distance))
+            return ray.GetPoint(distance);
+
+        return transform.position + transform.forward * 10f + Vector3.up * arrowHeightOffset;
     }
 }
