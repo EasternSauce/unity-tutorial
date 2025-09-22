@@ -144,16 +144,37 @@ public class BowAttackExecutor : CombatActionExecutor
 
     private void TriggerAttackAnimation()
     {
+        WeaponType type = WeaponType.None;
+
         InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
-        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
+        if (weapon != null)
+        {
+            type = weapon.itemData.weaponType;
+        }
+        else
+        {
+            AICombat aiCombat = character.GetComponent<AICombat>();
+            if (aiCombat != null)
+            {
+                type = aiCombat.WeaponType == AIWeaponType.Bow
+                    ? WeaponType.Bow
+                    : WeaponType.OneHandedAxe;
+            }
+        }
+
         string trigger = null;
 
-        if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
-        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
-        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
+        if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack"))
+            trigger = "BowAttack";
+        else if (AnimatorHasTrigger("Attack"))
+            trigger = "Attack";
+        else if (AnimatorHasTrigger("FistAttack"))
+            trigger = "FistAttack";
 
-        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
+        if (!string.IsNullOrEmpty(trigger))
+            animator.SetTrigger(trigger);
     }
+
 
     protected override float ApplyCooldown(float baseCooldown)
     {
