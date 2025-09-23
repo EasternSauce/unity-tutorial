@@ -9,9 +9,9 @@ public class Fireball : MonoBehaviour
     [SerializeField] private Vector3 rotationOffset = new Vector3(0f, 90f, 0f);
     [SerializeField] private float damage = 20f;
     [SerializeField] private GameObject explosionEffectPrefab;
-    [SerializeField] private float prefabDiameter = 2f;
+    [SerializeField] private float prefabDiameter = 2.5f;
 
-    private float explosionRadius = 1f;
+    private float explosionRadius = 2f;
 
     public void Initialize(Character shooter, Vector3 direction, float speed, float heightOffset)
     {
@@ -75,6 +75,29 @@ public class Fireball : MonoBehaviour
             float scaleFactor = (explosionRadius * 2f) / prefabDiameter;
             vfx.transform.localScale = Vector3.one * scaleFactor;
             Destroy(vfx, 3f);
+        }
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
+        foreach (var hit in hits)
+        {
+            if (hit.gameObject == shooter.gameObject) continue;
+
+            if (shooter.IsPlayer)
+            {
+                if (hit.TryGetComponent<IDamageable>(out var dmg))
+                {
+                    dmg.TakeDamage((int)damage);
+                    hit.GetComponent<AIController>()?.OnAttacked(shooter.gameObject);
+                }
+            }
+            else
+            {
+                if (hit.TryGetComponent<Character>(out var target) && target.IsPlayer)
+                {
+                    if (hit.TryGetComponent<IDamageable>(out var dmg))
+                        dmg.TakeDamage((int)damage);
+                }
+            }
         }
     }
 }
