@@ -4,11 +4,11 @@ using UnityEngine;
 public class FireballAbilityExecutor : CombatActionExecutor
 {
     [SerializeField] private GameObject fireballPrefab;
-    private float fireballSpeed = 15f;
-    private float fireballHeightOffset = 1.2f;
-    private float defaultTimeToAttack = 1f;
-    private float attackAnimationTime = 1f;
-    private float attackSpawnProgress = 0.95f;
+    [SerializeField] private float fireballSpeed = 15f;
+    [SerializeField] private float fireballHeightOffset = 1.2f;
+    [SerializeField] private float defaultTimeToAttack = 1f;
+    [SerializeField] private float attackAnimationTime = 1f;
+    [SerializeField] private float attackSpawnProgress = 0.95f;
 
     private float cooldownTimer;
     private float animationTimer;
@@ -31,7 +31,7 @@ public class FireballAbilityExecutor : CombatActionExecutor
         SetPerformingCombatAction(isAttackLocked);
     }
 
-    public void CastFireball(Vector3 targetPos)
+    public void CastFireballAtPosition(Vector3 targetPos, GameObject shooter)
     {
         if (cooldownTimer > 0f || localCoroutine != null) return;
 
@@ -44,10 +44,10 @@ public class FireballAbilityExecutor : CombatActionExecutor
         TriggerAttackAnimation();
 
         float delay = attackAnimationTime * attackSpawnProgress;
-        localCoroutine = StartCoroutine(SpawnFireballDelayed(targetPos, delay));
+        localCoroutine = StartCoroutine(SpawnFireballDelayed(targetPos, shooter, delay));
     }
 
-    private IEnumerator SpawnFireballDelayed(Vector3 targetPos, float delay)
+    private IEnumerator SpawnFireballDelayed(Vector3 targetPos, GameObject shooter, float delay)
     {
         yield return new WaitForSeconds(delay);
 
@@ -61,7 +61,9 @@ public class FireballAbilityExecutor : CombatActionExecutor
             Fireball fireball = proj.GetComponent<Fireball>();
             if (fireball != null)
             {
-                fireball.Initialize(character, dir, fireballSpeed, fireballHeightOffset);
+                Character shooterChar = shooter.GetComponent<Character>();
+                if (shooterChar != null)
+                    fireball.Initialize(shooterChar, dir, fireballSpeed, fireballHeightOffset);
             }
         }
 
@@ -86,8 +88,8 @@ public class FireballAbilityExecutor : CombatActionExecutor
         ResetAnimatorTriggers("SpellCast");
     }
 
-    override protected float ApplyCooldown(float baseCooldown)
+    protected override float ApplyCooldown(float baseCooldown)
     {
-        return baseCooldown; // todo: add cast speed stat at some point
+        return baseCooldown;
     }
 }

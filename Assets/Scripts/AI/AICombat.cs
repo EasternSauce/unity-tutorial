@@ -3,7 +3,8 @@ using UnityEngine;
 public enum AIWeaponType
 {
     Melee,
-    Bow
+    Bow,
+    Magic
 }
 
 public class AICombat : MonoBehaviour
@@ -26,11 +27,6 @@ public class AICombat : MonoBehaviour
         aggro = GetComponent<AIAggro>();
     }
 
-    private void Update()
-    {
-
-    }
-
     public void HandleTarget(GameObject target)
     {
         if (!aggro.IsTargetValid()) return;
@@ -38,13 +34,25 @@ public class AICombat : MonoBehaviour
 
         if (aggro.ShouldAttack())
         {
-            if (weaponType == AIWeaponType.Bow)
+            if (weaponType == AIWeaponType.Bow || weaponType == AIWeaponType.Magic)
                 AdjustDistance(target);
 
-            if (weaponType == AIWeaponType.Bow)
-                GetComponent<BowAttackExecutor>()?.HandleBowAttack(new Command(CommandType.Attack, target));
-            else
-                GetComponent<MeleeAttackExecutor>()?.HandleMeleeAttack(new Command(CommandType.Attack, target));
+            switch (weaponType)
+            {
+                case AIWeaponType.Bow:
+                    GetComponent<BowAttackExecutor>()?.HandleBowAttack(new Command(CommandType.Attack, target));
+                    break;
+
+                case AIWeaponType.Magic:
+                    EnemyAbilityHandler abilityHandler = GetComponent<EnemyAbilityHandler>();
+                    if (abilityHandler != null && abilityHandler.CanCast())
+                        abilityHandler.CastMagic(target);
+                    break;
+
+                case AIWeaponType.Melee:
+                    GetComponent<MeleeAttackExecutor>()?.HandleMeleeAttack(new Command(CommandType.Attack, target));
+                    break;
+            }
         }
         else
         {

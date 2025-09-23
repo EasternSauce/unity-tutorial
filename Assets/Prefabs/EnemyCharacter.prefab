@@ -26,6 +26,8 @@ GameObject:
   - component: {fileID: 5111452547635281438}
   - component: {fileID: -3868445144195624007}
   - component: {fileID: 7269741813899601911}
+  - component: {fileID: 7360522978826248675}
+  - component: {fileID: 8082466312820932934}
   m_Layer: 8
   m_Name: EnemyCharacter
   m_TagString: Untagged
@@ -431,7 +433,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponType: 0
   minimumRangedDistance: 3
-  distanceAdjustCooldown: 1.5
 --- !u!114 &5111452547635281438
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,3 +473,35 @@ MonoBehaviour:
   bowOnBack: {fileID: 0}
   axeInHand: {fileID: 0}
   axeOnBack: {fileID: 0}
+--- !u!114 &7360522978826248675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6313870040128712383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dfbe7f06196e684d9ac7e822b5e351e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  magicAbility: {fileID: 11400000, guid: b398f7054e42b0b4cb57ec0d83ac924a, type: 2}
+  fireballExecutor: {fileID: 8082466312820932934}
+--- !u!114 &8082466312820932934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6313870040128712383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73aa58bd8d6938840aa87290d1eaa73e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
+  fireballSpeed: 15
+  fireballHeightOffset: 1.2
+  defaultTimeToAttack: 1
+  attackAnimationTime: 1
+  attackSpawnProgress: 0.95
