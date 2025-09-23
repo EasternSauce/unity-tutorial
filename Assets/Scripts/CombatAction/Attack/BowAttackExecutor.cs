@@ -129,6 +129,22 @@ public class BowAttackExecutor : CombatActionExecutor
             return;
         }
 
+        // Ignore collisions with shooter
+        Collider shooterCollider = character.GetComponent<Collider>();
+        Collider arrowCollider = arrowObject.GetComponent<Collider>();
+        if (shooterCollider != null && arrowCollider != null)
+            Physics.IgnoreCollision(arrowCollider, shooterCollider);
+
+        // Ignore collisions with all allies if enemy is shooter
+        if (!character.IsPlayer)
+        {
+            foreach (var ally in FindObjectsOfType<Character>())
+            {
+                if (!ally.IsPlayer && ally.TryGetComponent<Collider>(out var allyCollider))
+                    Physics.IgnoreCollision(arrowCollider, allyCollider);
+            }
+        }
+
         Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
         Vector3 dir = (flatTarget - spawnPos).normalized;
         arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);

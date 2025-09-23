@@ -14,8 +14,8 @@ TagManager:
   - Terrain
   - Player
   - Enemy
-  - 
-  - 
+  - PlayerProjectile
+  - EnemyProjectile
   - 
   - 
   - 

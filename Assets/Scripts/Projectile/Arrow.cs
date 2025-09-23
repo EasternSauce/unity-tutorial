@@ -26,13 +26,23 @@ public class Arrow : MonoBehaviour
     {
         if (other.gameObject == shooter.gameObject) return;
 
-        if (other.TryGetComponent<IDamageable>(out var damageable))
+        if (shooter.IsPlayer)
         {
-            damageable.TakeDamage(shooter.GetDamage());
+            if (other.TryGetComponent<Character>(out var target) && !target.IsPlayer)
+            {
+                if (other.TryGetComponent<IDamageable>(out var damageable))
+                    damageable.TakeDamage(shooter.GetDamage());
 
-            AIController aiEnemy = other.GetComponent<AIController>();
-            if (aiEnemy != null)
-                aiEnemy.OnAttacked(shooter.gameObject);
+                other.GetComponent<AIController>()?.OnAttacked(shooter.gameObject);
+            }
+        }
+        else
+        {
+            if (other.TryGetComponent<Character>(out var target) && target.IsPlayer)
+            {
+                if (other.TryGetComponent<IDamageable>(out var damageable))
+                    damageable.TakeDamage(shooter.GetDamage());
+            }
         }
 
         Destroy(gameObject);
