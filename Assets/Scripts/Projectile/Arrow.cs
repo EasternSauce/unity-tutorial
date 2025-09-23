@@ -34,6 +34,15 @@ public class Arrow : MonoBehaviour
                     damageable.TakeDamage(shooter.GetDamage());
 
                 other.GetComponent<AIController>()?.OnAttacked(shooter.gameObject);
+                Destroy(gameObject);
+                return;
+            }
+
+            if (other.TryGetComponent<IDamageable>(out var destructible))
+            {
+                destructible.TakeDamage(shooter.GetDamage());
+                Destroy(gameObject);
+                return;
             }
         }
         else
@@ -42,9 +51,12 @@ public class Arrow : MonoBehaviour
             {
                 if (other.TryGetComponent<IDamageable>(out var damageable))
                     damageable.TakeDamage(shooter.GetDamage());
-            }
-        }
 
-        Destroy(gameObject);
+                Destroy(gameObject);
+                return;
+            }
+
+            return;
+        }
     }
 }
