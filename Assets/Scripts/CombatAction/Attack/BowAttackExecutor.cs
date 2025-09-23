@@ -43,7 +43,6 @@ public class BowAttackExecutor : CombatActionExecutor
         StartArrowSpawnCoroutine(targetPos);
     }
 
-
     public override void ResetState()
     {
         base.ResetState();
@@ -122,25 +121,17 @@ public class BowAttackExecutor : CombatActionExecutor
 
         Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
         GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
+
+        if (character.IsPlayer)
+            arrowObject.layer = LayerMask.NameToLayer("PlayerProjectile");
+        else
+            arrowObject.layer = LayerMask.NameToLayer("EnemyProjectile");
+
         Arrow arrowScript = arrowObject.GetComponent<Arrow>();
         if (arrowScript == null)
         {
             Destroy(arrowObject);
             return;
-        }
-
-        Collider shooterCollider = character.GetComponent<Collider>();
-        Collider arrowCollider = arrowObject.GetComponent<Collider>();
-        if (shooterCollider != null && arrowCollider != null)
-            Physics.IgnoreCollision(arrowCollider, shooterCollider);
-
-        if (!character.IsPlayer)
-        {
-            foreach (var ally in FindObjectsByType<Character>(FindObjectsSortMode.None))
-            {
-                if (!ally.IsPlayer && ally.TryGetComponent<Collider>(out var allyCollider))
-                    Physics.IgnoreCollision(arrowCollider, allyCollider);
-            }
         }
 
         Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
@@ -189,7 +180,6 @@ public class BowAttackExecutor : CombatActionExecutor
         if (!string.IsNullOrEmpty(trigger))
             animator.SetTrigger(trigger);
     }
-
 
     protected override float ApplyCooldown(float baseCooldown)
     {
