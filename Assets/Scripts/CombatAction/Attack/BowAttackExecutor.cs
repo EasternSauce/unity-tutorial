@@ -129,16 +129,14 @@ public class BowAttackExecutor : CombatActionExecutor
             return;
         }
 
-        // Ignore collisions with shooter
         Collider shooterCollider = character.GetComponent<Collider>();
         Collider arrowCollider = arrowObject.GetComponent<Collider>();
         if (shooterCollider != null && arrowCollider != null)
             Physics.IgnoreCollision(arrowCollider, shooterCollider);
 
-        // Ignore collisions with all allies if enemy is shooter
         if (!character.IsPlayer)
         {
-            foreach (var ally in FindObjectsOfType<Character>())
+            foreach (var ally in FindObjectsByType<Character>(FindObjectsSortMode.None))
             {
                 if (!ally.IsPlayer && ally.TryGetComponent<Collider>(out var allyCollider))
                     Physics.IgnoreCollision(arrowCollider, allyCollider);
@@ -169,16 +167,29 @@ public class BowAttackExecutor : CombatActionExecutor
 
     private void TriggerAttackAnimation()
     {
-        InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
-        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
         string trigger = null;
 
-        if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
-        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
-        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
+        if (character.IsPlayer)
+        {
+            InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
+            WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
 
-        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
+            if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
+            else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
+            else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
+        }
+        else
+        {
+            AICombat aiCombat = character.GetComponent<AICombat>();
+            if (aiCombat != null && aiCombat.WeaponType == AIWeaponType.Bow && AnimatorHasTrigger("BowAttack"))
+                trigger = "BowAttack";
+            else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
+        }
+
+        if (!string.IsNullOrEmpty(trigger))
+            animator.SetTrigger(trigger);
     }
+
 
     protected override float ApplyCooldown(float baseCooldown)
     {
