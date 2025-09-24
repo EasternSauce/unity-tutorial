@@ -46,7 +46,7 @@ public class AICombat : MonoBehaviour
                 case AIWeaponType.Magic:
                     EnemyAbilityHandler abilityHandler = GetComponent<EnemyAbilityHandler>();
                     if (abilityHandler != null && abilityHandler.CanCast())
-                        abilityHandler.CastAbilityAtTarget(target);
+                        abilityHandler.CastMagic(target);
                     break;
 
                 case AIWeaponType.Melee:
