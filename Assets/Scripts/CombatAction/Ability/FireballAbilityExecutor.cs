@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class FireballAbilityExecutor : CombatActionExecutor
@@ -13,84 +12,79 @@ public class FireballAbilityExecutor : CombatActionExecutor
     private float cooldownTimer;
     private float animationTimer;
     private bool isAttackLocked;
-    private Coroutine localCoroutine;
+    private bool isCasting;
+    private Vector3 targetPosition;
 
     private void Update()
     {
         if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
-        if (animationTimer > 0f) animationTimer -= Time.deltaTime;
 
-        if (animationTimer <= 0f) isAttackLocked = false;
+        if (!isCasting) return;
+
+        animationTimer -= Time.deltaTime;
+
+        float progress = 1f - (animationTimer / attackAnimationTime);
+
+        isAttackLocked = progress >= 0.3f && progress <= 0.6f;
+
+        if (progress >= attackSpawnProgress)
+        {
+            SpawnFireball(targetPosition);
+            cooldownTimer = ApplyCooldown(defaultTimeToAttack);
+            isCasting = false;
+            isAttackLocked = false;
+            SetPerformingCombatAction(false);
+        }
         else
         {
-            float progress = 1f - (animationTimer / attackAnimationTime);
-            if (!isAttackLocked && progress >= 0.3f && progress <= 0.6f) isAttackLocked = true;
-            else if (isAttackLocked && progress > 0.6f) isAttackLocked = false;
+            SetPerformingCombatAction(isAttackLocked);
         }
 
-        SetPerformingCombatAction(isAttackLocked);
+        if (animationTimer <= 0f)
+        {
+            isAttackLocked = false;
+            SetPerformingCombatAction(false);
+        }
     }
 
     public override void Execute(Command command)
     {
-        Vector3 targetPos = command != null && command.target != null
-            ? command.target.transform.position + Vector3.up * fireballHeightOffset
-            : transform.position + transform.forward * 10f;
-
-        CastFireballAtPosition(targetPos, gameObject);
-    }
-
-    public void CastFireballAtPosition(Vector3 targetPos, GameObject shooter)
-    {
-        if (cooldownTimer > 0f || localCoroutine != null) return;
+        if (command.target != null)
+            targetPosition = command.target.transform.position + Vector3.up * fireballHeightOffset;
+        else
+            targetPosition = transform.position + transform.forward * 10f + Vector3.up * fireballHeightOffset;
 
         StopMovement();
-        RotateTowardsPoint(targetPos);
-        SetPerformingCombatAction(true);
-
+        RotateTowardsPoint(targetPosition);
         animationTimer = attackAnimationTime;
         isAttackLocked = false;
+        isCasting = true;
         TriggerAttackAnimation();
-
-        float delay = attackAnimationTime * attackSpawnProgress;
-        localCoroutine = StartCoroutine(SpawnFireballDelayed(targetPos, shooter, delay));
     }
 
-    private IEnumerator SpawnFireballDelayed(Vector3 targetPos, GameObject shooter, float delay)
+    private void SpawnFireball(Vector3 targetPos)
     {
-        yield return new WaitForSeconds(delay);
+        if (fireballPrefab == null) return;
 
         Vector3 spawnPos = transform.position + Vector3.up * fireballHeightOffset;
         Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
         Vector3 dir = (flatTarget - spawnPos).normalized;
 
-        if (fireballPrefab != null)
-        {
-            GameObject proj = Instantiate(fireballPrefab, spawnPos, Quaternion.identity);
-            Fireball fireball = proj.GetComponent<Fireball>();
-            if (fireball != null)
-            {
-                Character shooterChar = shooter.GetComponent<Character>();
-                if (shooterChar != null)
-                    fireball.Initialize(shooterChar, dir, fireballSpeed, fireballHeightOffset);
-            }
-        }
-
-        cooldownTimer = ApplyCooldown(defaultTimeToAttack);
-        StopAndClearCoroutine(ref localCoroutine);
-        isAttackLocked = false;
-        SetPerformingCombatAction(false);
+        GameObject proj = Instantiate(fireballPrefab, spawnPos, Quaternion.identity);
+        Fireball fireball = proj.GetComponent<Fireball>();
+        if (fireball != null)
+            fireball.Initialize(character, dir, fireballSpeed, fireballHeightOffset);
     }
 
     private void TriggerAttackAnimation()
     {
-        if (AnimatorHasTrigger("SpellCast")) animator.SetTrigger("SpellCast");
+        if (AnimatorHasTrigger("SpellCast"))
+            animator.SetTrigger("SpellCast");
     }
 
     public override void ResetState()
     {
-        base.ResetState();
-        StopAndClearCoroutine(ref localCoroutine);
+        isCasting = false;
         animationTimer = 0f;
         isAttackLocked = false;
         SetPerformingCombatAction(false);

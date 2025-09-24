@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class BowAttackExecutor : CombatActionExecutor
@@ -13,76 +12,71 @@ public class BowAttackExecutor : CombatActionExecutor
     private float cooldownTimer;
     private float animationTimer;
     private bool isAttackLocked;
-    private Coroutine localCoroutine;
+    private bool isSpawningArrow;
+    private Vector3 targetPosition;
+    private bool isActive;
 
     private void Update()
     {
-        UpdateTimers();
-        UpdateAttackLock();
-        UpdateMovementState();
+        if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
+
+        if (isActive)
+        {
+            if (animationTimer > 0f)
+            {
+                animationTimer -= Time.deltaTime;
+                float progress = 1f - (animationTimer / attackAnimationTime);
+                isAttackLocked = progress >= 0.3f && progress <= 0.6f;
+
+                if (!isSpawningArrow && progress >= arrowSpawnProgress)
+                {
+                    SpawnArrowAtPosition(targetPosition);
+                    isSpawningArrow = true;
+                    cooldownTimer = ApplyCooldown(defaultTimeToAttack);
+                }
+            }
+            else
+            {
+                isActive = false;
+                isAttackLocked = false;
+                isSpawningArrow = false;
+            }
+
+            SetPerformingCombatAction(isAttackLocked);
+        }
     }
 
     public override void Execute(Command command)
     {
-        HandleBowAttack(command);
-    }
-
-    private void HandleBowAttack(Command command)
-    {
         if (!CanAttack()) return;
 
-        Vector3 targetPos;
-
         if (command != null && command.target != null)
-        {
-            targetPos = command.target.transform.position + Vector3.up * arrowHeightOffset;
-        }
+            targetPosition = command.target.transform.position + Vector3.up * arrowHeightOffset;
         else
-        {
-            targetPos = GetMouseWorldPosition();
-        }
+            targetPosition = GetMouseWorldPosition();
 
-        StopMovementAndRotate(targetPos);
+        StopMovementAndRotate(targetPosition);
         PrepareWeapon();
         PlayAttackAnimation();
-        StartArrowSpawnCoroutine(targetPos);
+
+        isActive = true;
+        isSpawningArrow = false;
     }
 
     public override void ResetState()
     {
         base.ResetState();
-        StopArrowCoroutine();
-        ResetTimersAndLock();
-        ResetAnimatorTrigger("BowAttack");
+        animationTimer = 0f;
+        isAttackLocked = false;
+        isSpawningArrow = false;
+        isActive = false;
+        SetPerformingCombatAction(false);
+        ResetAnimatorTriggers("BowAttack", "Attack", "FistAttack");
     }
 
     private bool CanAttack()
     {
-        return cooldownTimer <= 0f && localCoroutine == null;
-    }
-
-    private void UpdateTimers()
-    {
-        if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
-        if (animationTimer > 0f) animationTimer -= Time.deltaTime;
-    }
-
-    private void UpdateAttackLock()
-    {
-        if (animationTimer <= 0f)
-        {
-            isAttackLocked = false;
-            return;
-        }
-
-        float progress = 1f - (animationTimer / attackAnimationTime);
-        if (!isAttackLocked && progress >= 0.3f && progress <= 0.6f) isAttackLocked = true;
-        else if (isAttackLocked && progress > 0.6f) isAttackLocked = false;
-    }
-
-    private void UpdateMovementState()
-    {
-        SetPerformingCombatAction(isAttackLocked);
+        return cooldownTimer <= 0f && !isActive;
     }
 
     private void StopMovementAndRotate(Vector3 targetPos)
@@ -104,22 +98,6 @@ public class BowAttackExecutor : CombatActionExecutor
         TriggerAttackAnimation();
     }
 
-    private void StartArrowSpawnCoroutine(Vector3 targetPos)
-    {
-        float delay = attackAnimationTime * arrowSpawnProgress;
-        localCoroutine = StartCoroutine(SpawnArrowDelayed(targetPos, delay));
-    }
-
-    private IEnumerator SpawnArrowDelayed(Vector3 targetPos, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        SpawnArrowAtPosition(targetPos);
-        cooldownTimer = ApplyCooldown(defaultTimeToAttack);
-        StopAndClearCoroutine(ref localCoroutine);
-        isAttackLocked = false;
-        SetPerformingCombatAction(false);
-    }
-
     private void SpawnArrowAtPosition(Vector3 targetPos)
     {
         if (arrowPrefab == null) return;
@@ -133,32 +111,16 @@ public class BowAttackExecutor : CombatActionExecutor
             arrowObject.layer = LayerMask.NameToLayer("EnemyProjectile");
 
         Arrow arrowScript = arrowObject.GetComponent<Arrow>();
-        if (arrowScript == null)
+        if (arrowScript != null)
+        {
+            Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
+            Vector3 dir = (flatTarget - spawnPos).normalized;
+            arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
+        }
+        else
         {
             Destroy(arrowObject);
-            return;
         }
-
-        Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
-        Vector3 dir = (flatTarget - spawnPos).normalized;
-        arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
-    }
-
-    private void StopArrowCoroutine()
-    {
-        StopAndClearCoroutine(ref localCoroutine);
-    }
-
-    private void ResetTimersAndLock()
-    {
-        animationTimer = 0f;
-        isAttackLocked = false;
-        SetPerformingCombatAction(false);
-    }
-
-    private void ResetAnimatorTrigger(string triggerName)
-    {
-        ResetAnimatorTriggers(triggerName);
     }
 
     private void TriggerAttackAnimation()
@@ -197,7 +159,6 @@ public class BowAttackExecutor : CombatActionExecutor
         Plane plane = new Plane(Vector3.up, transform.position + Vector3.up * arrowHeightOffset);
         if (plane.Raycast(ray, out float distance))
             return ray.GetPoint(distance);
-
         return transform.position + transform.forward * 10f + Vector3.up * arrowHeightOffset;
     }
 }

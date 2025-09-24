@@ -19,8 +19,7 @@ public class EnemyAbilityHandler : MonoBehaviour
     public void CastMagic(GameObject target)
     {
         if (!CanCast() || fireballExecutor == null || target == null) return;
-
-        fireballExecutor.CastFireballAtPosition(target.transform.position, gameObject);
+        fireballExecutor.Execute(new Command(CommandType.CombatAction, target));
         cooldownTimer = magicAbility.cooldown;
     }
 }

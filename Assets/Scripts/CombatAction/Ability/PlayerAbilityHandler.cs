@@ -1,12 +1,11 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.Events;
 
 public class PlayerAbilityHandler : MonoBehaviour
 {
-    [SerializeField] Ability startingAbility;
-    [SerializeField] FireballAbilityExecutor fireballExecutor;
+    [SerializeField] private Ability startingAbility;
+    [SerializeField] private FireballAbilityExecutor fireballExecutor;
 
     private List<AbilityContainer> abilities;
 
@@ -15,24 +14,11 @@ public class PlayerAbilityHandler : MonoBehaviour
 
     private void Start()
     {
+        abilities = new List<AbilityContainer>();
         AddAbility(startingAbility);
     }
 
-    private void AddAbility(Ability abilityToAdd)
-    {
-        if (abilities == null) abilities = new List<AbilityContainer>();
-
-        AbilityContainer abilityContainer = new AbilityContainer(abilityToAdd);
-        abilities.Add(abilityContainer);
-        onAbilityChange?.Invoke(abilityContainer, abilities.Count - 1);
-    }
-
     private void Update()
-    {
-        ProcessCooldown();
-    }
-
-    private void ProcessCooldown()
     {
         for (int i = 0; i < abilities.Count; i++)
         {
@@ -41,24 +27,28 @@ public class PlayerAbilityHandler : MonoBehaviour
         }
     }
 
+    private void AddAbility(Ability abilityToAdd)
+    {
+        if (abilityToAdd == null) return;
+        AbilityContainer container = new AbilityContainer(abilityToAdd);
+        abilities.Add(container);
+        onAbilityChange?.Invoke(container, abilities.Count - 1);
+    }
+
     public void ActivateAbility(AbilityContainer ability)
     {
         if (ability.currentCooldown > 0f) return;
-
         if (ability.ability.name == "Fireball" && fireballExecutor != null)
         {
             Vector3 targetPos = GetMouseWorldPosition();
-            fireballExecutor.CastFireballAtPosition(targetPos, gameObject);
+            fireballExecutor.Execute(new Command(CommandType.CombatAction, targetPos));
         }
-
         ability.Cooldown();
     }
 
     public void ActivateAbility(int abilityId)
     {
         if (abilityId >= abilities.Count) return;
-        if (abilities[abilityId] == null) return;
-
         ActivateAbility(abilities[abilityId]);
     }
 

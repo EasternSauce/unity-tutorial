@@ -5,7 +5,6 @@ public abstract class CombatActionExecutor : MonoBehaviour
     protected Character character;
     protected MoveCommandHandler characterMovement;
     protected Animator animator;
-    protected Coroutine combatActionCoroutine;
 
     protected virtual void Awake()
     {
@@ -18,9 +17,12 @@ public abstract class CombatActionExecutor : MonoBehaviour
 
     protected void StopMovement()
     {
-        characterMovement.Stop();
-        if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
-            characterMovement.Agent.isStopped = true;
+        if (characterMovement != null)
+        {
+            characterMovement.Stop();
+            if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
+                characterMovement.Agent.isStopped = true;
+        }
     }
 
     protected void RotateTowardsPoint(Vector3 point)
@@ -43,6 +45,11 @@ public abstract class CombatActionExecutor : MonoBehaviour
         else transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);
     }
 
+    protected void SetPerformingCombatAction(bool state)
+    {
+        if (character != null) character.isPerformingCombatAction = state;
+    }
+
     protected bool AnimatorHasTrigger(string name)
     {
         if (animator == null) return false;
@@ -52,22 +59,6 @@ public abstract class CombatActionExecutor : MonoBehaviour
         return false;
     }
 
-    protected void StopAndClearCoroutine(ref Coroutine coroutine)
-    {
-        if (coroutine != null)
-        {
-            StopCoroutine(coroutine);
-            coroutine = null;
-        }
-    }
-
-    protected void SetPerformingCombatAction(bool state)
-    {
-        if (character != null) character.isPerformingCombatAction = state;
-    }
-
-    protected abstract float ApplyCooldown(float baseCooldown);
-
     protected void ResetAnimatorTriggers(params string[] triggers)
     {
         foreach (var t in triggers)
@@ -75,9 +66,10 @@ public abstract class CombatActionExecutor : MonoBehaviour
                 animator.ResetTrigger(t);
     }
 
+    protected abstract float ApplyCooldown(float baseCooldown);
+
     public virtual void ResetState()
     {
-        StopAndClearCoroutine(ref combatActionCoroutine);
         SetPerformingCombatAction(false);
     }
 }
