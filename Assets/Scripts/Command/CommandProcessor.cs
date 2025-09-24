@@ -22,7 +22,7 @@ public class CommandProcessor
             case CommandType.Move:
                 moveHandler.ProcessCommand(command);
                 break;
-            case CommandType.Attack:
+            case CommandType.CombatAction:
                 attackHandler.ProcessCommand(command);
                 break;
             case CommandType.Interact:

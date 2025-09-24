@@ -22,7 +22,12 @@ public class MeleeAttackExecutor : CombatActionExecutor
         SetPerformingCombatAction(currentPhase != AttackPhase.None);
     }
 
-    public void HandleMeleeAttack(Command command)
+    public override void Execute(Command command)
+    {
+        HandleMeleeAttack(command);
+    }
+
+    private void HandleMeleeAttack(Command command)
     {
         if (command.target == null || character == null || character.IsDead) return;
         if (command.target.GetComponent<Character>()?.IsDead == true) return;
@@ -158,7 +163,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
     }
 
-    override protected float ApplyCooldown(float baseCooldown)
+    protected override float ApplyCooldown(float baseCooldown)
     {
         return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
     }

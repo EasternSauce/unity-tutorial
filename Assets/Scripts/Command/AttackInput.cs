@@ -26,7 +26,7 @@ public class AttackInput : MonoBehaviour
             if (mouseInput != null)
             {
                 Vector3 clickPos = mouseInput.rayToWorldIntersectionPoint;
-                Command bowAttackCommand = new Command(CommandType.Attack, clickPos);
+                Command bowAttackCommand = new Command(CommandType.CombatAction, clickPos);
                 commandHandler.ExecuteCommand(bowAttackCommand);
             }
         }
@@ -39,13 +39,13 @@ public class AttackInput : MonoBehaviour
                 MonoBehaviour mb = target as MonoBehaviour;
                 if (mb != null)
                 {
-                    Command meleeAttackCommand = new Command(CommandType.Attack, mb.gameObject);
+                    Command meleeAttackCommand = new Command(CommandType.CombatAction, mb.gameObject);
                     commandHandler.ExecuteCommand(meleeAttackCommand);
                 }
             }
             else
             {
-                Command whiffAttackCommand = new Command(CommandType.Attack, (GameObject)null);
+                Command whiffAttackCommand = new Command(CommandType.CombatAction, (GameObject)null);
                 commandHandler.ExecuteCommand(whiffAttackCommand);
             }
         }

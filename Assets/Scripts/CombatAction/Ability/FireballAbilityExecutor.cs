@@ -31,6 +31,15 @@ public class FireballAbilityExecutor : CombatActionExecutor
         SetPerformingCombatAction(isAttackLocked);
     }
 
+    public override void Execute(Command command)
+    {
+        Vector3 targetPos = command != null && command.target != null
+            ? command.target.transform.position + Vector3.up * fireballHeightOffset
+            : transform.position + transform.forward * 10f;
+
+        CastFireballAtPosition(targetPos, gameObject);
+    }
+
     public void CastFireballAtPosition(Vector3 targetPos, GameObject shooter)
     {
         if (cooldownTimer > 0f || localCoroutine != null) return;

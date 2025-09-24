@@ -21,7 +21,7 @@ public class CharacterCommandExecutor : MonoBehaviour
                 GetComponent<InteractCommandHandler>()?.ProcessCommand(command);
                 break;
 
-            case CommandType.Attack:
+            case CommandType.CombatAction:
                 GetComponent<AttackCommandHandler>()?.ProcessCommand(command);
                 break;
         }

@@ -20,8 +20,7 @@ public class EnemyAbilityHandler : MonoBehaviour
     {
         if (!CanCast() || fireballExecutor == null || target == null) return;
 
-        Vector3 targetPos = target.transform.position;
-        fireballExecutor.CastFireballAtPosition(targetPos, gameObject);
+        fireballExecutor.CastFireballAtPosition(target.transform.position, gameObject);
         cooldownTimer = magicAbility.cooldown;
     }
 }

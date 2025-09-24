@@ -22,7 +22,12 @@ public class BowAttackExecutor : CombatActionExecutor
         UpdateMovementState();
     }
 
-    public void HandleBowAttack(Command command)
+    public override void Execute(Command command)
+    {
+        HandleBowAttack(command);
+    }
+
+    private void HandleBowAttack(Command command)
     {
         if (!CanAttack()) return;
 

@@ -14,6 +14,8 @@ public abstract class CombatActionExecutor : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
     }
 
+    public abstract void Execute(Command command);
+
     protected void StopMovement()
     {
         characterMovement.Stop();

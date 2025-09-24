@@ -4,7 +4,7 @@ public enum CommandType
 {
     None,
     Move,
-    Attack,
+    CombatAction,
     Interact
 }
 

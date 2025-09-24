@@ -40,17 +40,17 @@ public class AICombat : MonoBehaviour
             switch (weaponType)
             {
                 case AIWeaponType.Bow:
-                    GetComponent<BowAttackExecutor>()?.HandleBowAttack(new Command(CommandType.Attack, target));
+                    GetComponent<BowAttackExecutor>()?.Execute(new Command(CommandType.CombatAction, target));
                     break;
 
                 case AIWeaponType.Magic:
                     EnemyAbilityHandler abilityHandler = GetComponent<EnemyAbilityHandler>();
                     if (abilityHandler != null && abilityHandler.CanCast())
-                        abilityHandler.CastMagic(target);
+                        abilityHandler.CastAbilityAtTarget(target);
                     break;
 
                 case AIWeaponType.Melee:
-                    GetComponent<MeleeAttackExecutor>()?.HandleMeleeAttack(new Command(CommandType.Attack, target));
+                    GetComponent<MeleeAttackExecutor>()?.Execute(new Command(CommandType.CombatAction, target));
                     break;
             }
         }

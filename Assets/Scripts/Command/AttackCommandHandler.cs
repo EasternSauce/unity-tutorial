@@ -18,8 +18,7 @@ public class AttackCommandHandler : MonoBehaviour, ICommandHandler
 
     public void ProcessCommand(Command command)
     {
-        if (command == null || command.commandType != CommandType.Attack) return;
-
+        if (command == null || command.commandType != CommandType.CombatAction) return;
         if (command.target != null && command.target.GetComponent<Character>()?.IsDead == true) return;
 
         InventoryItem weapon = playerInventory?.CurrentWeapon;
@@ -28,15 +27,15 @@ public class AttackCommandHandler : MonoBehaviour, ICommandHandler
         character.isPerformingCombatAction = true;
 
         if (weaponType == WeaponType.Bow)
-            bowAttackExecutor?.HandleBowAttack(command);
+            bowAttackExecutor?.Execute(command);
         else
-            meleeAttackExecutor?.HandleMeleeAttack(command);
+            meleeAttackExecutor?.Execute(command);
     }
 
     public void CancelAttack()
     {
         bowAttackExecutor?.ResetState();
-        meleeAttackExecutor?.CancelCurrentAttack();
+        meleeAttackExecutor?.ResetState();
 
         if (character != null)
             character.isPerformingCombatAction = false;
