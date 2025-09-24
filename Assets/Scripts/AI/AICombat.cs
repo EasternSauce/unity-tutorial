@@ -12,6 +12,7 @@ public class AICombat : MonoBehaviour
     private AttackCommandHandler attackHandler;
     private MoveCommandHandler moveHandler;
     private AIAggro aggro;
+    private CombatActionController combatActionController;
 
     [SerializeField] private AIWeaponType weaponType = AIWeaponType.Melee;
     [SerializeField] private float minimumRangedDistance = 3f;
@@ -25,6 +26,7 @@ public class AICombat : MonoBehaviour
         attackHandler = GetComponent<AttackCommandHandler>();
         moveHandler = GetComponent<MoveCommandHandler>();
         aggro = GetComponent<AIAggro>();
+        combatActionController = GetComponent<CombatActionController>();
     }
 
     public void HandleTarget(GameObject target)
@@ -40,17 +42,13 @@ public class AICombat : MonoBehaviour
             switch (weaponType)
             {
                 case AIWeaponType.Bow:
-                    GetComponent<BowAttackExecutor>()?.Execute(new Command(CommandType.CombatAction, target));
+                    combatActionController.Execute(CombatActionType.Bow, new Command(CommandType.CombatAction, target));
                     break;
-
                 case AIWeaponType.Magic:
-                    EnemyAbilityHandler abilityHandler = GetComponent<EnemyAbilityHandler>();
-                    if (abilityHandler != null && abilityHandler.CanCast())
-                        abilityHandler.CastMagic(target);
+                    combatActionController.Execute(CombatActionType.Fireball, new Command(CommandType.CombatAction, target));
                     break;
-
                 case AIWeaponType.Melee:
-                    GetComponent<MeleeAttackExecutor>()?.Execute(new Command(CommandType.CombatAction, target));
+                    combatActionController.Execute(CombatActionType.Melee, new Command(CommandType.CombatAction, target));
                     break;
             }
         }

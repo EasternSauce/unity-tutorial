@@ -5,12 +5,17 @@ using UnityEngine.Events;
 public class PlayerAbilityHandler : MonoBehaviour
 {
     [SerializeField] private Ability startingAbility;
-    [SerializeField] private FireballAbilityExecutor fireballExecutor;
+    private CombatActionController combatActionController;
 
     private List<AbilityContainer> abilities;
 
     public UnityEvent<AbilityContainer, int> onAbilityChange;
     public UnityEvent<float, int> onCooldownUpdate;
+
+    private void Awake()
+    {
+        combatActionController = GetComponent<CombatActionController>();
+    }
 
     private void Start()
     {
@@ -38,10 +43,10 @@ public class PlayerAbilityHandler : MonoBehaviour
     public void ActivateAbility(AbilityContainer ability)
     {
         if (ability.currentCooldown > 0f) return;
-        if (ability.ability.name == "Fireball" && fireballExecutor != null)
+        if (ability.ability.name == "Fireball")
         {
             Vector3 targetPos = GetMouseWorldPosition();
-            fireballExecutor.Execute(new Command(CommandType.CombatAction, targetPos));
+            combatActionController.Execute(CombatActionType.Fireball, new Command(CommandType.CombatAction, targetPos));
         }
         ability.Cooldown();
     }

@@ -2,12 +2,12 @@ using UnityEngine;
 
 public class FireballAbilityExecutor : CombatActionExecutor
 {
-    [SerializeField] private GameObject fireballPrefab;
-    [SerializeField] private float fireballSpeed = 15f;
-    [SerializeField] private float fireballHeightOffset = 1.2f;
-    [SerializeField] private float defaultTimeToAttack = 1f;
-    [SerializeField] private float attackAnimationTime = 1f;
-    [SerializeField] private float attackSpawnProgress = 0.95f;
+    private GameObject fireballPrefab;
+    private float speed;
+    private float heightOffset;
+    private float attackTime;
+    private float spawnProgress;
+    private float defaultCooldown;
 
     private float cooldownTimer;
     private float animationTimer;
@@ -15,24 +15,31 @@ public class FireballAbilityExecutor : CombatActionExecutor
     private bool isAttackLocked;
     private Vector3 targetPosition;
 
-    private void Update()
+    public FireballAbilityExecutor(Character character, MoveCommandHandler movement, Animator animator, GameObject prefab, float speed = 15f, float heightOffset = 1.2f, float attackTime = 1f, float spawnProgress = 0.95f, float defaultCooldown = 1f)
+        : base(character, movement, animator)
+    {
+        fireballPrefab = prefab;
+        this.speed = speed;
+        this.heightOffset = heightOffset;
+        this.attackTime = attackTime;
+        this.spawnProgress = spawnProgress;
+        this.defaultCooldown = defaultCooldown;
+    }
+
+    public override void TickUpdate()
     {
         if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
-
-        if (!isCasting)
-            return;
-
+        if (!isCasting) return;
         StopMovement();
         animationTimer -= Time.deltaTime;
-        float progress = 1f - (animationTimer / attackAnimationTime);
-
+        float progress = 1f - animationTimer / attackTime;
         isAttackLocked = progress >= 0.3f && progress <= 0.6f;
         SetPerformingCombatAction(isAttackLocked);
 
-        if (progress >= attackSpawnProgress)
+        if (progress >= spawnProgress)
         {
             SpawnFireball(targetPosition);
-            cooldownTimer = ApplyCooldown(defaultTimeToAttack);
+            cooldownTimer = ApplyCooldown(defaultCooldown);
             isCasting = false;
             isAttackLocked = false;
             SetPerformingCombatAction(false);
@@ -48,36 +55,25 @@ public class FireballAbilityExecutor : CombatActionExecutor
 
     public override void Execute(Command command)
     {
-        if (command.target != null)
-            targetPosition = command.target.transform.position + Vector3.up * fireballHeightOffset;
-        else
-            targetPosition = transform.position + transform.forward * 10f + Vector3.up * fireballHeightOffset;
-
+        if (cooldownTimer > 0f || isCasting) return;
+        targetPosition = (command.target != null) ? command.target.transform.position + Vector3.up * heightOffset : character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
         StopMovement();
         RotateTowardsPoint(targetPosition);
-        animationTimer = attackAnimationTime;
+        animationTimer = attackTime;
         isAttackLocked = false;
         isCasting = true;
-        TriggerAttackAnimation();
+        if (AnimatorHasTrigger("SpellCast")) animator.SetTrigger("SpellCast");
     }
 
-    private void SpawnFireball(Vector3 targetPos)
+    private void SpawnFireball(Vector3 target)
     {
         if (fireballPrefab == null) return;
-        Vector3 spawnPos = transform.position + Vector3.up * fireballHeightOffset;
-        Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
-        Vector3 dir = (flatTarget - spawnPos).normalized;
-
-        GameObject proj = Instantiate(fireballPrefab, spawnPos, Quaternion.identity);
-        Fireball fireball = proj.GetComponent<Fireball>();
-        if (fireball != null)
-            fireball.Initialize(character, dir, fireballSpeed, fireballHeightOffset);
-    }
-
-    private void TriggerAttackAnimation()
-    {
-        if (AnimatorHasTrigger("SpellCast"))
-            animator.SetTrigger("SpellCast");
+        Vector3 spawn = character.transform.position + Vector3.up * heightOffset;
+        Vector3 flatTarget = new Vector3(target.x, spawn.y, target.z);
+        Vector3 dir = (flatTarget - spawn).normalized;
+        GameObject proj = Object.Instantiate(fireballPrefab, spawn, Quaternion.identity);
+        Fireball f = proj.GetComponent<Fireball>();
+        if (f != null) f.Initialize(character, dir, speed, heightOffset);
     }
 
     public override void ResetState()
@@ -89,8 +85,5 @@ public class FireballAbilityExecutor : CombatActionExecutor
         ResetAnimatorTriggers("SpellCast");
     }
 
-    protected override float ApplyCooldown(float baseCooldown)
-    {
-        return baseCooldown;
-    }
+    protected override float ApplyCooldown(float baseCooldown) => baseCooldown;
 }

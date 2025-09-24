@@ -19,15 +19,13 @@ GameObject:
   - component: {fileID: 7617368940083294593}
   - component: {fileID: 7599319321417753288}
   - component: {fileID: 3810563472766681406}
-  - component: {fileID: 2678309537643834986}
-  - component: {fileID: 1338710687925481526}
   - component: {fileID: -4215278729807050537}
   - component: {fileID: 2672389237768731777}
   - component: {fileID: 5111452547635281438}
   - component: {fileID: -3868445144195624007}
   - component: {fileID: 7269741813899601911}
   - component: {fileID: 7360522978826248675}
-  - component: {fileID: 8082466312820932934}
+  - component: {fileID: 5833279936784177857}
   m_Layer: 8
   m_Name: EnemyCharacter
   m_TagString: Untagged
@@ -371,39 +369,6 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
---- !u!114 &2678309537643834986
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6313870040128712383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3aebcc438c75d914abefc94897319347, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  arrowPrefab: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}
-  arrowSpeed: 15
-  arrowHeightOffset: 1.2
-  arrowSpawnProgress: 0.5
-  defaultTimeToAttack: 1
-  attackAnimationTime: 1
---- !u!114 &1338710687925481526
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6313870040128712383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66e1b3f88672789418666d882fc36128, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackRange: 2.5
-  defaultTimeToAttack: 1
-  attackAnimationTime: 1
 --- !u!114 &-4215278729807050537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -486,8 +451,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   magicAbility: {fileID: 11400000, guid: b398f7054e42b0b4cb57ec0d83ac924a, type: 2}
-  fireballExecutor: {fileID: 8082466312820932934}
---- !u!114 &8082466312820932934
+--- !u!114 &5833279936784177857
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -496,12 +460,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 6313870040128712383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73aa58bd8d6938840aa87290d1eaa73e, type: 3}
+  m_Script: {fileID: 11500000, guid: be9b39cb22e053942bab3deb85c23edd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
-  fireballSpeed: 15
-  fireballHeightOffset: 1.2
-  defaultTimeToAttack: 1
-  attackAnimationTime: 1
-  attackSpawnProgress: 0.95
+  arrowPrefab: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}

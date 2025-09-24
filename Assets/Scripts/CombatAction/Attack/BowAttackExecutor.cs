@@ -2,12 +2,12 @@ using UnityEngine;
 
 public class BowAttackExecutor : CombatActionExecutor
 {
-    [SerializeField] private GameObject arrowPrefab;
-    [SerializeField] private float arrowSpeed = 15f;
-    [SerializeField] private float arrowHeightOffset = 1.2f;
-    [SerializeField] private float arrowSpawnProgress = 0.5f;
-    [SerializeField] private float defaultTimeToAttack = 1f;
-    [SerializeField] private float attackAnimationTime = 1f;
+    private GameObject arrowPrefab;
+    private float speed;
+    private float heightOffset;
+    private float attackTime;
+    private float spawnProgress;
+    private float defaultCooldown;
 
     private float cooldownTimer;
     private float animationTimer;
@@ -16,24 +16,32 @@ public class BowAttackExecutor : CombatActionExecutor
     private bool hasSpawnedArrow;
     private Vector3 targetPosition;
 
-    private void Update()
+    public BowAttackExecutor(Character character, MoveCommandHandler movement, Animator animator, GameObject prefab, float speed = 15f, float heightOffset = 1.2f, float attackTime = 1f, float spawnProgress = 0.5f, float defaultCooldown = 1f)
+        : base(character, movement, animator)
+    {
+        arrowPrefab = prefab;
+        this.speed = speed;
+        this.heightOffset = heightOffset;
+        this.attackTime = attackTime;
+        this.spawnProgress = spawnProgress;
+        this.defaultCooldown = defaultCooldown;
+    }
+
+    public override void TickUpdate()
     {
         if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
-
-        if (!isAttacking)
-            return;
-
+        if (!isAttacking) return;
         StopMovement();
         animationTimer -= Time.deltaTime;
-        float progress = 1f - (animationTimer / attackAnimationTime);
+        float progress = 1f - animationTimer / attackTime;
         isAttackLocked = progress >= 0.3f && progress <= 0.6f;
         SetPerformingCombatAction(isAttackLocked);
 
-        if (!hasSpawnedArrow && progress >= arrowSpawnProgress)
+        if (!hasSpawnedArrow && progress >= spawnProgress)
         {
-            SpawnArrowAtPosition(targetPosition);
+            SpawnArrow(targetPosition);
             hasSpawnedArrow = true;
-            cooldownTimer = ApplyCooldown(defaultTimeToAttack);
+            cooldownTimer = ApplyCooldown(defaultCooldown);
         }
 
         if (animationTimer <= 0f)
@@ -48,54 +56,38 @@ public class BowAttackExecutor : CombatActionExecutor
     public override void Execute(Command command)
     {
         if (cooldownTimer > 0f || isAttacking) return;
-
-        if (command.target != null)
-            targetPosition = command.target.transform.position + Vector3.up * arrowHeightOffset;
-        else
-            targetPosition = transform.position + transform.forward * 10f + Vector3.up * arrowHeightOffset;
-
+        targetPosition = (command.target != null) ? command.target.transform.position + Vector3.up * heightOffset : character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
         StopMovement();
         RotateTowardsPoint(targetPosition);
         PrepareWeapon();
-        PlayAttackAnimation();
-
+        animationTimer = attackTime;
+        isAttackLocked = false;
         isAttacking = true;
         hasSpawnedArrow = false;
+        TriggerAttackAnimation();
     }
 
-    private void SpawnArrowAtPosition(Vector3 targetPos)
+    private void SpawnArrow(Vector3 target)
     {
         if (arrowPrefab == null) return;
-
-        Vector3 spawnPos = transform.position + Vector3.up * arrowHeightOffset + transform.forward * 0.5f;
-        GameObject arrowObject = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
-
-        if (character.IsPlayer)
-            arrowObject.layer = LayerMask.NameToLayer("PlayerProjectile");
-        else
-            arrowObject.layer = LayerMask.NameToLayer("EnemyProjectile");
-
-        Arrow arrowScript = arrowObject.GetComponent<Arrow>();
-        if (arrowScript != null)
+        Vector3 spawn = character.transform.position + Vector3.up * heightOffset + character.transform.forward * 0.5f;
+        GameObject arrowObj = Object.Instantiate(arrowPrefab, spawn, Quaternion.identity);
+        if (character.IsPlayer) arrowObj.layer = LayerMask.NameToLayer("PlayerProjectile");
+        else arrowObj.layer = LayerMask.NameToLayer("EnemyProjectile");
+        Arrow a = arrowObj.GetComponent<Arrow>();
+        if (a != null)
         {
-            Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
-            Vector3 dir = (flatTarget - spawnPos).normalized;
-            arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
+            Vector3 flatTarget = new Vector3(target.x, spawn.y, target.z);
+            Vector3 dir = (flatTarget - spawn).normalized;
+            a.Initialize(character, dir, speed, heightOffset);
         }
-        else Destroy(arrowObject);
+        else Object.Destroy(arrowObj);
     }
 
     private void PrepareWeapon()
     {
         SetPerformingCombatAction(true);
         character.GetComponent<CharacterWeaponVisibilityController>()?.ResetLingerTimer();
-    }
-
-    private void PlayAttackAnimation()
-    {
-        animationTimer = attackAnimationTime;
-        isAttackLocked = false;
-        TriggerAttackAnimation();
     }
 
     private void TriggerAttackAnimation()
@@ -105,21 +97,17 @@ public class BowAttackExecutor : CombatActionExecutor
         {
             InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
             WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
-
             if (type == WeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
             else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
             else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
         }
         else
         {
-            AICombat aiCombat = character.GetComponent<AICombat>();
-            if (aiCombat != null && aiCombat.WeaponType == AIWeaponType.Bow && AnimatorHasTrigger("BowAttack"))
-                trigger = "BowAttack";
+            AICombat ai = character.GetComponent<AICombat>();
+            if (ai != null && ai.WeaponType == AIWeaponType.Bow && AnimatorHasTrigger("BowAttack")) trigger = "BowAttack";
             else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
         }
-
-        if (!string.IsNullOrEmpty(trigger))
-            animator.SetTrigger(trigger);
+        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
     }
 
     public override void ResetState()

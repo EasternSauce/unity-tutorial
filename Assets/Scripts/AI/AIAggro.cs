@@ -73,7 +73,6 @@ public class AIAggro : MonoBehaviour
         return true;
     }
 
-
     public bool ShouldAttack()
     {
         return isAggroed;

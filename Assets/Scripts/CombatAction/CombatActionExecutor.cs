@@ -1,53 +1,45 @@
 using UnityEngine;
 
-public abstract class CombatActionExecutor : MonoBehaviour
+public abstract class CombatActionExecutor
 {
     protected Character character;
-    protected MoveCommandHandler characterMovement;
+    protected MoveCommandHandler movement;
     protected Animator animator;
 
-    protected virtual void Awake()
+    protected CombatActionExecutor(Character character, MoveCommandHandler movement, Animator animator)
     {
-        character = GetComponent<Character>();
-        characterMovement = GetComponent<MoveCommandHandler>();
-        animator = GetComponentInChildren<Animator>();
+        this.character = character;
+        this.movement = movement;
+        this.animator = animator;
     }
 
     public abstract void Execute(Command command);
+    public virtual void TickUpdate() { }
+    public virtual void ResetState() { SetPerformingCombatAction(false); }
+    protected abstract float ApplyCooldown(float baseCooldown);
 
     protected void StopMovement()
     {
-        if (characterMovement != null)
+        if (movement != null)
         {
-            characterMovement.Stop();
-            if (characterMovement.Agent != null && characterMovement.Agent.enabled && characterMovement.Agent.isOnNavMesh)
-                characterMovement.Agent.isStopped = true;
+            movement.Stop();
+            if (movement.Agent != null && movement.Agent.enabled && movement.Agent.isOnNavMesh)
+                movement.Agent.isStopped = true;
         }
+    }
+
+    protected void ResumeMovement()
+    {
+        if (movement != null && movement.Agent != null && movement.Agent.enabled && movement.Agent.isOnNavMesh)
+            movement.Agent.isStopped = false;
     }
 
     protected void RotateTowardsPoint(Vector3 point)
     {
-        Vector3 lookVector = point - transform.position;
-        lookVector.y = 0f;
-        if (lookVector == Vector3.zero) return;
-        transform.rotation = Quaternion.LookRotation(lookVector);
-    }
-
-    protected void RotateTowardsTarget(Transform target, bool forceInstant = false)
-    {
-        if (target == null) return;
-        Vector3 lookVector = target.position - transform.position;
-        lookVector.y = 0f;
-        if (lookVector == Vector3.zero) return;
-        Quaternion targetRotation = Quaternion.LookRotation(lookVector);
-        bool isMoving = characterMovement.Agent != null && characterMovement.Agent.velocity.magnitude > 0.1f;
-        if (forceInstant || isMoving) transform.rotation = targetRotation;
-        else transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);
-    }
-
-    protected void SetPerformingCombatAction(bool state)
-    {
-        if (character != null) character.isPerformingCombatAction = state;
+        Vector3 look = point - character.transform.position;
+        look.y = 0f;
+        if (look == Vector3.zero) return;
+        character.transform.rotation = Quaternion.LookRotation(look);
     }
 
     protected bool AnimatorHasTrigger(string name)
@@ -66,10 +58,8 @@ public abstract class CombatActionExecutor : MonoBehaviour
                 animator.ResetTrigger(t);
     }
 
-    protected abstract float ApplyCooldown(float baseCooldown);
-
-    public virtual void ResetState()
+    protected void SetPerformingCombatAction(bool state)
     {
-        SetPerformingCombatAction(false);
+        if (character != null) character.isPerformingCombatAction = state;
     }
 }

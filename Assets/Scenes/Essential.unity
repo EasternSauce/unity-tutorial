@@ -10892,7 +10892,7 @@ PrefabInstance:
     - target: {fileID: 708920662019824349, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: fireballExecutor
       value: 
-      objectReference: {fileID: 6365066707932090209}
+      objectReference: {fileID: 0}
     - target: {fileID: 708920662019824349, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       propertyPath: onAbilityChange.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -11619,13 +11619,7 @@ PrefabInstance:
       addedObject: {fileID: 6365066707932090194}
     - targetCorrespondingSourceObject: {fileID: 8591223694103453509, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6365066707932090195}
-    - targetCorrespondingSourceObject: {fileID: 8591223694103453509, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6365066707932090202}
-    - targetCorrespondingSourceObject: {fileID: 8591223694103453509, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6365066707932090209}
+      addedObject: {fileID: 6365066707932090215}
   m_SourcePrefab: {fileID: 100100000, guid: 99519ddf43e261a4db89076da3f29c91, type: 3}
 --- !u!114 &6365066707932090170 stripped
 MonoBehaviour:
@@ -11709,7 +11703,7 @@ MonoBehaviour:
   bowInHand: {fileID: 785057505}
   bowOnBack: {fileID: 94984895}
   lingerTime: 15
---- !u!114 &6365066707932090195
+--- !u!114 &6365066707932090215
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11718,43 +11712,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 796244759}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3aebcc438c75d914abefc94897319347, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  arrowPrefab: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}
-  arrowSpeed: 15
-  arrowHeightOffset: 1.2
-  arrowSpawnProgress: 0.5
-  defaultTimeToAttack: 1
-  attackAnimationTime: 1
---- !u!114 &6365066707932090202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 796244759}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66e1b3f88672789418666d882fc36128, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackRange: 2.5
-  defaultTimeToAttack: 1
-  attackAnimationTime: 1
---- !u!114 &6365066707932090209
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 796244759}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73aa58bd8d6938840aa87290d1eaa73e, type: 3}
+  m_Script: {fileID: 11500000, guid: be9b39cb22e053942bab3deb85c23edd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
+  arrowPrefab: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

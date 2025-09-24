@@ -3,8 +3,13 @@ using UnityEngine;
 public class EnemyAbilityHandler : MonoBehaviour
 {
     [SerializeField] private Ability magicAbility;
-    [SerializeField] private FireballAbilityExecutor fireballExecutor;
+    private CombatActionController combatActionController;
     private float cooldownTimer;
+
+    private void Awake()
+    {
+        combatActionController = GetComponent<CombatActionController>();
+    }
 
     private void Update()
     {
@@ -18,8 +23,8 @@ public class EnemyAbilityHandler : MonoBehaviour
 
     public void CastMagic(GameObject target)
     {
-        if (!CanCast() || fireballExecutor == null || target == null) return;
-        fireballExecutor.Execute(new Command(CommandType.CombatAction, target));
+        if (!CanCast() || target == null) return;
+        combatActionController.Execute(CombatActionType.Fireball, new Command(CommandType.CombatAction, target));
         cooldownTimer = magicAbility.cooldown;
     }
 }
