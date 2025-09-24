@@ -12,90 +12,55 @@ public class BowAttackExecutor : CombatActionExecutor
     private float cooldownTimer;
     private float animationTimer;
     private bool isAttackLocked;
-    private bool isSpawningArrow;
+    private bool isAttacking;
+    private bool hasSpawnedArrow;
     private Vector3 targetPosition;
-    private bool isActive;
 
     private void Update()
     {
         if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
 
-        if (isActive)
+        if (!isAttacking)
+            return;
+
+        StopMovement();
+        animationTimer -= Time.deltaTime;
+        float progress = 1f - (animationTimer / attackAnimationTime);
+        isAttackLocked = progress >= 0.3f && progress <= 0.6f;
+        SetPerformingCombatAction(isAttackLocked);
+
+        if (!hasSpawnedArrow && progress >= arrowSpawnProgress)
         {
-            if (animationTimer > 0f)
-            {
-                animationTimer -= Time.deltaTime;
-                float progress = 1f - (animationTimer / attackAnimationTime);
-                isAttackLocked = progress >= 0.3f && progress <= 0.6f;
+            SpawnArrowAtPosition(targetPosition);
+            hasSpawnedArrow = true;
+            cooldownTimer = ApplyCooldown(defaultTimeToAttack);
+        }
 
-                if (!isSpawningArrow && progress >= arrowSpawnProgress)
-                {
-                    SpawnArrowAtPosition(targetPosition);
-                    isSpawningArrow = true;
-                    cooldownTimer = ApplyCooldown(defaultTimeToAttack);
-                }
-            }
-            else
-            {
-                isActive = false;
-                isAttackLocked = false;
-                isSpawningArrow = false;
-            }
-
-            SetPerformingCombatAction(isAttackLocked);
+        if (animationTimer <= 0f)
+        {
+            isAttacking = false;
+            isAttackLocked = false;
+            hasSpawnedArrow = false;
+            SetPerformingCombatAction(false);
         }
     }
 
     public override void Execute(Command command)
     {
-        if (!CanAttack()) return;
+        if (cooldownTimer > 0f || isAttacking) return;
 
-        if (command != null && command.target != null)
+        if (command.target != null)
             targetPosition = command.target.transform.position + Vector3.up * arrowHeightOffset;
         else
-            targetPosition = GetMouseWorldPosition();
+            targetPosition = transform.position + transform.forward * 10f + Vector3.up * arrowHeightOffset;
 
-        StopMovementAndRotate(targetPosition);
+        StopMovement();
+        RotateTowardsPoint(targetPosition);
         PrepareWeapon();
         PlayAttackAnimation();
 
-        isActive = true;
-        isSpawningArrow = false;
-    }
-
-    public override void ResetState()
-    {
-        base.ResetState();
-        animationTimer = 0f;
-        isAttackLocked = false;
-        isSpawningArrow = false;
-        isActive = false;
-        SetPerformingCombatAction(false);
-        ResetAnimatorTriggers("BowAttack", "Attack", "FistAttack");
-    }
-
-    private bool CanAttack()
-    {
-        return cooldownTimer <= 0f && !isActive;
-    }
-
-    private void StopMovementAndRotate(Vector3 targetPos)
-    {
-        StopMovement();
-        RotateTowardsPoint(targetPos);
-    }
-
-    private void PrepareWeapon()
-    {
-        SetPerformingCombatAction(true);
-        character.GetComponent<CharacterWeaponVisibilityController>()?.ResetLingerTimer();
-    }
-
-    private void PlayAttackAnimation()
-    {
-        animationTimer = attackAnimationTime;
-        isAttackLocked = false;
-        TriggerAttackAnimation();
+        isAttacking = true;
+        hasSpawnedArrow = false;
     }
 
     private void SpawnArrowAtPosition(Vector3 targetPos)
@@ -117,16 +82,25 @@ public class BowAttackExecutor : CombatActionExecutor
             Vector3 dir = (flatTarget - spawnPos).normalized;
             arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
         }
-        else
-        {
-            Destroy(arrowObject);
-        }
+        else Destroy(arrowObject);
+    }
+
+    private void PrepareWeapon()
+    {
+        SetPerformingCombatAction(true);
+        character.GetComponent<CharacterWeaponVisibilityController>()?.ResetLingerTimer();
+    }
+
+    private void PlayAttackAnimation()
+    {
+        animationTimer = attackAnimationTime;
+        isAttackLocked = false;
+        TriggerAttackAnimation();
     }
 
     private void TriggerAttackAnimation()
     {
         string trigger = null;
-
         if (character.IsPlayer)
         {
             InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
@@ -148,17 +122,18 @@ public class BowAttackExecutor : CombatActionExecutor
             animator.SetTrigger(trigger);
     }
 
+    public override void ResetState()
+    {
+        isAttacking = false;
+        animationTimer = 0f;
+        isAttackLocked = false;
+        hasSpawnedArrow = false;
+        SetPerformingCombatAction(false);
+        ResetAnimatorTriggers("BowAttack", "Attack", "FistAttack");
+    }
+
     protected override float ApplyCooldown(float baseCooldown)
     {
         return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
-    }
-
-    private Vector3 GetMouseWorldPosition()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Plane plane = new Plane(Vector3.up, transform.position + Vector3.up * arrowHeightOffset);
-        if (plane.Raycast(ray, out float distance))
-            return ray.GetPoint(distance);
-        return transform.position + transform.forward * 10f + Vector3.up * arrowHeightOffset;
     }
 }

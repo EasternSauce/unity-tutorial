@@ -11,21 +11,23 @@ public class FireballAbilityExecutor : CombatActionExecutor
 
     private float cooldownTimer;
     private float animationTimer;
-    private bool isAttackLocked;
     private bool isCasting;
+    private bool isAttackLocked;
     private Vector3 targetPosition;
 
     private void Update()
     {
         if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
 
-        if (!isCasting) return;
+        if (!isCasting)
+            return;
 
+        StopMovement();
         animationTimer -= Time.deltaTime;
-
         float progress = 1f - (animationTimer / attackAnimationTime);
 
         isAttackLocked = progress >= 0.3f && progress <= 0.6f;
+        SetPerformingCombatAction(isAttackLocked);
 
         if (progress >= attackSpawnProgress)
         {
@@ -35,13 +37,10 @@ public class FireballAbilityExecutor : CombatActionExecutor
             isAttackLocked = false;
             SetPerformingCombatAction(false);
         }
-        else
-        {
-            SetPerformingCombatAction(isAttackLocked);
-        }
 
         if (animationTimer <= 0f)
         {
+            isCasting = false;
             isAttackLocked = false;
             SetPerformingCombatAction(false);
         }
@@ -65,7 +64,6 @@ public class FireballAbilityExecutor : CombatActionExecutor
     private void SpawnFireball(Vector3 targetPos)
     {
         if (fireballPrefab == null) return;
-
         Vector3 spawnPos = transform.position + Vector3.up * fireballHeightOffset;
         Vector3 flatTarget = new Vector3(targetPos.x, spawnPos.y, targetPos.z);
         Vector3 dir = (flatTarget - spawnPos).normalized;
