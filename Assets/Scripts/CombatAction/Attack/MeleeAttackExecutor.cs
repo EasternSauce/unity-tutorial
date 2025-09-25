@@ -6,8 +6,8 @@ public class MeleeAttackExecutor : CombatActionExecutor
     [SerializeField] private float defaultCooldown = 1f;
     [SerializeField] private float attackAnimationTime = 1f;
 
-    private float attackTimer;
     private float phaseTimer;
+    private float attackCooldownTimer;
     private GameObject currentTarget;
     private bool hasDealtDamage;
     private AttackPhase currentPhase = AttackPhase.None;
@@ -21,15 +21,17 @@ public class MeleeAttackExecutor : CombatActionExecutor
     {
         if (command == null || command.target == null || character == null || character.IsDead) return;
 
-        if (currentTarget == command.target && currentPhase != AttackPhase.None)
-            return;
+        if (currentTarget == command.target && currentPhase != AttackPhase.None) return;
 
         currentTarget = command.target;
         currentPhase = AttackPhase.None;
+        hasDealtDamage = false;
     }
 
     public override void TickUpdate()
     {
+        if (attackCooldownTimer > 0f) attackCooldownTimer -= Time.deltaTime;
+
         if (character == null || character.IsDead || currentTarget == null) return;
 
         float distance = Vector3.Distance(character.transform.position, currentTarget.transform.position);
@@ -46,17 +48,20 @@ public class MeleeAttackExecutor : CombatActionExecutor
         {
             StopMovement();
             RotateTowardsPoint(currentTarget.transform.position);
-            if (attackTimer <= 0f && currentPhase == AttackPhase.None)
+            if (attackCooldownTimer <= 0f && currentPhase == AttackPhase.None)
                 StartAttackPhase();
         }
 
-        if (attackTimer > 0f) attackTimer -= Time.deltaTime;
         if (phaseTimer > 0f) phaseTimer -= Time.deltaTime;
 
         if (currentPhase == AttackPhase.Windup && phaseTimer <= attackAnimationTime * 0.6f)
+        {
             ExecuteDamageOnTarget();
+        }
         else if (currentPhase == AttackPhase.Damage && phaseTimer <= 0f)
+        {
             EndAttackPhase();
+        }
 
         SetPerformingCombatAction(currentPhase != AttackPhase.None);
     }
@@ -76,6 +81,9 @@ public class MeleeAttackExecutor : CombatActionExecutor
         hasDealtDamage = false;
         currentPhase = AttackPhase.Windup;
         phaseTimer = attackAnimationTime;
+
+        attackCooldownTimer = ApplyCooldown(defaultCooldown);
+
         TriggerAttackAnimation();
     }
 
@@ -99,7 +107,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
         }
 
         hasDealtDamage = true;
-        attackTimer = ApplyCooldown(defaultCooldown);
         currentPhase = AttackPhase.Damage;
     }
 
@@ -135,7 +142,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
     public override void ResetState()
     {
         CancelCurrentAttack();
-        attackTimer = 0f;
         phaseTimer = 0f;
         SetPerformingCombatAction(false);
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
