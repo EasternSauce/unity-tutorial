@@ -17,6 +17,8 @@ public class MeleeAttackExecutor : CombatActionExecutor
     public MeleeAttackExecutor(Character character, MoveCommandHandler movement, Animator animator)
         : base(character, movement, animator) { }
 
+    public bool IsPerformingCombatAction => currentPhase != AttackPhase.None;
+
     public override void Execute(Command command)
     {
         if (command == null || command.target == null || character == null || character.IsDead) return;

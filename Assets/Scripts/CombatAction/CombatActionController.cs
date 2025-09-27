@@ -43,4 +43,11 @@ public class CombatActionController : MonoBehaviour
         foreach (var executor in executors.Values)
             executor.ResetState();
     }
+
+    public T GetExecutor<T>(CombatActionType type) where T : CombatActionExecutor
+    {
+        if (executors.TryGetValue(type, out var executor) && executor is T typedExecutor)
+            return typedExecutor;
+        return null;
+    }
 }
