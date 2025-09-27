@@ -91,7 +91,25 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     private void ExecuteDamageOnTarget()
     {
-        if (hasDealtDamage || currentTarget == null || character == null || character.IsDead) return;
+        if (hasDealtDamage || currentTarget == null || character == null || character.IsDead)
+            return;
+
+        // Check if still in range before dealing damage
+        float distance = Vector3.Distance(character.transform.position, currentTarget.transform.position);
+        float effectiveRange = attackRange;
+
+        InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
+        if (weapon == null || weapon.itemData.weaponType == WeaponType.None)
+            effectiveRange = 1.5f;
+
+        // Only hit if target is still inside range
+        if (distance > effectiveRange)
+        {
+            // Missed the attack
+            currentPhase = AttackPhase.Damage; // end the attack cleanly
+            hasDealtDamage = true; // mark as "used" so it doesn’t keep trying
+            return;
+        }
 
         if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
         {
@@ -103,7 +121,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
                 {
                     currentTarget = null;
                     currentPhase = AttackPhase.None;
-
                     return;
                 }
             }
