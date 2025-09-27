@@ -85,6 +85,10 @@ public class MeleeAttackExecutor : CombatActionExecutor
         attackCooldownTimer = ApplyCooldown(defaultCooldown);
 
         TriggerAttackAnimation();
+
+        // Log for player only
+        if (character.GetComponent<PlayerInventory>() != null)
+            Debug.Log($"[Player] Attack phase started: Windup at time {Time.time}");
     }
 
     private void ExecuteDamageOnTarget()
@@ -101,6 +105,10 @@ public class MeleeAttackExecutor : CombatActionExecutor
                 {
                     currentTarget = null;
                     currentPhase = AttackPhase.None;
+
+                    if (character.GetComponent<PlayerInventory>() != null)
+                        Debug.Log($"[Player] Target died during attack at time {Time.time}");
+
                     return;
                 }
             }
@@ -108,11 +116,18 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
         hasDealtDamage = true;
         currentPhase = AttackPhase.Damage;
+
+        // Log for player only
+        if (character.GetComponent<PlayerInventory>() != null)
+            Debug.Log($"[Player] Damage dealt, entering Damage phase at time {Time.time}");
     }
 
     private void EndAttackPhase()
     {
         currentPhase = AttackPhase.None;
+
+        if (character.GetComponent<PlayerInventory>() != null)
+            Debug.Log($"[Player] Attack phase ended at time {Time.time}");
     }
 
     private void TriggerAttackAnimation()
@@ -134,10 +149,23 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     public void CancelCurrentAttack()
     {
+        if (currentPhase == AttackPhase.None)
+            return;
+
+        if (character.GetComponent<PlayerInventory>() != null)
+        {
+            Debug.Log($"[Player] Attack cancelled during {currentPhase}, hasDealtDamage={hasDealtDamage}, time={Time.time}");
+        }
+
         currentTarget = null;
         currentPhase = AttackPhase.None;
+
+        if (!hasDealtDamage)
+            attackCooldownTimer = 0f;
+
         hasDealtDamage = false;
     }
+
 
     public override void ResetState()
     {
