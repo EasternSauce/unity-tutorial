@@ -11715,8 +11715,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be9b39cb22e053942bab3deb85c23edd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
   arrowPrefab: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}
+  fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

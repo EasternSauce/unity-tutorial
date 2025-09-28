@@ -1,8 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Character), typeof(MoveCommandHandler))]
 public class CombatActionController : MonoBehaviour
 {
+    [Header("Projectile Prefabs")]
+    [SerializeField] private GameObject arrowPrefab;
+    [SerializeField] private GameObject fireballPrefab;
+
     private Dictionary<CombatActionType, CombatActionExecutor> executors = new();
 
     private void Awake()
@@ -15,7 +20,28 @@ public class CombatActionController : MonoBehaviour
         if (movement == null) Debug.LogError("[CombatActionController] No MoveCommandHandler component found!");
         if (anim == null) Debug.LogError("[CombatActionController] No Animator found in children!");
 
+        // Register Melee Executor
         RegisterExecutor(CombatActionType.Melee, new MeleeAttackExecutor(character, movement, anim));
+
+        // Register Bow Executor
+        if (arrowPrefab != null)
+        {
+            RegisterExecutor(CombatActionType.Bow, new BowAttackExecutor(character, movement, anim, arrowPrefab));
+        }
+        else
+        {
+            Debug.LogWarning("[CombatActionController] Arrow prefab not assigned! Bow attacks will not spawn projectiles.");
+        }
+
+        // Register Fireball Executor
+        if (fireballPrefab != null)
+        {
+            RegisterExecutor(CombatActionType.Fireball, new FireballAbilityExecutor(character, movement, anim, fireballPrefab));
+        }
+        else
+        {
+            Debug.LogWarning("[CombatActionController] Fireball prefab not assigned! Fireball attacks will not spawn projectiles.");
+        }
     }
 
     private void Update()
