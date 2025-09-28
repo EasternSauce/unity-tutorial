@@ -1,5 +1,62 @@
 using UnityEngine;
 
+/*
+BowAttackExecutor.cs
+
+Purpose:
+- Executes bow combat actions for characters (player or AI).
+- Handles attack animation, arrow spawning, and cooldown management.
+
+Functional Requirements / Expected Behavior:
+
+1. Phases of bow attack:
+   - AttackStart: Immediately starts attack animation and prepares to release an arrow.
+   - ArrowSpawn: At a defined point in the animation, a single arrow is spawned and fired in a direction.
+   - AttackEnd: Attack continues until animation completes or is cancelled.
+
+2. Targeting:
+   - Bow attacks do not have a "target" in the melee sense.
+   - Player: arrow is fired in the direction of the mouse cursor.
+   - AI: arrow is fired toward the target's current position.
+   - The arrow will hit the first object in its path; no automatic homing.
+
+3. AttackStart Phase:
+   - Bow attacks do not require walking toward a target; the character shoots immediately.
+   - Attack can be cancelled at any time before arrow spawn.
+
+4. ArrowSpawn Phase:
+   - A single arrow is instantiated and fired toward the specified direction.
+   - Cooldown is applied at the moment the arrow is spawned.
+   - Only one arrow per attack command is spawned.
+
+5. AttackEnd Phase:
+   - Animation continues after arrow spawn until the end of the attack or cancellation.
+   - Attack can be cancelled at any point.
+   - Canceling after arrow spawn does not destroy the arrow but stops the animation and resets attack state.
+
+6. Cooldown:
+   - Applied only when the arrow is spawned.
+   - If the attack is cancelled before arrow spawn, cooldown is not applied, allowing a new attack to be issued immediately.
+
+7. Command Behavior:
+   - Unlike melee attacks, a single command only produces one attack.
+   - Repeated attacks require issuing additional commands.
+   - Multiple commands on the same direction or target do not queue or cancel the previous attack.
+   - Each attack is independent; cancellation or completion resets state for the next command.
+
+8. Cancel Behavior:
+   - Bow attacks can be cancelled at any time.
+   - Canceling before arrow spawn prevents cooldown.
+   - Canceling after arrow spawn stops the animation but does not remove the arrow.
+
+Notes:
+- Arrow spawning and direction calculation are handled in helper methods.
+- Animator triggers are selected based on weapon type and character type (player or AI).
+- `IsPerformingCombatAction` reflects whether the bow attack is in progress (between AttackStart and AttackEnd).
+- Public methods and properties should not be removed unless confirmed unused externally.
+*/
+
+
 public class BowAttackExecutor : CombatActionExecutor
 {
     private GameObject arrowPrefab;

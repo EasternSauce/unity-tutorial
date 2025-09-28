@@ -49,7 +49,6 @@ Notes:
 - Public methods and properties should not be removed unless confirmed unused externally.
 */
 
-
 public class MeleeAttackExecutor : CombatActionExecutor
 {
     [SerializeField] private float attackRange = 2.5f;
