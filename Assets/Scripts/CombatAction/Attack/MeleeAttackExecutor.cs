@@ -1,5 +1,55 @@
 using UnityEngine;
 
+/*
+MeleeAttackExecutor.cs
+
+Purpose:
+- Executes melee combat actions for characters (player or AI).
+- Handles walking up to the target, attack animation, damage application, and cooldown management.
+
+Functional Requirements / Expected Behavior:
+
+1. Phases of melee attack command:
+   - WalkUp: Character moves toward the target and keeps trying to reach it unless the attack is cancelled.
+   - Windup: Once in attack range, attack animation starts, but no damage is dealt yet.
+   - Damage: Damage is applied if the target is still within range and alive.
+   - Animation continues after damage until cancelled or phase timer ends.
+
+2. WalkUp Phase:
+   - Character keeps moving toward the target.
+   - Phase transitions to Windup once within the specific attack range.
+
+3. Windup Phase:
+   - Attack animation plays but no damage is applied yet.
+   - Target can move out of range; in this case, no damage is dealt.
+   - Attack can be cancelled at any time during this phase.
+
+4. Damage Phase:
+   - Damage is applied to the target if still in range and alive.
+   - Attack continues for the remainder of the animation unless cancelled (for example, by movement).
+   - Phase ends after damage has been applied and animation timer expires.
+
+5. Cooldown:
+   - Applied at the start of the attack.
+   - If the attack is cancelled before damage is dealt, the cooldown is nullified, allowing immediate subsequent attacks.
+
+6. Command Behavior:
+   - A single attack command is enough for the character to repeatedly attack the same enemy as soon as cooldown allows.
+   - Issuing multiple commands on the same target does not trigger the cancel logic.
+   - If the first attack is targeting one enemy and a new attack command targets a different enemy, the first attack is cancelled.
+
+7. Cancel Behavior:
+   - Attacks can be cancelled at any point.
+   - If cancelled before damage, cooldown is reset so another attack can be issued immediately.
+
+Notes:
+- Movement toward the target and rotation are handled in helper methods.
+- Animator triggers are selected based on weapon type.
+- `IsPerformingCombatAction` reflects whether the character is in Windup or Damage phase.
+- Public methods and properties should not be removed unless confirmed unused externally.
+*/
+
+
 public class MeleeAttackExecutor : CombatActionExecutor
 {
     [SerializeField] private float attackRange = 2.5f;
