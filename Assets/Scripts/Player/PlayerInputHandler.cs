@@ -122,7 +122,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     private void CancelOngoingAttack()
     {
-        var attackHandler = GetComponent<AttackCommandHandler>();
+        var attackHandler = GetComponent<CombatActionCommandHandler>();
         if (attackHandler != null)
             attackHandler.CancelAttack();
     }

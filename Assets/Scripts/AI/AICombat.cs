@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class AICombat : MonoBehaviour
 {
-    private AttackCommandHandler attackHandler;
+    private CombatActionCommandHandler attackHandler;
     private MoveCommandHandler moveHandler;
     private AIAggro aggro;
     private CombatActionController combatActionController;
@@ -20,7 +20,7 @@ public class AICombat : MonoBehaviour
 
     private void Awake()
     {
-        attackHandler = GetComponent<AttackCommandHandler>();
+        attackHandler = GetComponent<CombatActionCommandHandler>();
         moveHandler = GetComponent<MoveCommandHandler>();
         aggro = GetComponent<AIAggro>();
         combatActionController = GetComponent<CombatActionController>();

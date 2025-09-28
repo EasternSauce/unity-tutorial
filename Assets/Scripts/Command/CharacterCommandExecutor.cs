@@ -11,18 +11,18 @@ public class CharacterCommandExecutor : MonoBehaviour
         {
             case CommandType.Move:
                 CancelMoveAndInteract();
-                GetComponent<AttackCommandHandler>()?.CancelAttack();
+                GetComponent<CombatActionCommandHandler>()?.CancelAttack();
                 GetComponent<MoveCommandHandler>()?.ProcessCommand(command);
                 break;
 
             case CommandType.Interact:
                 CancelMoveAndInteract();
-                GetComponent<AttackCommandHandler>()?.CancelAttack();
+                GetComponent<CombatActionCommandHandler>()?.CancelAttack();
                 GetComponent<InteractCommandHandler>()?.ProcessCommand(command);
                 break;
 
             case CommandType.CombatAction:
-                GetComponent<AttackCommandHandler>()?.ProcessCommand(command);
+                GetComponent<CombatActionCommandHandler>()?.ProcessCommand(command);
                 break;
         }
     }
@@ -36,6 +36,6 @@ public class CharacterCommandExecutor : MonoBehaviour
     public void CancelCurrentCommand()
     {
         CancelMoveAndInteract();
-        GetComponent<AttackCommandHandler>()?.CancelAttack();
+        GetComponent<CombatActionCommandHandler>()?.CancelAttack();
     }
 }

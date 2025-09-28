@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Character))]
-public class AttackCommandHandler : MonoBehaviour, ICommandHandler
+public class CombatActionCommandHandler : MonoBehaviour, ICommandHandler
 {
     private PlayerInventory playerInventory;
     private Character character;
