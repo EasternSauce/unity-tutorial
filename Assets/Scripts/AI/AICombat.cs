@@ -1,68 +1,125 @@
 using UnityEngine;
 
+/*
+AICombat.cs
+
+Purpose:
+- Manages AI combat behavior for characters (melee and ranged).
+
+Functional requirements (must be preserved after any change):
+- Dead targets must never be attacked.
+- AI must respect attack cooldowns and windup timers.
+- Melee AI freezes movement while performing attacks.
+- Ranged AI maintains minimum and preferred distances.
+- Attack commands should only be issued when the AI is ready to perform the action:
+    - Melee: executor is idle and target in range.
+    - Ranged: cooldown complete, AI in position, and attack animation allows projectile spawn.
+- AI should stop combat if the target is no longer valid or leaves aggro range.
+- **Do not remove or make public properties private unless you are certain they are not used externally**.  
+
+Constraints / notes:
+- Uses CombatActionController for all attack execution.
+- Movement commands must respect NavMeshAgent capabilities.
+- Handles both melee and ranged weapon types separately.
+*/
+
+
 public class AICombat : MonoBehaviour
 {
-    private CombatActionCommandHandler attackHandler;
-    private MoveCommandHandler moveHandler;
-    private AIAggro aggro;
-    private CombatActionController combatActionController;
-
     [SerializeField] private AIWeaponType weaponType = AIWeaponType.Melee;
-    [SerializeField] private float minimumRangedDistance = 3f;
-    [SerializeField] private float moveCommandThrottle = 0.25f;
-
     public AIWeaponType WeaponType => weaponType;
 
-    private float preferredRangedDistance = 10f;
+    [SerializeField] private float minimumRangedDistance = 3f;
+    [SerializeField] private float preferredRangedDistance = 10f;
+    [SerializeField] private float moveCommandThrottle = 0.25f;
+
+    private CombatActionController combatActionController;
+    private MoveCommandHandler moveHandler;
+    private AIAggro aggro;
+
     private float moveCommandTimer;
     private Vector3 lastTargetPosition;
     private bool attackCommandIssued;
 
     private void Awake()
     {
-        attackHandler = GetComponent<CombatActionCommandHandler>();
+        combatActionController = GetComponent<CombatActionController>();
         moveHandler = GetComponent<MoveCommandHandler>();
         aggro = GetComponent<AIAggro>();
-        combatActionController = GetComponent<CombatActionController>();
     }
 
     private void Update()
     {
-        if (aggro.HasTarget())
-            HandleTarget(aggro.CurrentTarget);
+        if (!aggro.HasTarget()) return;
+
+        GameObject target = aggro.CurrentTarget;
+        HandleTarget(target);
     }
 
     public void HandleTarget(GameObject target)
     {
-        if (target == null || !aggro.IsTargetValid() || !aggro.UpdateAggroTimerIfOutOfRange())
+        if (!IsValidTarget(target))
         {
             StopCombat();
             return;
         }
 
-        if (weaponType == AIWeaponType.Melee)
-            HandleMeleeCombatAction(target);
-        else
-            HandleRangedCombatAction(target);
+        switch (weaponType)
+        {
+            case AIWeaponType.Melee:
+                HandleMeleeCombatAction(target);
+                break;
+            case AIWeaponType.Bow:
+            case AIWeaponType.Magic:
+                HandleRangedCombatAction(target);
+                break;
+        }
+    }
+
+    public void StopCombat()
+    {
+        StopMovement();
+        combatActionController?.ResetAllExecutors();
+        attackCommandIssued = false;
+    }
+
+    private bool IsValidTarget(GameObject target)
+    {
+        return target != null && aggro.IsTargetValid() && aggro.UpdateAggroTimerIfOutOfRange();
+    }
+
+    private void MoveTowards(Vector3 position, float stoppingDistance)
+    {
+        if (moveHandler?.Agent == null || !moveHandler.Agent.enabled || !moveHandler.Agent.isOnNavMesh)
+            return;
+
+        moveHandler.Agent.stoppingDistance = stoppingDistance;
+        moveHandler.SetDestination(position);
+        moveHandler.Agent.isStopped = false;
+    }
+
+    private void StopMovement()
+    {
+        moveHandler?.Stop();
+        if (moveHandler?.Agent != null && moveHandler.Agent.enabled && moveHandler.Agent.isOnNavMesh)
+            moveHandler.Agent.isStopped = true;
     }
 
     private void HandleMeleeCombatAction(GameObject target)
     {
-        if (combatActionController == null || moveHandler == null) return;
-
         var meleeExecutor = combatActionController.GetExecutor<MeleeAttackExecutor>(CombatActionType.Melee);
         if (meleeExecutor == null) return;
 
         if (target.TryGetComponent<Character>(out var targetChar) && targetChar.IsDead)
         {
-            moveHandler?.Stop();
+            StopMovement();
             attackCommandIssued = false;
             return;
         }
 
         if (meleeExecutor.IsPerformingCombatAction)
         {
-            moveHandler?.Stop();
+            StopMovement();
             return;
         }
 
@@ -75,9 +132,7 @@ public class AICombat : MonoBehaviour
             moveCommandTimer -= Time.deltaTime;
             if (moveCommandTimer <= 0f || (target.transform.position - lastTargetPosition).sqrMagnitude > 0.01f)
             {
-                moveHandler.SetDestination(target.transform.position);
-                moveHandler.Agent.stoppingDistance = attackRange * 0.95f;
-                moveHandler.Agent.isStopped = false;
+                MoveTowards(target.transform.position, attackRange * 0.95f);
                 moveCommandTimer = moveCommandThrottle;
                 lastTargetPosition = target.transform.position;
             }
@@ -85,8 +140,7 @@ public class AICombat : MonoBehaviour
         }
         else
         {
-            moveHandler?.Stop();
-
+            StopMovement();
             if (!attackCommandIssued)
             {
                 combatActionController.Execute(CombatActionType.Melee, new Command(CommandType.CombatAction, target));
@@ -97,26 +151,26 @@ public class AICombat : MonoBehaviour
 
     private void HandleRangedCombatAction(GameObject target)
     {
-        if (combatActionController == null || moveHandler == null) return;
-
         float distance = Vector3.Distance(transform.position, target.transform.position);
-        float effectiveLoseDistance = (weaponType == AIWeaponType.Bow || weaponType == AIWeaponType.Magic)
-            ? aggro.GetAggroDistance() * 1.5f
-            : aggro.GetAggroDistance();
+
+        if (target.TryGetComponent<Character>(out var targetChar) && targetChar.IsDead)
+        {
+            StopMovement();
+            return;
+        }
 
         if (distance < minimumRangedDistance)
-            moveHandler?.Stop();
+        {
+            StopMovement();
+        }
         else if (distance > preferredRangedDistance)
         {
-            if (moveHandler.Agent != null && moveHandler.Agent.enabled && moveHandler.Agent.isOnNavMesh)
-            {
-                moveHandler.Agent.stoppingDistance = preferredRangedDistance * 0.8f;
-                moveHandler.Agent.isStopped = false;
-                moveHandler.SetDestination(target.transform.position);
-            }
+            MoveTowards(target.transform.position, preferredRangedDistance * 0.8f);
         }
         else
-            moveHandler?.Stop();
+        {
+            StopMovement();
+        }
 
         if (distance <= preferredRangedDistance)
         {
@@ -130,12 +184,5 @@ public class AICombat : MonoBehaviour
                     break;
             }
         }
-    }
-
-    public void StopCombat()
-    {
-        moveHandler?.Stop();
-        attackHandler?.CancelAttack();
-        attackCommandIssued = false;
     }
 }
