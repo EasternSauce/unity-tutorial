@@ -34,11 +34,20 @@ public class MeleeAttackExecutor : CombatActionExecutor
     {
         if (attackCooldownTimer > 0f) attackCooldownTimer -= Time.deltaTime;
 
-        if (character == null || character.IsDead || currentTarget == null) return;
+        if (character == null || character.IsDead || currentTarget == null)
+        {
+            ResetAttackState();
+            return;
+        }
+
+        if (currentTarget.TryGetComponent<Character>(out var targetChar) && targetChar.IsDead)
+        {
+            ResetAttackState();
+            return;
+        }
 
         float distance = Vector3.Distance(character.transform.position, currentTarget.transform.position);
         float effectiveRange = attackRange;
-
         InventoryItem weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
         if (weapon == null || weapon.itemData.weaponType == WeaponType.None) effectiveRange = 1.5f;
 
@@ -50,6 +59,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         {
             StopMovement();
             RotateTowardsPoint(currentTarget.transform.position);
+
             if (attackCooldownTimer <= 0f && currentPhase == AttackPhase.None)
                 StartAttackPhase();
         }
@@ -57,15 +67,19 @@ public class MeleeAttackExecutor : CombatActionExecutor
         if (phaseTimer > 0f) phaseTimer -= Time.deltaTime;
 
         if (currentPhase == AttackPhase.Windup && phaseTimer <= attackAnimationTime * 0.6f)
-        {
             ExecuteDamageOnTarget();
-        }
         else if (currentPhase == AttackPhase.Damage && phaseTimer <= 0f)
-        {
             EndAttackPhase();
-        }
 
         SetPerformingCombatAction(currentPhase != AttackPhase.None);
+    }
+
+    private void ResetAttackState()
+    {
+        currentTarget = null;
+        currentPhase = AttackPhase.None;
+        hasDealtDamage = false;
+        SetPerformingCombatAction(false);
     }
 
     private void MoveTowardsTarget(float stopDistance)

@@ -41,26 +41,32 @@ public class AICombat : MonoBehaviour
         }
 
         if (weaponType == AIWeaponType.Melee)
-            HandleMeleeTarget(target);
+            HandleMeleeCombatAction(target);
         else
-            HandleRangedTarget(target);
+            HandleRangedCombatAction(target);
     }
 
-    private void HandleMeleeTarget(GameObject target)
+    private void HandleMeleeCombatAction(GameObject target)
     {
         if (combatActionController == null || moveHandler == null) return;
 
         var meleeExecutor = combatActionController.GetExecutor<MeleeAttackExecutor>(CombatActionType.Melee);
         if (meleeExecutor == null) return;
 
-        // Absolute guard: freeze in place if attacking
+        if (target.TryGetComponent<Character>(out var targetChar) && targetChar.IsDead)
+        {
+            moveHandler?.Stop();
+            attackCommandIssued = false;
+            return;
+        }
+
         if (meleeExecutor.IsPerformingCombatAction)
         {
             moveHandler?.Stop();
             return;
         }
 
-        float attackRange = 1.5f; // hardcoded
+        float attackRange = 1.5f;
         float distance = Vector3.Distance(transform.position, target.transform.position);
         bool inRange = distance <= attackRange;
 
@@ -89,7 +95,7 @@ public class AICombat : MonoBehaviour
         }
     }
 
-    private void HandleRangedTarget(GameObject target)
+    private void HandleRangedCombatAction(GameObject target)
     {
         if (combatActionController == null || moveHandler == null) return;
 
