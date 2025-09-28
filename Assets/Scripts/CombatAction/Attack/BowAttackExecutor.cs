@@ -63,7 +63,6 @@ public class BowAttackExecutor : CombatActionExecutor
     private bool isAttacking;
     private Vector3 targetPosition;
 
-    // Constructor: matches code that calls new BowAttackExecutor(character, movement, animator, prefab)
     public BowAttackExecutor(
         Character character,
         MoveCommandHandler movement,
@@ -90,7 +89,6 @@ public class BowAttackExecutor : CombatActionExecutor
         isAttacking = false;
     }
 
-    // Called by the combat controller each frame (non-MonoBehaviour)
     public override void TickUpdate()
     {
         if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
@@ -112,7 +110,6 @@ public class BowAttackExecutor : CombatActionExecutor
         }
         else
         {
-            // End of attack animation
             isAttacking = false;
             isAttackLocked = false;
             hasSpawnedArrow = false;
@@ -191,8 +188,6 @@ public class BowAttackExecutor : CombatActionExecutor
         Arrow arrowScript = arrowObject.GetComponent<Arrow>();
         if (arrowScript != null)
         {
-            // Use the true 3D direction toward the target (no Y flattening) because arrows have
-            // constant velocity and no gravity.
             Vector3 dir = (targetPos - spawnPos).normalized;
             arrowScript.Initialize(character, dir, arrowSpeed, arrowHeightOffset);
         }
@@ -237,7 +232,6 @@ public class BowAttackExecutor : CombatActionExecutor
         Camera cam = Camera.main;
         if (cam == null)
         {
-            // fallback to forward direction if no camera
             return character.transform.position + character.transform.forward * 10f + Vector3.up * arrowHeightOffset;
         }
 
@@ -247,7 +241,6 @@ public class BowAttackExecutor : CombatActionExecutor
         if (plane.Raycast(ray, out float distance))
             return ray.GetPoint(distance);
 
-        // fallback
         return character.transform.position + character.transform.forward * 10f + Vector3.up * arrowHeightOffset;
     }
 }

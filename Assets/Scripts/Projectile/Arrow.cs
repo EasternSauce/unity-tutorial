@@ -1,5 +1,43 @@
 using UnityEngine;
 
+/*
+Arrow.cs
+
+Purpose:
+- Represents a projectile fired from a bow.
+- Handles movement, rotation, collision detection, and lifetime management.
+
+Functional Requirements / Expected Behavior:
+
+1. Movement:
+   - Arrow moves in a straight line with constant velocity.
+   - Gravity is not applied; Y remains constant relative to the initialized direction.
+   - Arrow rotation continuously updates to match its velocity vector.
+
+2. Lifetime:
+   - Arrow self-destructs after a configurable time (`lifetime`).
+   - Prevents arrows from persisting indefinitely if they never hit anything.
+
+3. Collision Handling:
+   - Ignores collision with the shooter who fired it.
+   - If shooter is Player:
+     - Damages enemy characters (`Character` with `!IsPlayer`) on hit.
+     - Calls `OnAttacked` on enemy AI controllers if present.
+     - Damages destructible objects implementing `IDamageable` (e.g., crates, doors).
+   - If shooter is AI:
+     - Damages the Player character on hit.
+   - If arrow collides with anything on the **"Terrain" layer**, it is destroyed immediately.
+   - On all valid collisions (characters or destructibles), the arrow applies damage then destroys itself.
+
+4. Rotation Offset:
+   - Allows visual correction of the arrow model so it points in the expected direction.
+
+Notes:
+- Arrows travel on a perfectly straight trajectory, unaffected by gravity or terrain height.
+- Colliding with destructible or damageable objects ensures arrows can interact with the world (breaking items, damaging enemies).
+- Terrain collisions ensure arrows don’t fly endlessly across the scene.
+*/
+
 public class Arrow : MonoBehaviour
 {
     private Character shooter;
@@ -25,6 +63,13 @@ public class Arrow : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject == shooter.gameObject) return;
+
+        // ✅ destroy on terrain hit
+        if (other.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         if (shooter.IsPlayer)
         {
