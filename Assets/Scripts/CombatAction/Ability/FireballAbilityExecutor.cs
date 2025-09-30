@@ -3,29 +3,10 @@ using UnityEngine;
 /*
 FireballAbilityExecutor
 
-Functional overview:
-- Fireball is a ranged magical attack that spawns a fireball projectile.
-- Unlike melee, there is no walk-up phase. The caster begins casting immediately.
-- For the player:
-  - Fireball is aimed exactly like bow attacks: cast a ray from the camera through the cursor.
-  - A point along that ray is chosen, and the projectile is fired so that it travels through that point.
-  - This ensures the fireball lines up perfectly with the cursor in 3D space.
-- For AI:
-  - Fireball is cast toward the target’s current position.
-- Attack phases:
-  1. Casting begins when command is issued (if off cooldown).
-  2. Animation plays, locking the character briefly (attack lock phase).
-  3. When progress reaches spawnProgress, the fireball projectile is spawned and travels forward.
-  4. Cooldown is applied immediately when the fireball is spawned.
-  5. Casting ends when the animation completes or is interrupted.
-- Cancelation rules:
-  - Player or AI movement cancels the attack before the projectile spawns.
-  - If cancelled early, no projectile spawns and no cooldown is applied.
-  - If cancelled after spawn, the projectile still exists and cooldown is active.
-- Differences from melee and bow:
-  - Fireball is a one-off ability, not auto-repeat.
-  - Fireball does not track a target; it simply travels along its launch vector.
-  - Unlike bow, fireball uses a spell-cast animation trigger.
+- Fireball is a ranged magical attack that travels at a fixed height.
+- Player aims using mouse projected onto horizontal plane at character height.
+- AI aims at target’s position, or forward if no target.
+- Casting phases and cooldown match bow attack behavior.
 */
 public class FireballAbilityExecutor : CombatActionExecutor
 {
@@ -40,10 +21,20 @@ public class FireballAbilityExecutor : CombatActionExecutor
     private float animationTimer;
     private bool isCasting;
     private bool isAttackLocked;
+    private bool hasSpawnedFireball;
     private Vector3 targetPosition;
 
-    public FireballAbilityExecutor(Character character, MoveCommandHandler movement, Animator animator, GameObject prefab, float speed = 15f, float heightOffset = 1.2f, float attackTime = 1f, float spawnProgress = 0.95f, float defaultCooldown = 1f)
-        : base(character, movement, animator)
+    public FireballAbilityExecutor(
+        Character character,
+        MoveCommandHandler movement,
+        Animator animator,
+        GameObject prefab,
+        float speed = 15f,
+        float heightOffset = 1.2f,
+        float attackTime = 1f,
+        float spawnProgress = 0.95f,
+        float defaultCooldown = 1f
+    ) : base(character, movement, animator)
     {
         fireballPrefab = prefab;
         this.speed = speed;
@@ -51,6 +42,11 @@ public class FireballAbilityExecutor : CombatActionExecutor
         this.attackTime = attackTime;
         this.spawnProgress = spawnProgress;
         this.defaultCooldown = defaultCooldown;
+        cooldownTimer = 0f;
+        animationTimer = 0f;
+        isCasting = false;
+        isAttackLocked = false;
+        hasSpawnedFireball = false;
     }
 
     public override void TickUpdate()
@@ -59,25 +55,27 @@ public class FireballAbilityExecutor : CombatActionExecutor
         if (!isCasting) return;
 
         StopMovement();
-        animationTimer -= Time.deltaTime;
 
-        float progress = 1f - animationTimer / attackTime;
-        isAttackLocked = progress >= 0.3f && progress <= 0.6f;
-        SetPerformingCombatAction(isAttackLocked);
-
-        if (progress >= spawnProgress)
+        if (animationTimer > 0f)
         {
-            SpawnFireball(targetPosition);
-            cooldownTimer = ApplyCooldown(defaultCooldown);
-            isCasting = false;
-            isAttackLocked = false;
-            SetPerformingCombatAction(false);
+            animationTimer -= Time.deltaTime;
+            float progress = 1f - (animationTimer / attackTime);
+
+            isAttackLocked = progress >= 0.3f && progress <= 0.6f;
+            SetPerformingCombatAction(isAttackLocked);
+
+            if (!hasSpawnedFireball && progress >= spawnProgress)
+            {
+                SpawnFireball(targetPosition);
+                hasSpawnedFireball = true;
+                cooldownTimer = ApplyCooldown(defaultCooldown);
+            }
         }
-
-        if (animationTimer <= 0f)
+        else
         {
             isCasting = false;
             isAttackLocked = false;
+            hasSpawnedFireball = false;
             SetPerformingCombatAction(false);
         }
     }
@@ -86,27 +84,21 @@ public class FireballAbilityExecutor : CombatActionExecutor
     {
         if (cooldownTimer > 0f || isCasting) return;
 
+        // Determine target position
         if (character.IsPlayer)
-        {
-            if (Camera.main != null)
-            {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                targetPosition = ray.origin + ray.direction * 50f; // far point along ray
-            }
-        }
+            targetPosition = GetMouseWorldPosition();
         else
-        {
-            targetPosition = (command.target != null)
+            targetPosition = (command != null && command.target != null)
                 ? command.target.transform.position + Vector3.up * heightOffset
                 : character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
-        }
 
         StopMovement();
         RotateTowardsPoint(targetPosition);
 
         animationTimer = attackTime;
-        isAttackLocked = false;
         isCasting = true;
+        hasSpawnedFireball = false;
+        isAttackLocked = false;
 
         if (AnimatorHasTrigger("SpellCast"))
             animator.SetTrigger("SpellCast");
@@ -116,13 +108,30 @@ public class FireballAbilityExecutor : CombatActionExecutor
     {
         if (fireballPrefab == null) return;
 
-        Vector3 spawn = character.transform.position + Vector3.up * heightOffset;
-        Vector3 dir = (target - spawn).normalized;
+        Vector3 spawnPos = character.transform.position + Vector3.up * heightOffset;
+        Vector3 dir = (target - spawnPos).normalized;
+        dir.y = 0f; // enforce horizontal flight
+        dir.Normalize();
 
-        GameObject proj = Object.Instantiate(fireballPrefab, spawn, Quaternion.identity);
-        Fireball f = proj.GetComponent<Fireball>();
-        if (f != null)
-            f.Initialize(character, dir, speed, heightOffset);
+        GameObject proj = Object.Instantiate(fireballPrefab, spawnPos, Quaternion.LookRotation(dir));
+        Fireball fireball = proj.GetComponent<Fireball>();
+        if (fireball != null)
+            fireball.Initialize(character, dir, speed, heightOffset);
+    }
+
+    private Vector3 GetMouseWorldPosition()
+    {
+        Camera cam = Camera.main;
+        if (cam == null)
+            return character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
+
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(Vector3.up, character.transform.position + Vector3.up * heightOffset);
+
+        if (plane.Raycast(ray, out float distance))
+            return ray.GetPoint(distance);
+
+        return character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
     }
 
     public override void ResetState()
@@ -130,9 +139,13 @@ public class FireballAbilityExecutor : CombatActionExecutor
         isCasting = false;
         animationTimer = 0f;
         isAttackLocked = false;
+        hasSpawnedFireball = false;
         SetPerformingCombatAction(false);
         ResetAnimatorTriggers("SpellCast");
     }
 
-    protected override float ApplyCooldown(float baseCooldown) => baseCooldown;
+    protected override float ApplyCooldown(float baseCooldown)
+    {
+        return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
+    }
 }
