@@ -5,7 +5,8 @@ public enum CommandType
     None,
     Move,
     CombatAction,
-    Interact
+    Interact,
+    AttackTarget
 }
 
 public class Command

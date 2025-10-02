@@ -20,26 +20,17 @@ public abstract class CombatActionExecutor
 
     protected void StopMovement()
     {
-        if (movement != null)
-        {
-            movement.Stop();
-            if (movement.Agent != null && movement.Agent.enabled && movement.Agent.isOnNavMesh)
-                movement.Agent.isStopped = true;
-        }
+        movement?.Stop();
     }
 
     protected void ResumeMovement()
     {
-        if (movement != null && movement.Agent != null && movement.Agent.enabled && movement.Agent.isOnNavMesh)
-            movement.Agent.isStopped = false;
+        movement?.MoveTo(character.transform.position);
     }
 
     protected void RotateTowardsPoint(Vector3 point)
     {
-        Vector3 look = point - character.transform.position;
-        look.y = 0f;
-        if (look == Vector3.zero) return;
-        character.transform.rotation = Quaternion.LookRotation(look);
+        movement?.RotateTowards(point);
     }
 
     protected bool AnimatorHasTrigger(string name)

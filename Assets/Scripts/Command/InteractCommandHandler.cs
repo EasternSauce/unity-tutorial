@@ -35,7 +35,7 @@ public class InteractCommandHandler : MonoBehaviour, ICommandHandler
         }
         else
         {
-            characterMovement.SetDestination(currentCommand.target.transform.position);
+            characterMovement.MoveTo(currentCommand.target.transform.position);
         }
     }
 

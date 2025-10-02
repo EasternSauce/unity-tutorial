@@ -1,29 +1,5 @@
 using UnityEngine;
 
-/*
-AICombat.cs
-
-Purpose:
-- Manages AI combat behavior for characters (melee and ranged).
-
-Functional requirements (must be preserved after any change):
-- Dead targets must never be attacked.
-- AI must respect attack cooldowns and windup timers.
-- Melee AI freezes movement while performing attacks.
-- Ranged AI maintains minimum and preferred distances.
-- Attack commands should only be issued when the AI is ready to perform the action:
-    - Melee: executor is idle and target in range.
-    - Ranged: cooldown complete, AI in position, and attack animation allows projectile spawn.
-- AI should stop combat if the target is no longer valid or leaves aggro range.
-- **Do not remove or make public properties private unless you are certain they are not used externally**.  
-
-Constraints / notes:
-- Uses CombatActionController for all attack execution.
-- Movement commands must respect NavMeshAgent capabilities.
-- Handles both melee and ranged weapon types separately.
-*/
-
-
 public class AICombat : MonoBehaviour
 {
     [SerializeField] private AIWeaponType weaponType = AIWeaponType.Melee;
@@ -78,7 +54,7 @@ public class AICombat : MonoBehaviour
 
     public void StopCombat()
     {
-        StopMovement();
+        moveHandler?.Stop();
         combatActionController?.ResetAllExecutors();
         attackCommandIssued = false;
     }
@@ -90,19 +66,12 @@ public class AICombat : MonoBehaviour
 
     private void MoveTowards(Vector3 position, float stoppingDistance)
     {
-        if (moveHandler?.Agent == null || !moveHandler.Agent.enabled || !moveHandler.Agent.isOnNavMesh)
-            return;
-
-        moveHandler.Agent.stoppingDistance = stoppingDistance;
-        moveHandler.SetDestination(position);
-        moveHandler.Agent.isStopped = false;
+        moveHandler?.MoveTo(position, stoppingDistance);
     }
 
     private void StopMovement()
     {
         moveHandler?.Stop();
-        if (moveHandler?.Agent != null && moveHandler.Agent.enabled && moveHandler.Agent.isOnNavMesh)
-            moveHandler.Agent.isStopped = true;
     }
 
     private void HandleMeleeCombatAction(GameObject target)
@@ -160,17 +129,11 @@ public class AICombat : MonoBehaviour
         }
 
         if (distance < minimumRangedDistance)
-        {
             StopMovement();
-        }
         else if (distance > preferredRangedDistance)
-        {
             MoveTowards(target.transform.position, preferredRangedDistance * 0.8f);
-        }
         else
-        {
             StopMovement();
-        }
 
         if (distance <= preferredRangedDistance)
         {

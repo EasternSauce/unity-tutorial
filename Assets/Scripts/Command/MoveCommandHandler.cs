@@ -6,16 +6,10 @@ public class MoveCommandHandler : MonoBehaviour, ICommandHandler
 {
     [SerializeField] private float defaultStoppingDistance = 0.1f;
     [SerializeField] private NavMeshAgent agent;
-
-    public NavMeshAgent Agent => agent;
-    public float DefaultStoppingDistance => defaultStoppingDistance;
-
     private Character character;
     [SerializeField] private float default_MoveSpeed = 3.5f;
     private RegularStatValue moveSpeed;
-
     private Command currentCommand;
-    public Command CurrentCommand => currentCommand;
 
     private void Awake()
     {
@@ -32,7 +26,6 @@ public class MoveCommandHandler : MonoBehaviour, ICommandHandler
     private void Update()
     {
         if (moveSpeed == null) return;
-
         ApplyMoveSpeed();
 
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
@@ -51,30 +44,42 @@ public class MoveCommandHandler : MonoBehaviour, ICommandHandler
     private void ApplyMoveSpeed()
     {
         if (agent == null) return;
-
         float newSpeed = default_MoveSpeed * moveSpeed.float_value;
         if (agent.isActiveAndEnabled && agent.isOnNavMesh)
             agent.speed = newSpeed;
     }
 
-    public void SetDestination(Vector3 destinationPosition)
+    public void MoveTo(Vector3 position, float stoppingDistance = -1f)
     {
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-            agent.SetDestination(destinationPosition);
-        }
+        if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh) return;
+        if (stoppingDistance >= 0f) agent.stoppingDistance = stoppingDistance;
+        agent.isStopped = false;
+        agent.SetDestination(position);
     }
 
     public void Stop()
     {
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
-            agent.isStopped = true;
+        if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh) return;
+        agent.isStopped = true;
     }
+
+    public void RotateTowards(Vector3 point)
+    {
+        if (character == null) return;
+        Vector3 direction = (point - character.transform.position).normalized;
+        if (direction.sqrMagnitude > 0.001f)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            character.transform.rotation = Quaternion.Slerp(character.transform.rotation, lookRotation, Time.deltaTime * 10f);
+        }
+    }
+
+    public float RemainingDistance => agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh ? agent.remainingDistance : 0f;
+    public bool IsOnNavMesh => agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh;
 
     public void ProcessCommand(Command command)
     {
-        SetDestination(command.worldPoint);
         currentCommand = command;
+        MoveTo(command.worldPoint, defaultStoppingDistance);
     }
 }

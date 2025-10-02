@@ -11,11 +11,15 @@ public class MeleeAttackExecutor : CombatActionExecutor
     private GameObject currentTarget;
     private bool hasDealtDamage;
     private AttackPhase currentPhase = AttackPhase.None;
+    private MoveCommandHandler movementHandler;
 
     private enum AttackPhase { None, Windup, Damage }
 
-    public MeleeAttackExecutor(Character character, MoveCommandHandler movement, Animator animator)
-        : base(character, movement, animator) { }
+    public MeleeAttackExecutor(Character character, MoveCommandHandler movementHandler, Animator animator)
+        : base(character, movementHandler, animator)
+    {
+        this.movementHandler = movementHandler;
+    }
 
     public bool IsPerformingCombatAction => currentPhase != AttackPhase.None;
 
@@ -86,12 +90,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     private void MoveTowardsTarget(float stopDistance)
     {
-        if (movement != null && movement.Agent != null && movement.Agent.enabled && movement.Agent.isOnNavMesh)
-        {
-            movement.Agent.stoppingDistance = stopDistance;
-            movement.SetDestination(currentTarget.transform.position);
-            movement.Agent.isStopped = false;
-        }
+        movementHandler?.MoveTo(currentTarget.transform.position, stopDistance);
     }
 
     private void StartAttackPhase()
@@ -99,9 +98,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         hasDealtDamage = false;
         currentPhase = AttackPhase.Windup;
         phaseTimer = attackAnimationTime;
-
         attackCooldownTimer = ApplyCooldown(defaultCooldown);
-
         TriggerAttackAnimation();
     }
 
@@ -125,7 +122,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
             if (!(damageable is Character c) || !c.IsDead)
             {
                 damageable.TakeDamage(character.GetDamage());
-
                 if (damageable is Character deadChar && deadChar.IsDead)
                 {
                     ResetAttackState();
