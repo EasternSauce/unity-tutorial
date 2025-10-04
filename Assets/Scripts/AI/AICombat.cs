@@ -86,28 +86,19 @@ public class AICombat : MonoBehaviour
             return;
         }
 
-        if (meleeExecutor.IsPerformingCombatAction)
-        {
-            StopMovement();
-            return;
-        }
-
         float attackRange = 1.5f;
         float distance = Vector3.Distance(transform.position, target.transform.position);
         bool inRange = distance <= attackRange;
 
-        if (!inRange)
+        moveCommandTimer -= Time.deltaTime;
+        if (!inRange && (moveCommandTimer <= 0f || (target.transform.position - lastTargetPosition).sqrMagnitude > 0.01f))
         {
-            moveCommandTimer -= Time.deltaTime;
-            if (moveCommandTimer <= 0f || (target.transform.position - lastTargetPosition).sqrMagnitude > 0.01f)
-            {
-                MoveTowards(target.transform.position, attackRange * 0.95f);
-                moveCommandTimer = moveCommandThrottle;
-                lastTargetPosition = target.transform.position;
-            }
+            MoveTowards(target.transform.position, attackRange * 0.95f);
+            moveCommandTimer = moveCommandThrottle;
+            lastTargetPosition = target.transform.position;
             attackCommandIssued = false;
         }
-        else
+        else if (inRange)
         {
             StopMovement();
             if (!attackCommandIssued)
@@ -117,6 +108,7 @@ public class AICombat : MonoBehaviour
             }
         }
     }
+
 
     private void HandleRangedCombatAction(GameObject target)
     {
