@@ -4,14 +4,14 @@ public class MeleeAttackExecutor : CombatActionExecutor
 {
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float attackCooldown = 2f;
-
+    [SerializeField] private float damageDelay = 0.3f; // new delay field
     private float cooldownTimer = 0f;
+    private float damageTimer = 0f; // timer for delayed damage
     private GameObject currentTarget;
+    private IDamageable pendingDamageTarget; // target to apply damage
 
     public MeleeAttackExecutor(Character character, MoveCommandHandler movement, Animator animator)
-        : base(character, movement, animator)
-    {
-    }
+        : base(character, movement, animator) { }
 
     public override void Execute(Command command)
     {
@@ -24,14 +24,22 @@ public class MeleeAttackExecutor : CombatActionExecutor
     public override void TickUpdate()
     {
         if (cooldownTimer > 0f)
-        {
             cooldownTimer -= Time.deltaTime;
+
+        if (damageTimer > 0f)
+        {
+            damageTimer -= Time.deltaTime;
+            if (damageTimer <= 0f && pendingDamageTarget != null)
+            {
+                int damage = Mathf.RoundToInt(character.GetDamage());
+                pendingDamageTarget.TakeDamage(damage);
+                pendingDamageTarget = null;
+                CancelCurrentAttackTargetOnly();
+            }
         }
 
         if (currentTarget == null || character == null || character.IsDead)
-        {
             return;
-        }
 
         if (currentTarget.TryGetComponent<Character>(out var targetChar) && targetChar.IsDead)
         {
@@ -48,50 +56,35 @@ public class MeleeAttackExecutor : CombatActionExecutor
         {
             movement?.Stop();
             FaceDirection(currentTarget.transform.position);
+
             if (cooldownTimer <= 0f)
             {
-                PerformAttack();
+                TriggerAttackAnimation();
+                if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
+                {
+                    pendingDamageTarget = damageable;
+                    damageTimer = damageDelay; // schedule delayed damage
+                }
                 cooldownTimer = attackCooldown;
             }
         }
     }
 
-    private void PerformAttack()
-    {
-        TriggerAttackAnimation();
-        if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
-        {
-            int damage = Mathf.RoundToInt(character.GetDamage());
-            damageable.TakeDamage(damage);
-        }
-        CancelCurrentAttackTargetOnly();
-    }
-
-    private void CancelCurrentAttackTargetOnly()
-    {
-        currentTarget = null;
-    }
-
     public void CancelCurrentAttack()
     {
         CancelCurrentAttackTargetOnly();
+        pendingDamageTarget = null;
+        damageTimer = 0f;
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
     }
 
-    protected override void ResetState()
-    {
-        CancelCurrentAttack();
-    }
+    private void CancelCurrentAttackTargetOnly() => currentTarget = null;
 
-    public override bool HasActiveTarget()
-    {
-        return currentTarget != null;
-    }
+    protected override void ResetState() => CancelCurrentAttack();
 
-    protected override float ApplyCooldown(float baseCooldown)
-    {
-        return baseCooldown;
-    }
+    public override bool HasActiveTarget() => currentTarget != null;
+
+    protected override float ApplyCooldown(float baseCooldown) => baseCooldown;
 
     private void TriggerAttackAnimation()
     {
@@ -99,8 +92,8 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
         var weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
         WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
-        string trigger = null;
 
+        string trigger = null;
         if (type == WeaponType.OneHandedAxe && AnimatorHasTrigger("OneHandedMeleeAttack")) trigger = "OneHandedMeleeAttack";
         else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack")) trigger = "TwoHandedMeleeAttack";
         else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
@@ -109,5 +102,4 @@ public class MeleeAttackExecutor : CombatActionExecutor
         if (!string.IsNullOrEmpty(trigger))
             animator.SetTrigger(trigger);
     }
-
 }
