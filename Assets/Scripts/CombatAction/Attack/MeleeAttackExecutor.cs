@@ -5,12 +5,17 @@ public class MeleeAttackExecutor : CombatActionExecutor
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float attackCooldown = 2f;
     [SerializeField] private float damageDelay = 0.3f;
+    [SerializeField] private float attackAnimationTime = 1f; // New: duration of the attack animation
+
     private float cooldownTimer = 0f;
     private float damageTimer = 0f;
+    private float attackTimer = 0f; // New: how long the attack animation is playing
+
     private GameObject currentTarget;
     private IDamageable pendingDamageTarget;
 
-    public bool IsBusyAttacking() => cooldownTimer > 0f; // TODO: introduce attack timer
+    // Updated: now uses attackTimer instead of cooldownTimer
+    public bool IsBusyAttacking() => attackTimer > 0f;
 
     public MeleeAttackExecutor(Character character, MoveCommandHandler movement, Animator animator)
         : base(character, movement, animator) { }
@@ -25,8 +30,12 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     public override void TickUpdate()
     {
+        // Update timers
         if (cooldownTimer > 0f)
             cooldownTimer -= Time.deltaTime;
+
+        if (attackTimer > 0f)
+            attackTimer -= Time.deltaTime;
 
         if (damageTimer > 0f)
         {
@@ -39,6 +48,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
             }
         }
 
+        // Early exits
         if (currentTarget == null || character == null || character.IsDead)
             return;
 
@@ -58,15 +68,20 @@ public class MeleeAttackExecutor : CombatActionExecutor
             movement?.Stop();
             FaceDirection(currentTarget.transform.position);
 
-            if (cooldownTimer <= 0f)
+            // Only trigger a new attack if not attacking and cooldown expired
+            if (cooldownTimer <= 0f && attackTimer <= 0f)
             {
                 TriggerAttackAnimation();
+
                 if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
                 {
                     pendingDamageTarget = damageable;
                     damageTimer = damageDelay;
                 }
+
+                // Reset timers
                 cooldownTimer = attackCooldown;
+                attackTimer = attackAnimationTime; // NEW: start attack animation timer
             }
         }
     }
@@ -76,6 +91,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         currentTarget = null;
         pendingDamageTarget = null;
         damageTimer = 0f;
+        attackTimer = 0f; // NEW: reset attack timer
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
     }
 
@@ -100,5 +116,8 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
         if (!string.IsNullOrEmpty(trigger))
             animator.SetTrigger(trigger);
+
+        // Reset attack timer on animation start
+        attackTimer = attackAnimationTime;
     }
 }
