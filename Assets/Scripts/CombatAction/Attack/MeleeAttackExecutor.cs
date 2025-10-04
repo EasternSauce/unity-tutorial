@@ -82,6 +82,9 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     private void ResetAttackState()
     {
+        if (currentPhase == AttackPhase.None)
+            return;
+
         currentTarget = null;
         currentPhase = AttackPhase.None;
         hasDealtDamage = false;
@@ -136,6 +139,9 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     private void EndAttackPhase()
     {
+        if (currentPhase == AttackPhase.None)
+            return;
+
         currentPhase = AttackPhase.None;
     }
 
