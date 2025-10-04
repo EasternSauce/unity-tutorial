@@ -4,11 +4,11 @@ public class MeleeAttackExecutor : CombatActionExecutor
 {
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float attackCooldown = 2f;
-    [SerializeField] private float damageDelay = 0.3f; // new delay field
+    [SerializeField] private float damageDelay = 0.3f;
     private float cooldownTimer = 0f;
-    private float damageTimer = 0f; // timer for delayed damage
+    private float damageTimer = 0f;
     private GameObject currentTarget;
-    private IDamageable pendingDamageTarget; // target to apply damage
+    private IDamageable pendingDamageTarget;
 
     public bool IsBusyAttacking() => cooldownTimer > 0f; // TODO: introduce attack timer
 
@@ -64,7 +64,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
                 if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
                 {
                     pendingDamageTarget = damageable;
-                    damageTimer = damageDelay; // schedule delayed damage
+                    damageTimer = damageDelay;
                 }
                 cooldownTimer = attackCooldown;
             }
@@ -73,13 +73,11 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     public void CancelCurrentAttack()
     {
-        CancelCurrentAttackTargetOnly();
+        currentTarget = null;
         pendingDamageTarget = null;
         damageTimer = 0f;
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
     }
-
-    private void CancelCurrentAttackTargetOnly() => currentTarget = null;
 
     protected override void ResetState() => CancelCurrentAttack();
 
