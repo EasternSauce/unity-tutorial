@@ -17,6 +17,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
     {
         if (command == null || command.target == null || character == null || character.IsDead)
             return;
+
         currentTarget = command.target;
     }
 
@@ -48,6 +49,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         else
         {
             movement?.Stop();
+            FaceDirection(currentTarget.transform.position); // instant look at target
             if (cooldownTimer <= 0f)
             {
                 PerformAttack();

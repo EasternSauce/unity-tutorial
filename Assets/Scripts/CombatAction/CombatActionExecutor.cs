@@ -44,7 +44,7 @@ public abstract class CombatActionExecutor
     protected void FaceDirection(Vector3 point)
     {
         if (character == null) return;
-        Vector3 direction = (point - character.transform.position);
+        Vector3 direction = point - character.transform.position;
         direction.y = 0f;
         if (direction.sqrMagnitude > 0.001f)
             character.transform.forward = direction.normalized;
