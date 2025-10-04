@@ -64,10 +64,8 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     private void PerformAttack()
     {
-        // Trigger proper animation
         TriggerAttackAnimation();
 
-        // Deal damage
         if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
         {
             int damage = Mathf.RoundToInt(character.GetDamage());
@@ -92,11 +90,21 @@ public class MeleeAttackExecutor : CombatActionExecutor
             animator.SetTrigger(trigger);
     }
 
-    protected override void ResetState()
+    /// <summary>
+    /// Immediately cancels the current attack and clears the target.
+    /// </summary>
+    public void CancelCurrentAttack()
     {
+        if (currentTarget == null) return;
+        Debug.Log("cancelling...");
         currentTarget = null;
         cooldownTimer = 0f;
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
+    }
+
+    protected override void ResetState()
+    {
+        CancelCurrentAttack();
     }
 
     protected override float ApplyCooldown(float baseCooldown)

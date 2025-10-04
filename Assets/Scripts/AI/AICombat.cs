@@ -109,7 +109,6 @@ public class AICombat : MonoBehaviour
         }
     }
 
-
     private void HandleRangedCombatAction(GameObject target)
     {
         float distance = Vector3.Distance(transform.position, target.transform.position);
