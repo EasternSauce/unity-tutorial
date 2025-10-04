@@ -71,4 +71,11 @@ public class MoveCommandHandler : MonoBehaviour, ICommandHandler
         currentCommand = command;
         MoveTo(command.worldPoint, defaultStoppingDistance);
     }
+
+    public void ResumeMovement()
+    {
+        if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh) return;
+        agent.isStopped = false;
+    }
+
 }

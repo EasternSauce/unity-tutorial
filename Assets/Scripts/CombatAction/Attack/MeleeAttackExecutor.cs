@@ -83,7 +83,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         CancelCurrentAttack();
     }
 
-    protected override bool HasActiveTarget()
+    public override bool HasActiveTarget()
     {
         return currentTarget != null;
     }

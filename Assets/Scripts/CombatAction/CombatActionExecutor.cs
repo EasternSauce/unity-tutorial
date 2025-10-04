@@ -26,7 +26,7 @@ public abstract class CombatActionExecutor
         }
     }
 
-    protected virtual bool HasActiveTarget()
+    public virtual bool HasActiveTarget()
     {
         return false;
     }
