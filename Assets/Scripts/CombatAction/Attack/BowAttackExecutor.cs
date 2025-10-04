@@ -144,9 +144,8 @@ public class BowAttackExecutor : CombatActionExecutor
         hasSpawnedArrow = false;
     }
 
-    public override void ResetState()
+    protected override void ResetState()
     {
-        base.ResetState();
         animationTimer = 0f;
         isAttackLocked = false;
         hasSpawnedArrow = false;

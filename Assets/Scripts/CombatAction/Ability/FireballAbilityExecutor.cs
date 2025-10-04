@@ -134,7 +134,7 @@ public class FireballAbilityExecutor : CombatActionExecutor
         return character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
     }
 
-    public override void ResetState()
+    protected override void ResetState()
     {
         isCasting = false;
         animationTimer = 0f;

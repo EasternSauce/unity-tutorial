@@ -14,9 +14,17 @@ public abstract class CombatActionExecutor
     }
 
     public abstract void Execute(Command command);
-    public virtual void TickUpdate() { }
-    public virtual void ResetState() { SetPerformingCombatAction(false); }
+    public abstract void TickUpdate();
+    protected abstract void ResetState();
     protected abstract float ApplyCooldown(float baseCooldown);
+
+    public void CancelOngoingCombatAction()
+    {
+        if (character != null && character.isPerformingCombatAction)
+        {
+            ResetState();
+        }
+    }
 
     protected void StopMovement()
     {

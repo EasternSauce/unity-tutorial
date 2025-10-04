@@ -169,7 +169,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         hasDealtDamage = false;
     }
 
-    public override void ResetState()
+    protected override void ResetState()
     {
         CancelCurrentAttack();
         phaseTimer = 0f;

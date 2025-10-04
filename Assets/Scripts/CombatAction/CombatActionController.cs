@@ -64,7 +64,7 @@ public class CombatActionController : MonoBehaviour
     public void ResetAllExecutors()
     {
         foreach (var executor in executors.Values)
-            executor.ResetState();
+            executor.CancelOngoingCombatAction();
     }
 
     public T GetExecutor<T>(CombatActionType type) where T : CombatActionExecutor
