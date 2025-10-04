@@ -23,21 +23,19 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     public override void TickUpdate()
     {
+        if (cooldownTimer > 0f)
+        {
+            cooldownTimer -= Time.deltaTime;
+        }
+
         if (currentTarget == null || character == null || character.IsDead)
         {
-            ResetState();
             return;
         }
 
         if (currentTarget.TryGetComponent<Character>(out var targetChar) && targetChar.IsDead)
         {
-            ResetState();
-            return;
-        }
-
-        if (cooldownTimer > 0f)
-        {
-            cooldownTimer -= Time.deltaTime;
+            CancelCurrentAttack();
             return;
         }
 
@@ -49,7 +47,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         else
         {
             movement?.Stop();
-            FaceDirection(currentTarget.transform.position); // instant look at target
+            FaceDirection(currentTarget.transform.position);
             if (cooldownTimer <= 0f)
             {
                 PerformAttack();
@@ -66,25 +64,17 @@ public class MeleeAttackExecutor : CombatActionExecutor
             int damage = Mathf.RoundToInt(character.GetDamage());
             damageable.TakeDamage(damage);
         }
+        CancelCurrentAttackTargetOnly();
     }
 
-    private void TriggerAttackAnimation()
+    private void CancelCurrentAttackTargetOnly()
     {
-        if (animator == null) return;
-        var weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
-        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
-        string trigger = null;
-        if (type == WeaponType.OneHandedAxe && AnimatorHasTrigger("OneHandedMeleeAttack")) trigger = "OneHandedMeleeAttack";
-        else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack")) trigger = "TwoHandedMeleeAttack";
-        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
-        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
-        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
+        currentTarget = null;
     }
 
     public void CancelCurrentAttack()
     {
-        currentTarget = null;
-        cooldownTimer = 0f;
+        CancelCurrentAttackTargetOnly();
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
     }
 
@@ -102,4 +92,22 @@ public class MeleeAttackExecutor : CombatActionExecutor
     {
         return baseCooldown;
     }
+
+    private void TriggerAttackAnimation()
+    {
+        if (animator == null) return;
+
+        var weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
+        WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
+        string trigger = null;
+
+        if (type == WeaponType.OneHandedAxe && AnimatorHasTrigger("OneHandedMeleeAttack")) trigger = "OneHandedMeleeAttack";
+        else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack")) trigger = "TwoHandedMeleeAttack";
+        else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
+        else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
+
+        if (!string.IsNullOrEmpty(trigger))
+            animator.SetTrigger(trigger);
+    }
+
 }
