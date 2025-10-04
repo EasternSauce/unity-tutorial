@@ -83,6 +83,12 @@ public class AICombat : MonoBehaviour
             return;
         }
 
+        if (meleeExecutor.IsBusyAttacking())
+        {
+            StopMovement();
+            return;
+        }
+
         float attackRange = 1.5f;
         float distance = Vector3.Distance(transform.position, target.transform.position);
 

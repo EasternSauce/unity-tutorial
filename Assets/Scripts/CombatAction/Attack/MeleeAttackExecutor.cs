@@ -3,12 +3,18 @@ using UnityEngine;
 public class MeleeAttackExecutor : CombatActionExecutor
 {
     [SerializeField] private float attackRange = 2f;
-    [SerializeField] private float attackCooldown = 2f;
-    [SerializeField] private float damageDelay = 0.3f; // new delay field
+    [SerializeField] private float attackCooldown = 3f;
+    [SerializeField] private float damageDelay = 0.3f;
+    [SerializeField] private float attackDuration = 2f;
+
     private float cooldownTimer = 0f;
-    private float damageTimer = 0f; // timer for delayed damage
+    private float damageTimer = 0f;
+    private float attackTimer = 0f;
+
     private GameObject currentTarget;
-    private IDamageable pendingDamageTarget; // target to apply damage
+    private IDamageable pendingDamageTarget;
+
+    public bool IsBusyAttacking() => attackTimer > 0f;
 
     public MeleeAttackExecutor(Character character, MoveCommandHandler movement, Animator animator)
         : base(character, movement, animator) { }
@@ -48,6 +54,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         }
 
         float distance = Vector3.Distance(character.transform.position, currentTarget.transform.position);
+
         if (distance > attackRange)
         {
             movement?.MoveTo(currentTarget.transform.position, attackRange);
@@ -60,11 +67,15 @@ public class MeleeAttackExecutor : CombatActionExecutor
             if (cooldownTimer <= 0f)
             {
                 TriggerAttackAnimation();
+
+                attackTimer = attackDuration;
+
                 if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
                 {
                     pendingDamageTarget = damageable;
-                    damageTimer = damageDelay; // schedule delayed damage
+                    damageTimer = damageDelay;
                 }
+
                 cooldownTimer = attackCooldown;
             }
         }
@@ -75,6 +86,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
         CancelCurrentAttackTargetOnly();
         pendingDamageTarget = null;
         damageTimer = 0f;
+        attackTimer = 0f;
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
     }
 
