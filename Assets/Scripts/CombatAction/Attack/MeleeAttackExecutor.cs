@@ -36,7 +36,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
                 int damage = Mathf.RoundToInt(character.GetDamage());
                 pendingDamageTarget.TakeDamage(damage);
                 pendingDamageTarget = null;
-                CancelCurrentAttackTargetOnly();
             }
         }
 
