@@ -63,17 +63,6 @@ public class MoveCommandHandler : MonoBehaviour, ICommandHandler
         agent.isStopped = true;
     }
 
-    public void RotateTowards(Vector3 point)
-    {
-        if (character == null) return;
-        Vector3 direction = (point - character.transform.position).normalized;
-        if (direction.sqrMagnitude > 0.001f)
-        {
-            Quaternion lookRotation = Quaternion.LookRotation(direction);
-            character.transform.rotation = Quaternion.Slerp(character.transform.rotation, lookRotation, Time.deltaTime * 10f);
-        }
-    }
-
     public float RemainingDistance => agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh ? agent.remainingDistance : 0f;
     public bool IsOnNavMesh => agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh;
 

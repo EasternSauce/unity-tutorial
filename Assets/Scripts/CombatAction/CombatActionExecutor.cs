@@ -20,10 +20,15 @@ public abstract class CombatActionExecutor
 
     public void CancelOngoingCombatAction()
     {
-        if (character != null && character.isPerformingCombatAction)
+        if (character != null && HasActiveTarget())
         {
             ResetState();
         }
+    }
+
+    protected virtual bool HasActiveTarget()
+    {
+        return false;
     }
 
     protected void StopMovement()
@@ -36,9 +41,13 @@ public abstract class CombatActionExecutor
         movement?.MoveTo(character.transform.position);
     }
 
-    protected void RotateTowardsPoint(Vector3 point)
+    protected void FaceDirection(Vector3 point)
     {
-        movement?.RotateTowards(point);
+        if (character == null) return;
+        Vector3 direction = (point - character.transform.position);
+        direction.y = 0f;
+        if (direction.sqrMagnitude > 0.001f)
+            character.transform.forward = direction.normalized;
     }
 
     protected bool AnimatorHasTrigger(string name)
@@ -55,10 +64,5 @@ public abstract class CombatActionExecutor
         foreach (var t in triggers)
             if (AnimatorHasTrigger(t))
                 animator.ResetTrigger(t);
-    }
-
-    protected void SetPerformingCombatAction(bool state)
-    {
-        if (character != null) character.isPerformingCombatAction = state;
     }
 }

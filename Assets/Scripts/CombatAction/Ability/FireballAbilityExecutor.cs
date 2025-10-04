@@ -62,7 +62,6 @@ public class FireballAbilityExecutor : CombatActionExecutor
             float progress = 1f - (animationTimer / attackTime);
 
             isAttackLocked = progress >= 0.3f && progress <= 0.6f;
-            SetPerformingCombatAction(isAttackLocked);
 
             if (!hasSpawnedFireball && progress >= spawnProgress)
             {
@@ -76,7 +75,6 @@ public class FireballAbilityExecutor : CombatActionExecutor
             isCasting = false;
             isAttackLocked = false;
             hasSpawnedFireball = false;
-            SetPerformingCombatAction(false);
         }
     }
 
@@ -93,7 +91,6 @@ public class FireballAbilityExecutor : CombatActionExecutor
                 : character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
 
         StopMovement();
-        RotateTowardsPoint(targetPosition);
 
         animationTimer = attackTime;
         isCasting = true;
@@ -140,7 +137,6 @@ public class FireballAbilityExecutor : CombatActionExecutor
         animationTimer = 0f;
         isAttackLocked = false;
         hasSpawnedFireball = false;
-        SetPerformingCombatAction(false);
         ResetAnimatorTriggers("SpellCast");
     }
 

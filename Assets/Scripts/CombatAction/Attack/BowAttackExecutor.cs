@@ -114,8 +114,6 @@ public class BowAttackExecutor : CombatActionExecutor
             isAttackLocked = false;
             hasSpawnedArrow = false;
         }
-
-        SetPerformingCombatAction(isAttackLocked);
     }
 
     public override void Execute(Command command)
@@ -136,7 +134,6 @@ public class BowAttackExecutor : CombatActionExecutor
         }
 
         StopMovement();
-        RotateTowardsPoint(targetPosition);
         PrepareWeapon();
         PlayAttackAnimation();
 
@@ -150,7 +147,6 @@ public class BowAttackExecutor : CombatActionExecutor
         isAttackLocked = false;
         hasSpawnedArrow = false;
         isAttacking = false;
-        SetPerformingCombatAction(false);
         ResetAnimatorTriggers("BowAttack", "Attack", "FistAttack");
     }
 
@@ -161,7 +157,6 @@ public class BowAttackExecutor : CombatActionExecutor
 
     private void PrepareWeapon()
     {
-        SetPerformingCombatAction(true);
         character.GetComponent<CharacterWeaponVisibilityController>()?.ResetLingerTimer();
     }
 

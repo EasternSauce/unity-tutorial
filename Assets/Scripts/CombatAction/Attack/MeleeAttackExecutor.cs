@@ -13,13 +13,10 @@ public class MeleeAttackExecutor : CombatActionExecutor
     {
     }
 
-    public bool IsPerformingCombatAction => currentTarget != null;
-
     public override void Execute(Command command)
     {
         if (command == null || command.target == null || character == null || character.IsDead)
             return;
-
         currentTarget = command.target;
     }
 
@@ -37,7 +34,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
             return;
         }
 
-        // Reduce cooldown
         if (cooldownTimer > 0f)
         {
             cooldownTimer -= Time.deltaTime;
@@ -52,8 +48,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
         else
         {
             movement?.Stop();
-            RotateTowardsPoint(currentTarget.transform.position);
-
             if (cooldownTimer <= 0f)
             {
                 PerformAttack();
@@ -65,7 +59,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
     private void PerformAttack()
     {
         TriggerAttackAnimation();
-
         if (currentTarget.TryGetComponent<IDamageable>(out var damageable))
         {
             int damage = Mathf.RoundToInt(character.GetDamage());
@@ -76,27 +69,18 @@ public class MeleeAttackExecutor : CombatActionExecutor
     private void TriggerAttackAnimation()
     {
         if (animator == null) return;
-
         var weapon = character.GetComponent<PlayerInventory>()?.CurrentWeapon;
         WeaponType type = weapon != null ? weapon.itemData.weaponType : WeaponType.None;
-
         string trigger = null;
         if (type == WeaponType.OneHandedAxe && AnimatorHasTrigger("OneHandedMeleeAttack")) trigger = "OneHandedMeleeAttack";
         else if (type == WeaponType.TwoHandedAxe && AnimatorHasTrigger("TwoHandedMeleeAttack")) trigger = "TwoHandedMeleeAttack";
         else if (AnimatorHasTrigger("Attack")) trigger = "Attack";
         else if (AnimatorHasTrigger("FistAttack")) trigger = "FistAttack";
-
-        if (!string.IsNullOrEmpty(trigger))
-            animator.SetTrigger(trigger);
+        if (!string.IsNullOrEmpty(trigger)) animator.SetTrigger(trigger);
     }
 
-    /// <summary>
-    /// Immediately cancels the current attack and clears the target.
-    /// </summary>
     public void CancelCurrentAttack()
     {
-        if (currentTarget == null) return;
-        Debug.Log("cancelling...");
         currentTarget = null;
         cooldownTimer = 0f;
         ResetAnimatorTriggers("Attack", "FistAttack", "OneHandedMeleeAttack", "TwoHandedMeleeAttack");
@@ -105,6 +89,11 @@ public class MeleeAttackExecutor : CombatActionExecutor
     protected override void ResetState()
     {
         CancelCurrentAttack();
+    }
+
+    protected override bool HasActiveTarget()
+    {
+        return currentTarget != null;
     }
 
     protected override float ApplyCooldown(float baseCooldown)
