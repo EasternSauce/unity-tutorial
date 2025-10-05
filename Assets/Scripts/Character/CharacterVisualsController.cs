@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class CharacterAnimator : MonoBehaviour
+public class CharacterVisualsController : MonoBehaviour
 {
     Animator animator;
 
