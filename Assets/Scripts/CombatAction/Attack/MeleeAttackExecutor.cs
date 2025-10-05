@@ -3,7 +3,7 @@ using UnityEngine;
 public class MeleeAttackExecutor : CombatActionExecutor
 {
     [SerializeField] private float attackRange = 2f;
-    [SerializeField] private float attackCooldown = 2f;
+    [SerializeField] private float cooldownTime = 2f;
     [SerializeField] private float damageDelay = 0.3f;
     [SerializeField] private float attackAnimationTime = 1f;
     [SerializeField] private float rangeForgivenessMultiplier = 1.1f;
@@ -84,7 +84,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
                     damageTimer = damageDelay;
                 }
 
-                cooldownTimer = attackCooldown;
+                cooldownTimer = cooldownTime;
                 attackTimer = attackAnimationTime;
             }
         }
