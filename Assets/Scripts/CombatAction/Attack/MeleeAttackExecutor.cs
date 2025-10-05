@@ -5,8 +5,8 @@ public class MeleeAttackExecutor : CombatActionExecutor
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float attackCooldown = 2f;
     [SerializeField] private float damageDelay = 0.3f;
-    [SerializeField] private float attackAnimationTime = 1f; // duration of the attack animation
-    [SerializeField] private float rangeForgivenessMultiplier = 1.1f; // optional margin for leniency
+    [SerializeField] private float attackAnimationTime = 1f;
+    [SerializeField] private float rangeForgivenessMultiplier = 1.1f;
 
     private float cooldownTimer = 0f;
     private float damageTimer = 0f;
@@ -30,7 +30,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
     public override void TickUpdate()
     {
-        // Update timers
         if (cooldownTimer > 0f)
             cooldownTimer -= Time.deltaTime;
 
@@ -41,29 +40,21 @@ public class MeleeAttackExecutor : CombatActionExecutor
         {
             damageTimer -= Time.deltaTime;
 
-            // Handle delayed damage timing
             if (damageTimer <= 0f && pendingDamageTarget != null && currentTarget != null)
             {
                 float distance = Vector3.Distance(character.transform.position, currentTarget.transform.position);
                 float effectiveRange = attackRange * rangeForgivenessMultiplier;
 
-                // If target is too far away, miss the attack
                 if (distance <= effectiveRange)
                 {
                     int damage = Mathf.RoundToInt(character.GetDamage());
                     pendingDamageTarget.TakeDamage(damage);
-                }
-                else
-                {
-                    // Optional: log or play a "miss" effect
-                    Debug.Log($"{character.name}'s melee attack missed! Target moved out of range.");
                 }
 
                 pendingDamageTarget = null;
             }
         }
 
-        // Early exits
         if (currentTarget == null || character == null || character.IsDead)
             return;
 
@@ -83,7 +74,6 @@ public class MeleeAttackExecutor : CombatActionExecutor
             movement?.Stop();
             FaceDirection(currentTarget.transform.position);
 
-            // Only trigger a new attack if not attacking and cooldown expired
             if (cooldownTimer <= 0f && attackTimer <= 0f)
             {
                 TriggerAttackAnimation();

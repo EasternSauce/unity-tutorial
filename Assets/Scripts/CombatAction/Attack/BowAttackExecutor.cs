@@ -134,7 +134,6 @@ public class BowAttackExecutor : CombatActionExecutor
         }
 
         StopMovement();
-        PrepareWeapon();
         PlayAttackAnimation();
 
         isAttacking = true;
@@ -153,11 +152,6 @@ public class BowAttackExecutor : CombatActionExecutor
     private bool CanAttack()
     {
         return cooldownTimer <= 0f && !isAttacking;
-    }
-
-    private void PrepareWeapon()
-    {
-        character.GetComponent<CharacterWeaponVisibilityController>()?.ResetLingerTimer();
     }
 
     private void PlayAttackAnimation()

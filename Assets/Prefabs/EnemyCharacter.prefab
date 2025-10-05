@@ -23,7 +23,6 @@ GameObject:
   - component: {fileID: 2672389237768731777}
   - component: {fileID: 5111452547635281438}
   - component: {fileID: -3868445144195624007}
-  - component: {fileID: 7269741813899601911}
   - component: {fileID: 7360522978826248675}
   - component: {fileID: 5833279936784177857}
   m_Layer: 8
@@ -105,6 +104,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af9de9744897f294b9d2258388588871, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rightHandWeapon: {fileID: 0}
+  leftHandWeapon: {fileID: 0}
 --- !u!114 &3650609626759164196
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -398,6 +399,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponType: 0
   minimumRangedDistance: 3
+  preferredRangedDistance: 10
+  moveCommandThrottle: 0.25
 --- !u!114 &5111452547635281438
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -422,22 +425,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ba8fb3e1f2594f4cb258a04027ed09e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &7269741813899601911
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6313870040128712383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f404d08a0cbaff46bb2bbda01aa50a4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bowInHand: {fileID: 0}
-  bowOnBack: {fileID: 0}
-  axeInHand: {fileID: 0}
-  axeOnBack: {fileID: 0}
 --- !u!114 &7360522978826248675
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -463,5 +450,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be9b39cb22e053942bab3deb85c23edd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
   arrowPrefab: {fileID: 1712540611187126178, guid: 941808bd5bc77654181dc7b5a508fa73, type: 3}
+  fireballPrefab: {fileID: 2971281965241998675, guid: 3f6a811b14d29e246b895099581871ff, type: 3}
