@@ -26,7 +26,6 @@ public class AICombat : MonoBehaviour
     private void Update()
     {
         if (!aggro.HasTarget()) return;
-
         GameObject target = aggro.CurrentTarget;
         HandleTarget(target);
     }
@@ -75,47 +74,67 @@ public class AICombat : MonoBehaviour
     private void HandleMeleeCombatAction(GameObject target)
     {
         var meleeExecutor = combatActionController.GetExecutor<MeleeAttackExecutor>(CombatActionType.Melee);
-        if (meleeExecutor == null || target == null) return;
+        if (!CanEngageMelee(target, meleeExecutor))
+            return;
+
+        float attackRange = 1.5f;
+        float distance = Vector3.Distance(transform.position, target.transform.position);
+
+        if (ShouldMoveCloser(distance, attackRange))
+            TryMoveTowardsTarget(target, attackRange);
+        else
+            EngageMeleeAttack(target, meleeExecutor);
+
+        moveCommandTimer -= Time.deltaTime;
+    }
+
+    private bool CanEngageMelee(GameObject target, MeleeAttackExecutor meleeExecutor)
+    {
+        if (meleeExecutor == null || target == null)
+            return false;
 
         if (target.TryGetComponent<Character>(out var targetChar) && targetChar.IsDead)
         {
             StopMovement();
-            return;
+            return false;
         }
 
         if (meleeExecutor.IsBusyAttacking())
         {
             StopMovement();
-            return;
+            return false;
         }
 
-        float attackRange = 1.5f;
-        float distance = Vector3.Distance(transform.position, target.transform.position);
+        return true;
+    }
 
-        if (distance > attackRange)
+    private bool ShouldMoveCloser(float distance, float attackRange)
+    {
+        return distance > attackRange;
+    }
+
+    private void TryMoveTowardsTarget(GameObject target, float attackRange)
+    {
+        if (moveCommandTimer <= 0f || (target.transform.position - lastTargetPosition).sqrMagnitude > 0.01f)
         {
-            if (moveCommandTimer <= 0f || (target.transform.position - lastTargetPosition).sqrMagnitude > 0.01f)
-            {
-                MoveTowards(target.transform.position, attackRange * 0.95f);
-                moveCommandTimer = moveCommandThrottle;
-                lastTargetPosition = target.transform.position;
-            }
-            else
-            {
-                if (moveHandler.IsOnNavMesh)
-                    moveHandler.ResumeMovement();
-            }
+            MoveTowards(target.transform.position, attackRange * 0.95f);
+            moveCommandTimer = moveCommandThrottle;
+            lastTargetPosition = target.transform.position;
         }
         else
         {
-            StopMovement();
-            if (!meleeExecutor.HasActiveTarget())
-            {
-                combatActionController.Execute(CombatActionType.Melee, new Command(CommandType.CombatAction, target));
-            }
+            if (moveHandler.IsOnNavMesh)
+                moveHandler.ResumeMovement();
         }
+    }
 
-        moveCommandTimer -= Time.deltaTime;
+    private void EngageMeleeAttack(GameObject target, MeleeAttackExecutor meleeExecutor)
+    {
+        StopMovement();
+        if (!meleeExecutor.HasActiveTarget())
+        {
+            combatActionController.Execute(CombatActionType.Melee, new Command(CommandType.CombatAction, target));
+        }
     }
 
     private void HandleRangedCombatAction(GameObject target)
