@@ -3,7 +3,6 @@ using UnityEngine;
 public class BowAttackExecutor : CombatActionExecutor
 {
     private GameObject arrowPrefab;
-
     private float arrowSpeed = 15f;
     private float arrowHeightOffset = 1.2f;
     private float cooldownTime = 2f;
@@ -34,36 +33,64 @@ public class BowAttackExecutor : CombatActionExecutor
         if (damageTimer > 0f)
         {
             damageTimer -= Time.deltaTime;
-
             if (damageTimer <= 0f && arrowPending)
-            {
                 FireArrow();
-                arrowPending = false;
-                cooldownTimer = cooldownTime;
-            }
         }
     }
 
     public override void Execute(Command command)
     {
-        // Prevent spamming: ignore if attack in progress or cooldown
         if (attackTimer > 0f || cooldownTimer > 0f)
             return;
 
-        // Determine aim point
         targetPosition = GetTargetPosition(command);
-
-        // Face the target
         FaceDirection(targetPosition);
-
-        // Stop movement and play animation
         StopMovement();
         TriggerAttackAnimation();
 
-        // Setup timers
         attackTimer = attackAnimationTime;
         damageTimer = damageDelay;
         arrowPending = true;
+    }
+
+    private Vector3 GetTargetPosition(Command command)
+    {
+        if (character.IsPlayer)
+            return GetPlayerAimPosition();
+
+        if (command != null && command.target != null)
+            return GetAIPosition(command.target);
+
+        return GetFallbackPosition(command);
+    }
+
+    private Vector3 GetPlayerAimPosition()
+    {
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            Plane plane = new Plane(Vector3.up, character.transform.position + Vector3.up * arrowHeightOffset);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (plane.Raycast(ray, out float distance))
+                return ray.GetPoint(distance);
+        }
+        return GetFallbackPosition(null);
+    }
+
+    private Vector3 GetAIPosition(GameObject target)
+    {
+        Vector3 pos = target.transform.position;
+        pos.y = character.transform.position.y + arrowHeightOffset;
+        return pos;
+    }
+
+    private Vector3 GetFallbackPosition(Command command)
+    {
+        Vector3 pos = (command != null && command.worldPoint != Vector3.zero)
+            ? command.worldPoint
+            : character.transform.position + character.transform.forward * 10f;
+        pos.y = character.transform.position.y + arrowHeightOffset;
+        return pos;
     }
 
     private void FireArrow()
@@ -75,58 +102,19 @@ public class BowAttackExecutor : CombatActionExecutor
 
         var arrowObj = Object.Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
         arrowObj.GetComponent<Arrow>().Initialize(character, direction, arrowSpeed, arrowHeightOffset);
-    }
 
-    private Vector3 GetTargetPosition(Command command)
-    {
-        // Player aiming
-        if (character.IsPlayer)
-        {
-            Camera cam = Camera.main;
-            if (cam != null)
-            {
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                Plane plane = new Plane(Vector3.up, character.transform.position + Vector3.up * arrowHeightOffset);
-
-                if (plane.Raycast(ray, out float distance))
-                    return ray.GetPoint(distance);
-            }
-        }
-
-        // AI aiming
-        if (command != null)
-        {
-            if (command.target != null)
-            {
-                Vector3 pos = command.target.transform.position;
-                pos.y = character.transform.position.y + arrowHeightOffset;
-                return pos;
-            }
-            else if (command.worldPoint != Vector3.zero)
-            {
-                Vector3 pos = command.worldPoint;
-                pos.y = character.transform.position.y + arrowHeightOffset;
-                return pos;
-            }
-        }
-
-        // Fallback
-        Vector3 fallback = character.transform.position + character.transform.forward * 10f;
-        fallback.y = character.transform.position.y + arrowHeightOffset;
-        return fallback;
+        arrowPending = false;
+        cooldownTimer = cooldownTime;
     }
 
     private void TriggerAttackAnimation()
     {
         if (animator == null) return;
 
-        // Player animation
         if (character.IsPlayer && AnimatorHasTrigger("BowAttack"))
             animator.SetTrigger("BowAttack");
-        // AI animation
         else if (!character.IsPlayer && AnimatorHasTrigger("BowAttack"))
             animator.SetTrigger("BowAttack");
-        // fallback
         else if (AnimatorHasTrigger("Attack"))
             animator.SetTrigger("Attack");
     }
