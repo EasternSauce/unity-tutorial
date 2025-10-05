@@ -46,17 +46,17 @@ public class BowAttackExecutor : CombatActionExecutor
 
     public override void Execute(Command command)
     {
-        // ❌ Prevent spamming: ignore input if attack in progress or on cooldown
+        // Prevent spamming: ignore if attack in progress or cooldown
         if (attackTimer > 0f || cooldownTimer > 0f)
             return;
 
         // Determine aim point
-        targetPosition = GetAimPosition(command);
+        targetPosition = GetTargetPosition(command);
 
-        // Face target
+        // Face the target
         FaceDirection(targetPosition);
 
-        // Stop movement and trigger animation
+        // Stop movement and play animation
         StopMovement();
         TriggerAttackAnimation();
 
@@ -68,8 +68,7 @@ public class BowAttackExecutor : CombatActionExecutor
 
     private void FireArrow()
     {
-        if (arrowPrefab == null)
-            return;
+        if (arrowPrefab == null) return;
 
         Vector3 spawnPos = character.transform.position + Vector3.up * arrowHeightOffset + character.transform.forward * 0.5f;
         Vector3 direction = (targetPosition - spawnPos).normalized;
@@ -78,20 +77,41 @@ public class BowAttackExecutor : CombatActionExecutor
         arrowObj.GetComponent<Arrow>().Initialize(character, direction, arrowSpeed, arrowHeightOffset);
     }
 
-    private Vector3 GetAimPosition(Command command)
+    private Vector3 GetTargetPosition(Command command)
     {
-        Camera cam = Camera.main;
-        if (character.IsPlayer && cam != null)
+        // Player aiming
+        if (character.IsPlayer)
         {
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane plane = new Plane(Vector3.up, character.transform.position + Vector3.up * arrowHeightOffset);
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                Plane plane = new Plane(Vector3.up, character.transform.position + Vector3.up * arrowHeightOffset);
 
-            if (plane.Raycast(ray, out float distance))
-                return ray.GetPoint(distance);
+                if (plane.Raycast(ray, out float distance))
+                    return ray.GetPoint(distance);
+            }
         }
 
-        // Fallback for AI or no camera
-        Vector3 fallback = command != null ? command.worldPoint : character.transform.position + character.transform.forward * 10f;
+        // AI aiming
+        if (command != null)
+        {
+            if (command.target != null)
+            {
+                Vector3 pos = command.target.transform.position;
+                pos.y = character.transform.position.y + arrowHeightOffset;
+                return pos;
+            }
+            else if (command.worldPoint != Vector3.zero)
+            {
+                Vector3 pos = command.worldPoint;
+                pos.y = character.transform.position.y + arrowHeightOffset;
+                return pos;
+            }
+        }
+
+        // Fallback
+        Vector3 fallback = character.transform.position + character.transform.forward * 10f;
         fallback.y = character.transform.position.y + arrowHeightOffset;
         return fallback;
     }
@@ -100,8 +120,13 @@ public class BowAttackExecutor : CombatActionExecutor
     {
         if (animator == null) return;
 
+        // Player animation
         if (character.IsPlayer && AnimatorHasTrigger("BowAttack"))
             animator.SetTrigger("BowAttack");
+        // AI animation
+        else if (!character.IsPlayer && AnimatorHasTrigger("BowAttack"))
+            animator.SetTrigger("BowAttack");
+        // fallback
         else if (AnimatorHasTrigger("Attack"))
             animator.SetTrigger("Attack");
     }
