@@ -5,7 +5,7 @@ public class BowAttackExecutor : CombatActionExecutor
     private GameObject arrowPrefab;
     private float arrowSpeed = 15f;
     private float arrowHeightOffset = 1.2f;
-    private float cooldownTime = 1f;
+    private float cooldownTime = 2f;
     private float cooldownTimer;
 
     public BowAttackExecutor(Character character, MoveCommandHandler movement, Animator animator, GameObject arrowPrefab)
