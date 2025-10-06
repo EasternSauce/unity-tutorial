@@ -147,6 +147,30 @@ public class AICombat : MonoBehaviour
             return;
         }
 
+        // Get correct executor
+        bool isBusy = false;
+        if (weaponType == AIWeaponType.Bow)
+        {
+            var bowExec = combatActionController.GetExecutor<BowAttackExecutor>(CombatActionType.Bow);
+            if (bowExec != null && bowExec.IsBusyAttacking())
+                isBusy = true;
+        }
+        else if (weaponType == AIWeaponType.Magic)
+        {
+            var fireballExec = combatActionController.GetExecutor<FireballAbilityExecutor>(CombatActionType.Fireball);
+            if (fireballExec != null && fireballExec.IsBusyCasting())
+                isBusy = true;
+        }
+
+        // 🔒 If currently attacking/casting, stand still and face target
+        if (isBusy)
+        {
+            StopMovement();
+            transform.LookAt(target.transform.position);
+            return;
+        }
+
+        // Normal ranged behavior
         if (distance < minimumRangedDistance)
             StopMovement();
         else if (distance > preferredRangedDistance)
@@ -154,6 +178,7 @@ public class AICombat : MonoBehaviour
         else
             StopMovement();
 
+        // Try to attack if in range
         if (distance <= preferredRangedDistance)
         {
             switch (weaponType)
@@ -167,4 +192,6 @@ public class AICombat : MonoBehaviour
             }
         }
     }
+
+
 }

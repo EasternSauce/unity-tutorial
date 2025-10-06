@@ -2,24 +2,49 @@ using UnityEngine;
 
 public class FireballAbilityExecutor : CombatActionExecutor
 {
-    private GameObject fireballPrefab;
-    private float fireballSpeed = 15f;
-    private float heightOffset = 1.2f;
-    private float cooldownTime = 3.0f;
-    private float damageDelay = 1.2f;
-    private float attackAnimationTime = 2.0f;
+    [SerializeField] private float fireballSpeed = 15f;
+    [SerializeField] private float heightOffset = 1.2f;
+    [SerializeField] private float cooldownTime = 3.0f;
+    [SerializeField] private float damageDelay = 1.2f;
+    [SerializeField] private float attackAnimationTime = 2.0f;
 
     private float cooldownTimer;
     private float damageTimer;
     private float attackTimer;
     private bool fireballPending;
 
+    private GameObject currentTarget;
     private Vector3 targetPosition;
+
+    private GameObject fireballPrefab;
+
+    public bool IsBusyCasting() => attackTimer > 0f;
 
     public FireballAbilityExecutor(Character character, MoveCommandHandler movement, Animator animator, GameObject fireballPrefab)
         : base(character, movement, animator)
     {
         this.fireballPrefab = fireballPrefab;
+    }
+
+    public override void Execute(Command command)
+    {
+        if (attackTimer > 0f || cooldownTimer > 0f)
+            return;
+
+        if (command == null)
+            return;
+
+        currentTarget = command.target;
+
+        targetPosition = DetermineTargetPosition(command);
+        FaceDirection(targetPosition);
+        movement?.Stop();
+
+        TriggerCastAnimation();
+
+        attackTimer = attackAnimationTime;
+        damageTimer = damageDelay;
+        fireballPending = true;
     }
 
     public override void TickUpdate()
@@ -30,27 +55,19 @@ public class FireballAbilityExecutor : CombatActionExecutor
         if (attackTimer > 0f)
             attackTimer -= Time.deltaTime;
 
+        if (attackTimer > 0f)
+        {
+            movement?.Stop();
+            FaceDirection(targetPosition);
+        }
+
         if (damageTimer > 0f)
         {
             damageTimer -= Time.deltaTime;
+
             if (damageTimer <= 0f && fireballPending)
                 CastFireball();
         }
-    }
-
-    public override void Execute(Command command)
-    {
-        if (attackTimer > 0f || cooldownTimer > 0f)
-            return;
-
-        targetPosition = DetermineTargetPosition(command);
-        FaceDirection(targetPosition);
-        StopMovement();
-        TriggerCastAnimation();
-
-        attackTimer = attackAnimationTime;
-        damageTimer = damageDelay;
-        fireballPending = true;
     }
 
     private Vector3 DetermineTargetPosition(Command command)
@@ -58,7 +75,7 @@ public class FireballAbilityExecutor : CombatActionExecutor
         if (character.IsPlayer)
             return GetPlayerAimPosition();
 
-        if (command != null && command.target != null)
+        if (command.target != null)
             return GetAIPosition(command.target);
 
         return GetFallbackPosition(command);
@@ -74,6 +91,7 @@ public class FireballAbilityExecutor : CombatActionExecutor
             if (plane.Raycast(ray, out float distance))
                 return ray.GetPoint(distance);
         }
+
         return GetFallbackPosition(null);
     }
 
@@ -89,6 +107,7 @@ public class FireballAbilityExecutor : CombatActionExecutor
         Vector3 pos = (command != null && command.worldPoint != Vector3.zero)
             ? command.worldPoint
             : character.transform.position + character.transform.forward * 10f;
+
         pos.y = character.transform.position.y + heightOffset;
         return pos;
     }
@@ -126,7 +145,7 @@ public class FireballAbilityExecutor : CombatActionExecutor
 
     protected override void ResetState() => CancelCurrentCast();
 
-    public override bool HasActiveTarget() => fireballPending;
+    public override bool HasActiveTarget() => currentTarget != null;
 
     protected override float ApplyCooldown(float baseCooldown) => baseCooldown;
 }

@@ -16,6 +16,8 @@ public class BowAttackExecutor : CombatActionExecutor
 
     private Vector3 targetPosition;
 
+    public bool IsBusyAttacking() => attackTimer > 0f;
+
     public BowAttackExecutor(Character character, MoveCommandHandler movement, Animator animator, GameObject arrowPrefab)
         : base(character, movement, animator)
     {
