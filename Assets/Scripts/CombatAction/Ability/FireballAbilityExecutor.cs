@@ -1,147 +1,132 @@
 using UnityEngine;
 
-/*
-FireballAbilityExecutor
-
-- Fireball is a ranged magical attack that travels at a fixed height.
-- Player aims using mouse projected onto horizontal plane at character height.
-- AI aims at target’s position, or forward if no target.
-- Casting phases and cooldown match bow attack behavior.
-*/
 public class FireballAbilityExecutor : CombatActionExecutor
 {
     private GameObject fireballPrefab;
-    private float speed;
-    private float heightOffset;
-    private float attackTime;
-    private float spawnProgress;
-    private float defaultCooldown;
+    private float fireballSpeed = 15f;
+    private float heightOffset = 1.2f;
+    private float cooldownTime = 3.0f;
+    private float damageDelay = 1.2f;
+    private float attackAnimationTime = 2.0f;
 
     private float cooldownTimer;
-    private float animationTimer;
-    private bool isCasting;
-    private bool isAttackLocked;
-    private bool hasSpawnedFireball;
+    private float damageTimer;
+    private float attackTimer;
+    private bool fireballPending;
+
     private Vector3 targetPosition;
 
-    public FireballAbilityExecutor(
-        Character character,
-        MoveCommandHandler movement,
-        Animator animator,
-        GameObject prefab,
-        float speed = 15f,
-        float heightOffset = 1.2f,
-        float attackTime = 1f,
-        float spawnProgress = 0.95f,
-        float defaultCooldown = 1f
-    ) : base(character, movement, animator)
+    public FireballAbilityExecutor(Character character, MoveCommandHandler movement, Animator animator, GameObject fireballPrefab)
+        : base(character, movement, animator)
     {
-        fireballPrefab = prefab;
-        this.speed = speed;
-        this.heightOffset = heightOffset;
-        this.attackTime = attackTime;
-        this.spawnProgress = spawnProgress;
-        this.defaultCooldown = defaultCooldown;
-        cooldownTimer = 0f;
-        animationTimer = 0f;
-        isCasting = false;
-        isAttackLocked = false;
-        hasSpawnedFireball = false;
+        this.fireballPrefab = fireballPrefab;
     }
 
     public override void TickUpdate()
     {
-        if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
-        if (!isCasting) return;
+        if (cooldownTimer > 0f)
+            cooldownTimer -= Time.deltaTime;
 
-        StopMovement();
+        if (attackTimer > 0f)
+            attackTimer -= Time.deltaTime;
 
-        if (animationTimer > 0f)
+        if (damageTimer > 0f)
         {
-            animationTimer -= Time.deltaTime;
-            float progress = 1f - (animationTimer / attackTime);
-
-            isAttackLocked = progress >= 0.3f && progress <= 0.6f;
-
-            if (!hasSpawnedFireball && progress >= spawnProgress)
-            {
-                SpawnFireball(targetPosition);
-                hasSpawnedFireball = true;
-                cooldownTimer = ApplyCooldown(defaultCooldown);
-            }
-        }
-        else
-        {
-            isCasting = false;
-            isAttackLocked = false;
-            hasSpawnedFireball = false;
+            damageTimer -= Time.deltaTime;
+            if (damageTimer <= 0f && fireballPending)
+                CastFireball();
         }
     }
 
     public override void Execute(Command command)
     {
-        if (cooldownTimer > 0f || isCasting) return;
+        if (attackTimer > 0f || cooldownTimer > 0f)
+            return;
 
-        // Determine target position
-        if (character.IsPlayer)
-            targetPosition = GetMouseWorldPosition();
-        else
-            targetPosition = (command != null && command.target != null)
-                ? command.target.transform.position + Vector3.up * heightOffset
-                : character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
-
+        targetPosition = DetermineTargetPosition(command);
+        FaceDirection(targetPosition);
         StopMovement();
+        TriggerCastAnimation();
 
-        animationTimer = attackTime;
-        isCasting = true;
-        hasSpawnedFireball = false;
-        isAttackLocked = false;
+        attackTimer = attackAnimationTime;
+        damageTimer = damageDelay;
+        fireballPending = true;
+    }
 
+    private Vector3 DetermineTargetPosition(Command command)
+    {
+        if (character.IsPlayer)
+            return GetPlayerAimPosition();
+
+        if (command != null && command.target != null)
+            return GetAIPosition(command.target);
+
+        return GetFallbackPosition(command);
+    }
+
+    private Vector3 GetPlayerAimPosition()
+    {
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            Plane plane = new Plane(Vector3.up, character.transform.position + Vector3.up * heightOffset);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (plane.Raycast(ray, out float distance))
+                return ray.GetPoint(distance);
+        }
+        return GetFallbackPosition(null);
+    }
+
+    private Vector3 GetAIPosition(GameObject target)
+    {
+        Vector3 pos = target.transform.position;
+        pos.y = character.transform.position.y + heightOffset;
+        return pos;
+    }
+
+    private Vector3 GetFallbackPosition(Command command)
+    {
+        Vector3 pos = (command != null && command.worldPoint != Vector3.zero)
+            ? command.worldPoint
+            : character.transform.position + character.transform.forward * 10f;
+        pos.y = character.transform.position.y + heightOffset;
+        return pos;
+    }
+
+    private void CastFireball()
+    {
+        if (fireballPrefab == null) return;
+
+        Vector3 spawnPos = character.transform.position + Vector3.up * heightOffset + character.transform.forward * 0.5f;
+        Vector3 direction = (targetPosition - spawnPos).normalized;
+        direction.y = 0f;
+        direction.Normalize();
+
+        var fireballObj = Object.Instantiate(fireballPrefab, spawnPos, Quaternion.LookRotation(direction));
+        fireballObj.GetComponent<Fireball>().Initialize(character, direction, fireballSpeed, heightOffset);
+
+        fireballPending = false;
+        cooldownTimer = cooldownTime;
+    }
+
+    private void TriggerCastAnimation()
+    {
+        if (animator == null) return;
         if (AnimatorHasTrigger("SpellCast"))
             animator.SetTrigger("SpellCast");
     }
 
-    private void SpawnFireball(Vector3 target)
+    public void CancelCurrentCast()
     {
-        if (fireballPrefab == null) return;
-
-        Vector3 spawnPos = character.transform.position + Vector3.up * heightOffset;
-        Vector3 dir = (target - spawnPos).normalized;
-        dir.y = 0f; // enforce horizontal flight
-        dir.Normalize();
-
-        GameObject proj = Object.Instantiate(fireballPrefab, spawnPos, Quaternion.LookRotation(dir));
-        Fireball fireball = proj.GetComponent<Fireball>();
-        if (fireball != null)
-            fireball.Initialize(character, dir, speed, heightOffset);
-    }
-
-    private Vector3 GetMouseWorldPosition()
-    {
-        Camera cam = Camera.main;
-        if (cam == null)
-            return character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
-
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        Plane plane = new Plane(Vector3.up, character.transform.position + Vector3.up * heightOffset);
-
-        if (plane.Raycast(ray, out float distance))
-            return ray.GetPoint(distance);
-
-        return character.transform.position + character.transform.forward * 10f + Vector3.up * heightOffset;
-    }
-
-    protected override void ResetState()
-    {
-        isCasting = false;
-        animationTimer = 0f;
-        isAttackLocked = false;
-        hasSpawnedFireball = false;
+        fireballPending = false;
+        attackTimer = 0f;
+        damageTimer = 0f;
         ResetAnimatorTriggers("SpellCast");
     }
 
-    protected override float ApplyCooldown(float baseCooldown)
-    {
-        return baseCooldown / character.GetStatsValue(RegularStat.AttackSpeed).float_value;
-    }
+    protected override void ResetState() => CancelCurrentCast();
+
+    public override bool HasActiveTarget() => fireballPending;
+
+    protected override float ApplyCooldown(float baseCooldown) => baseCooldown;
 }
