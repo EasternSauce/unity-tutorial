@@ -147,7 +147,6 @@ public class AICombat : MonoBehaviour
             return;
         }
 
-        // Get correct executor
         bool isBusy = false;
         if (weaponType == AIWeaponType.Bow)
         {
@@ -162,7 +161,6 @@ public class AICombat : MonoBehaviour
                 isBusy = true;
         }
 
-        // 🔒 If currently attacking/casting, stand still and face target
         if (isBusy)
         {
             StopMovement();
@@ -170,7 +168,6 @@ public class AICombat : MonoBehaviour
             return;
         }
 
-        // Normal ranged behavior
         if (distance < minimumRangedDistance)
             StopMovement();
         else if (distance > preferredRangedDistance)
@@ -178,7 +175,6 @@ public class AICombat : MonoBehaviour
         else
             StopMovement();
 
-        // Try to attack if in range
         if (distance <= preferredRangedDistance)
         {
             switch (weaponType)

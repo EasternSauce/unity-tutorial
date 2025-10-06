@@ -32,6 +32,12 @@ public class BowAttackExecutor : CombatActionExecutor
         if (attackTimer > 0f)
             attackTimer -= Time.deltaTime;
 
+        if (attackTimer > 0f)
+        {
+            movement?.Stop();
+            FaceDirection(targetPosition);
+        }
+
         if (damageTimer > 0f)
         {
             damageTimer -= Time.deltaTime;
@@ -47,7 +53,7 @@ public class BowAttackExecutor : CombatActionExecutor
 
         targetPosition = GetTargetPosition(command);
         FaceDirection(targetPosition);
-        StopMovement();
+        movement?.Stop();
         TriggerAttackAnimation();
 
         attackTimer = attackAnimationTime;
