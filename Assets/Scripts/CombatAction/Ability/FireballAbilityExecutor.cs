@@ -15,6 +15,7 @@ public class FireballAbilityExecutor : CombatActionExecutor
 
     private GameObject currentTarget;
     private Vector3 targetPosition;
+    private Quaternion lockedRotation;
 
     private GameObject fireballPrefab;
 
@@ -28,18 +29,14 @@ public class FireballAbilityExecutor : CombatActionExecutor
 
     public override void Execute(Command command)
     {
-        if (attackTimer > 0f || cooldownTimer > 0f)
-            return;
-
-        if (command == null)
+        if (attackTimer > 0f || cooldownTimer > 0f || command == null)
             return;
 
         currentTarget = command.target;
-
         targetPosition = DetermineTargetPosition(command);
         FaceDirection(targetPosition);
+        lockedRotation = character.transform.rotation;
         movement?.Stop();
-
         TriggerCastAnimation();
 
         attackTimer = attackAnimationTime;
@@ -53,18 +50,15 @@ public class FireballAbilityExecutor : CombatActionExecutor
             cooldownTimer -= Time.deltaTime;
 
         if (attackTimer > 0f)
-            attackTimer -= Time.deltaTime;
-
-        if (attackTimer > 0f)
         {
+            attackTimer -= Time.deltaTime;
             movement?.Stop();
-            FaceDirection(targetPosition);
+            character.transform.rotation = lockedRotation;
         }
 
         if (damageTimer > 0f)
         {
             damageTimer -= Time.deltaTime;
-
             if (damageTimer <= 0f && fireballPending)
                 CastFireball();
         }
@@ -91,7 +85,6 @@ public class FireballAbilityExecutor : CombatActionExecutor
             if (plane.Raycast(ray, out float distance))
                 return ray.GetPoint(distance);
         }
-
         return GetFallbackPosition(null);
     }
 
@@ -107,7 +100,6 @@ public class FireballAbilityExecutor : CombatActionExecutor
         Vector3 pos = (command != null && command.worldPoint != Vector3.zero)
             ? command.worldPoint
             : character.transform.position + character.transform.forward * 10f;
-
         pos.y = character.transform.position.y + heightOffset;
         return pos;
     }
@@ -145,7 +137,7 @@ public class FireballAbilityExecutor : CombatActionExecutor
 
     protected override void ResetState() => CancelCurrentCast();
 
-    public override bool HasActiveTarget() => currentTarget != null;
+    public override bool HasActiveTarget() => fireballPending;
 
     protected override float ApplyCooldown(float baseCooldown) => baseCooldown;
 }

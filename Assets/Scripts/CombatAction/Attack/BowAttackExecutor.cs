@@ -15,6 +15,7 @@ public class BowAttackExecutor : CombatActionExecutor
     private bool arrowPending;
 
     private Vector3 targetPosition;
+    private Quaternion lockedRotation;
 
     public bool IsBusyAttacking() => attackTimer > 0f;
 
@@ -30,12 +31,10 @@ public class BowAttackExecutor : CombatActionExecutor
             cooldownTimer -= Time.deltaTime;
 
         if (attackTimer > 0f)
-            attackTimer -= Time.deltaTime;
-
-        if (attackTimer > 0f)
         {
+            attackTimer -= Time.deltaTime;
             movement?.Stop();
-            FaceDirection(targetPosition);
+            character.transform.rotation = lockedRotation;
         }
 
         if (damageTimer > 0f)
@@ -53,6 +52,7 @@ public class BowAttackExecutor : CombatActionExecutor
 
         targetPosition = GetTargetPosition(command);
         FaceDirection(targetPosition);
+        lockedRotation = character.transform.rotation;
         movement?.Stop();
         TriggerAttackAnimation();
 
