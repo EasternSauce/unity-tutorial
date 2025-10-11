@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class InteractCommandHandler : MonoBehaviour, ICommandHandler
 {
-    private float interactRange = 0.5f;
+    private float interactRange = 2f;
 
     private MoveCommandHandler characterMovement;
     private Character character;
@@ -16,7 +16,11 @@ public class InteractCommandHandler : MonoBehaviour, ICommandHandler
 
     private void Update()
     {
-        if (currentCommand == null) return;
+        if (currentCommand == null)
+        {
+            return;
+        }
+
         if (currentCommand.target == null)
         {
             currentCommand.isComplete = true;
@@ -28,7 +32,12 @@ public class InteractCommandHandler : MonoBehaviour, ICommandHandler
 
         if (distance <= interactRange)
         {
-            currentCommand.target.GetComponent<InteractableObject>()?.Interact(character);
+            InteractableObject io = currentCommand.target.GetComponent<InteractableObject>();
+            if (io != null)
+            {
+                io.Interact(character);
+            }
+
             characterMovement.Stop();
             currentCommand.isComplete = true;
             currentCommand = null;
