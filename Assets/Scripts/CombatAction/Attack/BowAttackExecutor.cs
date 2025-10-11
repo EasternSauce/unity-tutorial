@@ -25,26 +25,6 @@ public class BowAttackExecutor : CombatActionExecutor
         this.arrowPrefab = arrowPrefab;
     }
 
-    public override void TickUpdate()
-    {
-        if (cooldownTimer > 0f)
-            cooldownTimer -= Time.deltaTime;
-
-        if (attackTimer > 0f)
-        {
-            attackTimer -= Time.deltaTime;
-            movement?.Stop();
-            character.transform.rotation = lockedRotation;
-        }
-
-        if (damageTimer > 0f)
-        {
-            damageTimer -= Time.deltaTime;
-            if (damageTimer <= 0f && arrowPending)
-                FireArrow();
-        }
-    }
-
     public override void Execute(Command command)
     {
         if (attackTimer > 0f || cooldownTimer > 0f)
@@ -55,20 +35,32 @@ public class BowAttackExecutor : CombatActionExecutor
         lockedRotation = character.transform.rotation;
         movement?.Stop();
         TriggerAttackAnimation();
-
         attackTimer = attackAnimationTime;
         damageTimer = damageDelay;
         arrowPending = true;
     }
 
+    public override void TickUpdate()
+    {
+        if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
+        if (attackTimer > 0f)
+        {
+            attackTimer -= Time.deltaTime;
+            movement?.Stop();
+            character.transform.rotation = lockedRotation;
+        }
+        if (damageTimer > 0f)
+        {
+            damageTimer -= Time.deltaTime;
+            if (damageTimer <= 0f && arrowPending)
+                FireArrow();
+        }
+    }
+
     private Vector3 GetTargetPosition(Command command)
     {
-        if (character.IsPlayer)
-            return GetPlayerAimPosition();
-
-        if (command != null && command.target != null)
-            return GetAIPosition(command.target);
-
+        if (character.IsPlayer) return GetPlayerAimPosition();
+        if (command != null && command.target != null) return GetAIPosition(command.target);
         return GetFallbackPosition(command);
     }
 
@@ -79,8 +71,7 @@ public class BowAttackExecutor : CombatActionExecutor
         {
             Plane plane = new Plane(Vector3.up, character.transform.position + Vector3.up * arrowHeightOffset);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (plane.Raycast(ray, out float distance))
-                return ray.GetPoint(distance);
+            if (plane.Raycast(ray, out float distance)) return ray.GetPoint(distance);
         }
         return GetFallbackPosition(null);
     }
@@ -104,13 +95,10 @@ public class BowAttackExecutor : CombatActionExecutor
     private void FireArrow()
     {
         if (arrowPrefab == null) return;
-
         Vector3 spawnPos = character.transform.position + Vector3.up * arrowHeightOffset + character.transform.forward * 0.5f;
         Vector3 direction = (targetPosition - spawnPos).normalized;
-
-        var arrowObj = Object.Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
+        var arrowObj = Object.Instantiate(arrowPrefab, spawnPos, Quaternion.LookRotation(direction));
         arrowObj.GetComponent<Arrow>().Initialize(character, direction, arrowSpeed, arrowHeightOffset);
-
         arrowPending = false;
         cooldownTimer = cooldownTime;
     }
@@ -118,13 +106,7 @@ public class BowAttackExecutor : CombatActionExecutor
     private void TriggerAttackAnimation()
     {
         if (animator == null) return;
-
-        if (character.IsPlayer && AnimatorHasTrigger("BowAttack"))
-            animator.SetTrigger("BowAttack");
-        else if (!character.IsPlayer && AnimatorHasTrigger("BowAttack"))
-            animator.SetTrigger("BowAttack");
-        else if (AnimatorHasTrigger("Attack"))
-            animator.SetTrigger("Attack");
+        if (AnimatorHasTrigger("BowAttack")) animator.SetTrigger("BowAttack");
     }
 
     public void CancelCurrentAttack()
@@ -132,12 +114,10 @@ public class BowAttackExecutor : CombatActionExecutor
         arrowPending = false;
         attackTimer = 0f;
         damageTimer = 0f;
-        ResetAnimatorTriggers("BowAttack", "Attack", "FistAttack");
+        ResetAnimatorTriggers("BowAttack", "Attack");
     }
 
     protected override void ResetState() => CancelCurrentAttack();
-
     public override bool HasActiveTarget() => arrowPending;
-
     protected override float ApplyCooldown(float baseCooldown) => baseCooldown;
 }

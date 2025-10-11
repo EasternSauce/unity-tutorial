@@ -161,10 +161,10 @@ public class AICombat : MonoBehaviour
                 isBusy = true;
         }
 
+        // 🔥 IMPORTANT: do NOT rotate while busy
         if (isBusy)
         {
             StopMovement();
-            transform.LookAt(target.transform.position);
             return;
         }
 
@@ -182,6 +182,7 @@ public class AICombat : MonoBehaviour
                 case AIWeaponType.Bow:
                     combatActionController.Execute(CombatActionType.Bow, new Command(CommandType.CombatAction, target));
                     break;
+
                 case AIWeaponType.Magic:
                     combatActionController.Execute(CombatActionType.Fireball, new Command(CommandType.CombatAction, target));
                     break;
