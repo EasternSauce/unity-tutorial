@@ -28,7 +28,7 @@ public class AITargeting : MonoBehaviour
         foreach (var p in players)
         {
             if (p.IsDead || !p.IsPlayer) continue;
-            float dist = Vector3.Distance(transform.position, p.transform.position);
+            float dist = DistanceHelper.Distance(transform.position, p.transform.position);
             if (dist < minDist)
             {
                 minDist = dist;
@@ -40,7 +40,7 @@ public class AITargeting : MonoBehaviour
 
     private bool IsWithinAggroDistance(Character player)
     {
-        float distance = Vector3.Distance(transform.position, player.transform.position);
+        float distance = DistanceHelper.Distance(transform.position, player.transform.position);
         return distance <= aggro.GetAggroDistance();
     }
 }

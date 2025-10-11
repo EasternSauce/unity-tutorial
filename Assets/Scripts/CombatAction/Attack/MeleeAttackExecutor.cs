@@ -42,7 +42,7 @@ public class MeleeAttackExecutor : CombatActionExecutor
 
             if (damageTimer <= 0f && pendingDamageTarget != null && currentTarget != null)
             {
-                float distance = Vector3.Distance(character.transform.position, currentTarget.transform.position);
+                float distance = DistanceHelper.Distance(character.transform.position, currentTarget.transform.position);
                 float effectiveRange = attackRange * rangeForgivenessMultiplier;
 
                 if (distance <= effectiveRange)
@@ -64,7 +64,8 @@ public class MeleeAttackExecutor : CombatActionExecutor
             return;
         }
 
-        float distanceToTarget = Vector3.Distance(character.transform.position, currentTarget.transform.position);
+        float distanceToTarget = DistanceHelper.Distance(character.transform.position, currentTarget.transform.position);
+
         if (distanceToTarget > attackRange)
         {
             movement?.MoveTo(currentTarget.transform.position, attackRange);

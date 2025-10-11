@@ -161,7 +161,6 @@ public class AICombat : MonoBehaviour
                 isBusy = true;
         }
 
-        // 🔥 IMPORTANT: do NOT rotate while busy
         if (isBusy)
         {
             StopMovement();
@@ -189,6 +188,4 @@ public class AICombat : MonoBehaviour
             }
         }
     }
-
-
 }

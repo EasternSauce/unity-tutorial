@@ -51,7 +51,7 @@ public class AIAggro : MonoBehaviour
     public bool UpdateAggroTimerIfOutOfRange()
     {
         if (CurrentTarget == null) return false;
-        float distance = Vector3.Distance(transform.position, CurrentTarget.transform.position);
+        float distance = DistanceHelper.Distance(transform.position, CurrentTarget.transform.position);
 
         float effectiveLoseDistance = aggroLoseDistance;
         if (aiCombat != null && (aiCombat.WeaponType == AIWeaponType.Bow || aiCombat.WeaponType == AIWeaponType.Magic))

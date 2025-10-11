@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class InteractCommandHandler : MonoBehaviour, ICommandHandler
 {
-    [SerializeField] private float interactRange = 0.5f;
+    private float interactRange = 0.5f;
 
     private MoveCommandHandler characterMovement;
     private Character character;
@@ -24,7 +24,7 @@ public class InteractCommandHandler : MonoBehaviour, ICommandHandler
             return;
         }
 
-        float distance = Vector3.Distance(transform.position, currentCommand.target.transform.position);
+        float distance = DistanceHelper.Distance(transform.position, currentCommand.target.transform.position);
 
         if (distance <= interactRange)
         {
